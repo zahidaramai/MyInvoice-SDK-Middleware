@@ -1,0 +1,11 @@
+{
+  "groupId": "com.myinvois",
+  "artifactId": "myinvois-sdk",
+  "artifactVersion": "0.1.0",
+  "invokerPackage": "com.myinvois.sdk",
+  "apiPackage": "com.myinvois.sdk.api",
+  "modelPackage": "com.myinvois.sdk.model",
+  "hideGenerationTimestamp": true,
+  "library": "native",
+  "useJakartaEe": true
+}

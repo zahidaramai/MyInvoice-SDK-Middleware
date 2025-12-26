@@ -1,0 +1,11 @@
+{
+  "npmName": "@myinvois/sdk",
+  "npmVersion": "0.1.0",
+  "supportsES6": true,
+  "withInterfaces": true,
+  "withSeparateModelsAndApi": true,
+  "modelPackage": "models",
+  "apiPackage": "api",
+  "hideGenerationTimestamp": true,
+  "useSingleRequestParameter": true
+}

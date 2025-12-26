@@ -1,0 +1,7 @@
+{
+  "packageName": "MyInvois.Sdk",
+  "packageVersion": "0.1.0",
+  "targetFramework": "net8.0",
+  "hideGenerationTimestamp": true,
+  "nullableReferenceTypes": true
+}
