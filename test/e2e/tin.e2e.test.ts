@@ -1,0 +1,252 @@
+/**
+ * E2E Tests - TIN Validation
+ *
+ * Tests TIN validation with caching and privacy checks.
+ */
+
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach } from "vitest";
+import { buildApp } from "../../apps/gateway/src/app.js";
+import type { FastifyInstance } from "fastify";
+import { startMockServer, stopMockServer, resetMockServer, mockState } from "../msw/server.js";
+import { createTaxpayerSession } from "../fixtures/sessions.js";
+
+describe("E2E: TIN Validation", () => {
+  let app: FastifyInstance;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    startMockServer();
+    app = await buildApp({ logger: false });
+    await app.ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+    stopMockServer();
+  });
+
+  beforeEach(async () => {
+    resetMockServer();
+
+    // Create a fresh session
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/sessions",
+      payload: createTaxpayerSession(),
+    });
+    sessionId = response.json().sessionId;
+
+    // Set up valid TINs in mock state
+    mockState.addValidTin({
+      tin: "C12345678901",
+      idType: "BRN",
+      idValue: "202001234567",
+      valid: true,
+      name: "Valid Company Sdn Bhd",
+    });
+
+    mockState.addValidTin({
+      tin: "IG12345678901",
+      idType: "NRIC",
+      idValue: "880101015001",
+      valid: true,
+      name: "Individual Taxpayer",
+    });
+  });
+
+  afterEach(() => {
+    resetMockServer();
+  });
+
+  describe("Validate TIN", () => {
+    it("returns valid=true for a valid TIN", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      const body = response.json();
+      expect(body.valid).toBe(true);
+      expect(body.tin).toBe("C12345678901");
+      expect(body.name).toBe("Valid Company Sdn Bhd");
+    });
+
+    it("returns valid=false for an invalid TIN", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=INVALID123&idType=BRN&idValue=999999999999",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      const body = response.json();
+      expect(body.valid).toBe(false);
+      expect(body.tin).toBe("INVALID123");
+      expect(body.name).toBeUndefined();
+    });
+
+    it("validates individual TIN with NRIC", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=IG12345678901&idType=NRIC&idValue=880101015001",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      const body = response.json();
+      expect(body.valid).toBe(true);
+      expect(body.name).toBe("Individual Taxpayer");
+    });
+
+    it("requires all query parameters", async () => {
+      // Missing idValue
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("requires x-session-id header", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("validates idType enum", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=INVALID&idValue=202001234567",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+  });
+
+  describe("TIN Caching", () => {
+    it("caches valid TIN results (MISS then HIT)", async () => {
+      // First request - MISS (goes to upstream)
+      const response1 = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response1.statusCode).toBe(200);
+      expect(response1.json().valid).toBe(true);
+
+      // Note: In a full implementation, we'd check X-Cache header
+      // For now, just verify the second call also succeeds
+
+      // Second request - should HIT cache (no upstream call)
+      // We can verify by setting upstream to rate limited after first call
+      mockState.setRateLimited("validateTin");
+
+      const response2 = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+        headers: { "x-session-id": sessionId },
+      });
+
+      // If caching works, this should succeed despite rate limit
+      // because it hits the cache
+      expect(response2.statusCode).toBe(200);
+      expect(response2.json().valid).toBe(true);
+    });
+
+    it("does not cache across different sessions", async () => {
+      // First session validates TIN
+      await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+        headers: { "x-session-id": sessionId },
+      });
+
+      // Create a new session
+      const newSessionResponse = await app.inject({
+        method: "POST",
+        url: "/v1/sessions",
+        payload: createTaxpayerSession({ clientId: "different-client" }),
+      });
+      const newSessionId = newSessionResponse.json().sessionId;
+
+      // Set rate limit to verify new request goes upstream
+      mockState.setRateLimited("validateTin");
+
+      // New session should NOT use cache from first session
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+        headers: { "x-session-id": newSessionId },
+      });
+
+      // Should hit rate limit since cache is session-scoped
+      expect(response.statusCode).toBe(429);
+    });
+  });
+
+  describe("Privacy - idValue not stored raw", () => {
+    it("does not expose raw idValue in response", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      const body = response.json();
+
+      // Response should not contain the raw idValue
+      expect(body.idValue).toBeUndefined();
+      expect(JSON.stringify(body)).not.toContain("202001234567");
+    });
+  });
+
+  describe("Rate limiting (429)", () => {
+    it("handles upstream 429 gracefully", async () => {
+      mockState.setRateLimited("validateTin");
+
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?tin=NEWTIN123&idType=BRN&idValue=999999999999",
+        headers: { "x-session-id": sessionId },
+      });
+
+      expect(response.statusCode).toBe(429);
+      expect(response.headers["retry-after"]).toBeDefined();
+
+      const body = response.json();
+      expect(body.httpStatus).toBe(429);
+      expect(body.retryAfterSeconds).toBeDefined();
+    });
+  });
+
+  describe("Supported ID Types", () => {
+    const idTypes = ["NRIC", "PASSPORT", "BRN", "ARMY"];
+
+    idTypes.forEach((idType) => {
+      it(`accepts idType=${idType}`, async () => {
+        const response = await app.inject({
+          method: "GET",
+          url: `/v1/tin/validate?tin=TEST123&idType=${idType}&idValue=TESTVALUE`,
+          headers: { "x-session-id": sessionId },
+        });
+
+        // Should not reject based on idType
+        expect(response.statusCode).not.toBe(400);
+      });
+    });
+  });
+});

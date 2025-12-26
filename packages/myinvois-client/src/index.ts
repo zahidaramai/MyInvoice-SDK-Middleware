@@ -26,7 +26,18 @@ export type { TokenManagerOptions } from "./tokenManager.js";
 
 // HTTP Client
 export { MyInvoisHttpClient, createHttpClient } from "./httpClient.js";
-export type { HttpClientOptions } from "./httpClient.js";
+export type {
+  HttpClientOptions,
+  TimeoutConfig,
+  RetryConfig,
+  MetricsHooks,
+} from "./httpClient.js";
+
+// e-Invoice API
+export * from "./einvoice/index.js";
+
+// Taxpayer API
+export * from "./taxpayer/index.js";
 
 /**
  * Get package info
