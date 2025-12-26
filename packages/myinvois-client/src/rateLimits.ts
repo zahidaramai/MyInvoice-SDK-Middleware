@@ -15,7 +15,7 @@ export const RATE_LIMITS = {
   /** Reject document */
   REJECT: 12,
   /** Get document details */
-  GET_DOCUMENT: 300,
+  GET_DOCUMENT_DETAILS: 125,
   /** Validate TIN */
   VALIDATE_TIN: 60,
   /** Get recent documents */

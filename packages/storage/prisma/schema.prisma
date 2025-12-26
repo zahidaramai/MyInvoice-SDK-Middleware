@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Note: SQLite doesn't support enums, so we use String with validation in code
+// SubmissionStatus: RECEIVED | SUBMITTED | DUPLICATE_SUPPRESSED | ERROR
+// UpstreamOverallStatus: IN_PROGRESS | VALID | PARTIALLY_VALID | INVALID
+// DocumentInitialResult: ACCEPTED | REJECTED
+// Environment: PROD | SANDBOX
+
+/// Submission record
+model Submission {
+  /// Gateway tracking ID (primary key, format: trk_xxx)
+  trackingId           String    @id
+
+  /// Gateway session ID (format: sess_xxx)
+  sessionId            String
+
+  /// MyInvois environment: PROD or SANDBOX
+  env                  String
+
+  /// SHA256 hash of canonical submission payload (for deduplication)
+  payloadHash          String
+
+  /// MyInvois submission UID (null until upstream responds)
+  upstreamSubmissionUid String?
+
+  /// Local status: RECEIVED | SUBMITTED | DUPLICATE_SUPPRESSED | ERROR
+  status               String    @default("RECEIVED")
+
+  /// Upstream overall status (for polling): IN_PROGRESS | VALID | PARTIALLY_VALID | INVALID
+  upstreamOverallStatus String?
+
+  /// Correlation ID from MyInvois response
+  correlationId        String?
+
+  /// Retry-After seconds (stored when 422 DuplicateSubmission or 429)
+  retryAfterSeconds    Int?
+
+  /// Error message if status is ERROR
+  errorMessage         String?
+
+  /// Error code if status is ERROR
+  errorCode            String?
+
+  // === Phase 05: Polling state ===
+
+  /// Last time we polled upstream for this submission
+  lastPolledAt         DateTime?
+
+  /// Next scheduled poll time (worker checks this)
+  nextPollAt           DateTime?
+
+  /// Number of poll attempts made
+  pollAttempts         Int       @default(0)
+
+  /// When the submission reached a terminal state (VALID/INVALID/PARTIALLY_VALID)
+  finalizedAt          DateTime?
+
+  /// Last correlationId from Get Submission response
+  lastUpstreamCorrelationId String?
+
+  /// Last polling error code
+  lastPollErrorCode    String?
+
+  /// Last polling error message
+  lastPollErrorMessage String?
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  /// Related documents
+  documents            SubmissionDocument[]
+
+  /// Idempotency window entry
+  idempotencyWindow    IdempotencyWindow?
+
+  @@index([sessionId])
+  @@index([sessionId, payloadHash])
+  @@index([upstreamSubmissionUid])
+  @@index([nextPollAt])
+  @@index([status])
+}
+
+/// Document within a submission
+model SubmissionDocument {
+  id                   String    @id @default(uuid())
+
+  /// Foreign key to Submission
+  submissionTrackingId String
+  submission           Submission @relation(fields: [submissionTrackingId], references: [trackingId], onDelete: Cascade)
+
+  /// Document code number (invoice number)
+  codeNumber           String
+
+  /// MyInvois document UUID (null until upstream responds)
+  upstreamUuid         String?
+
+  /// Initial result from submission: ACCEPTED | REJECTED
+  initialResult        String?
+
+  /// Error code if rejected
+  errorCode            String?
+
+  /// Error message if rejected
+  errorMessage         String?
+
+  // === Phase 05: Document status from Get Submission ===
+
+  /// Document status from upstream: valid | invalid | pending etc.
+  upstreamStatus       String?
+
+  /// Long ID assigned by MyInvois
+  longId               String?
+
+  /// When the document was validated by MyInvois
+  dateTimeValidated    DateTime?
+
+  /// Issuer TIN (from Get Submission response)
+  issuerTin            String?
+
+  /// Issuer name
+  issuerName           String?
+
+  /// Receiver ID (TIN or identifier)
+  receiverId           String?
+
+  /// Receiver name
+  receiverName         String?
+
+  /// Total payable amount (stored as string for precision)
+  totalPayableAmount   String?
+
+  // === Phase 06: Document action fields ===
+
+  /// Last action type: CANCEL | REJECT (null if no action taken)
+  lastActionType       String?
+
+  /// Reason provided for the last action
+  lastActionReason     String?
+
+  /// When the last action was performed
+  lastActionAt         DateTime?
+
+  /// Last upstream status after action (may differ from upstreamStatus)
+  lastActionStatus     String?
+
+  /// Correlation ID from the last action
+  lastActionCorrelationId String?
+
+  /// Error code from last action (if failed)
+  lastActionErrorCode  String?
+
+  /// Error message from last action (if failed)
+  lastActionErrorMessage String?
+
+  /// Date/time when document was issued
+  dateTimeIssued       DateTime?
+
+  /// Date/time when document was received by MyInvois
+  dateTimeReceived     DateTime?
+
+  /// Date/time when document was cancelled
+  cancelDateTime       DateTime?
+
+  /// Date/time when document was rejected
+  rejectDateTime       DateTime?
+
+  /// Document status reason
+  statusReason         String?
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @default(now()) @updatedAt
+
+  @@index([submissionTrackingId])
+  @@index([upstreamUuid])
+  @@index([codeNumber])
+}
+
+/// Idempotency window for deduplication (10-minute window)
+model IdempotencyWindow {
+  id                   String    @id @default(uuid())
+
+  /// Gateway session ID
+  sessionId            String
+
+  /// SHA256 hash of payload
+  payloadHash          String
+
+  /// Foreign key to Submission
+  submissionTrackingId String    @unique
+  submission           Submission @relation(fields: [submissionTrackingId], references: [trackingId], onDelete: Cascade)
+
+  createdAt            DateTime  @default(now())
+
+  /// When this window expires (10 minutes from creation)
+  expiresAt            DateTime
+
+  @@unique([sessionId, payloadHash])
+  @@index([sessionId, payloadHash])
+  @@index([expiresAt])
+}
+
+// === Phase 07: TIN Validation Cache ===
+
+/// TIN validation result cache (privacy-safe: stores hash of idValue, not raw value)
+model TinValidateCache {
+  id                   String    @id @default(uuid())
+
+  /// MyInvois environment: PROD or SANDBOX
+  env                  String
+
+  /// Gateway session ID (for isolation)
+  sessionId            String
+
+  /// Tax Identification Number being validated
+  tin                  String
+
+  /// ID type: NRIC | PASSPORT | BRN | ARMY
+  idType               String
+
+  /// SHA256 hash of (idValue + SALT) - never store raw idValue
+  idValueHash          String
+
+  /// Validation result: VALID | INVALID
+  result               String
+
+  /// Taxpayer name (if returned by upstream, only for VALID)
+  taxpayerName         String?
+
+  /// When the validation was performed
+  validatedAt          DateTime  @default(now())
+
+  /// When this cache entry expires
+  expiresAt            DateTime
+
+  /// Correlation ID from upstream response
+  correlationId        String?
+
+  @@unique([env, sessionId, tin, idType, idValueHash])
+  @@index([env, sessionId, tin, idType, idValueHash])
+  @@index([expiresAt])
+}

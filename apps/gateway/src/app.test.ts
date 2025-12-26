@@ -102,30 +102,52 @@ describe("Gateway App", () => {
     });
   });
 
-  describe("V1 stub routes", () => {
-    // Sessions routes are implemented in Phase 03
+  describe("TIN validation endpoint", () => {
+    // TIN validation is implemented in Phase 07 - routes/v1/taxpayer.ts
+    // These tests verify basic behavior; detailed tests in taxpayer.test.ts
 
-    it("GET /v1/submissions/:trackingId returns 500 NOT_IMPLEMENTED", async () => {
+    it("GET /v1/tin/validate returns 404 for non-existent session", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/submissions/trk_test123",
+        url: "/v1/tin/validate?sessionId=sess_nonexistent&tin=C12345&idType=BRN&idValue=123456",
       });
 
-      expect(response.statusCode).toBe(500);
+      expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("NOT_IMPLEMENTED");
+      expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
     });
 
-    it("V1 stub routes include correlationId", async () => {
+    it("GET /v1/tin/validate returns 400 for invalid sessionId format", async () => {
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/tin/validate?sessionId=invalid&tin=C12345&idType=BRN&idValue=123456",
+      });
+
+      expect(response.statusCode).toBe(400);
+      const body = response.json();
+      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+    });
+  });
+
+  describe("Poll endpoint", () => {
+    it("POST /v1/submissions/:trackingId/poll returns 404 for non-existent submission", async () => {
       const response = await app.inject({
         method: "POST",
-        url: "/v1/submissions",
-        payload: {},
+        url: "/v1/submissions/trk_nonexistent/poll",
+      });
+
+      expect(response.statusCode).toBe(404);
+      const body = response.json();
+      expect(body.error.errorCode).toBe("SUBMISSION_NOT_FOUND");
+    });
+
+    it("poll endpoint includes correlationId header", async () => {
+      const response = await app.inject({
+        method: "POST",
+        url: "/v1/submissions/trk_test123/poll",
       });
 
       expect(response.headers["correlationid"]).toBeDefined();
-      const body = response.json();
-      expect(body.error.correlationId).toBeDefined();
     });
   });
 });
