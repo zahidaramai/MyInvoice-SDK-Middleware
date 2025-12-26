@@ -6,6 +6,7 @@
  * - Rate limiting
  * - Crypto helpers (redaction, hashing)
  * - Time utilities
+ * - Observability (metrics, logging redaction)
  */
 
 export const PACKAGE_NAME = "@myinvois/core";
@@ -22,6 +23,9 @@ export * from "./rateLimit/index.js";
 
 // Crypto helpers
 export * from "./crypto/index.js";
+
+// Observability (metrics + redaction)
+export * from "./observability/index.js";
 
 /**
  * Get package info

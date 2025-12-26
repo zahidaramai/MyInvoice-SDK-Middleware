@@ -17,5 +17,8 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "files": ["dist"]
+  "files": ["dist"],
+  "dependencies": {
+    "prom-client": "^15.1.3"
+  }
 }
