@@ -1,0 +1,1014 @@
+openapi: 3.0.3
+info:
+  title: MyInvois Middleware Gateway
+  description: |
+    Open-source middleware gateway for Malaysia's MyInvois e-invoicing system.
+    Provides a simplified REST API layer between applications and the official LHDN MyInvois API.
+
+    **Note**: This is an unofficial community project. See DISCLAIMER.md.
+  version: 0.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: GitHub Issues
+    url: https://github.com/user/myinvois-middleware/issues
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://api.example.com
+    description: Production (placeholder)
+
+tags:
+  - name: Health
+    description: Health and readiness checks
+  - name: Sessions
+    description: Session management for MyInvois authentication
+  - name: Submissions
+    description: Document submission and status tracking
+  - name: Documents
+    description: Document state management (cancel/reject) and details
+  - name: Taxpayer
+    description: Taxpayer validation utilities
+
+paths:
+  /healthz:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns OK if the gateway is running
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Gateway is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /readyz:
+    get:
+      operationId: getReady
+      summary: Readiness check
+      description: Returns OK if the gateway is ready to accept requests (DB, Redis connected)
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Gateway is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadyResponse"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          description: Gateway is not ready
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /version:
+    get:
+      operationId: getVersion
+      summary: Version information
+      description: Returns gateway version and build information
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionResponse"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/sessions:
+    post:
+      operationId: createSession
+      summary: Create a session
+      description: |
+        Creates a gateway session and authenticates with MyInvois.
+        For INTERMEDIARY mode, onBehalfOf is required.
+      tags:
+        - Sessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionCreateRequest"
+      responses:
+        "201":
+          description: Session created
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/sessions/{sessionId}:
+    get:
+      operationId: getSession
+      summary: Get session details
+      description: Returns session metadata (no secrets)
+      tags:
+        - Sessions
+      parameters:
+        - $ref: "#/components/parameters/sessionIdPath"
+      responses:
+        "200":
+          description: Session details
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      operationId: deleteSession
+      summary: Delete a session
+      description: Invalidates the session and clears cached tokens
+      tags:
+        - Sessions
+      parameters:
+        - $ref: "#/components/parameters/sessionIdPath"
+      responses:
+        "204":
+          description: Session deleted
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/submissions:
+    post:
+      operationId: createSubmission
+      summary: Submit documents
+      description: |
+        Submits documents to MyInvois and returns a tracking ID.
+        Constraints: max 100 documents, max 5MB total, max 300KB per document.
+      tags:
+        - Submissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionCreateRequest"
+      responses:
+        "202":
+          description: Submission accepted
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          description: Duplicate submission or validation error
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+            Retry-After:
+              $ref: "#/components/headers/Retry-After"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/submissions/{trackingId}:
+    get:
+      operationId: getSubmission
+      summary: Get submission status
+      description: Returns current submission status and document details
+      tags:
+        - Submissions
+      parameters:
+        - $ref: "#/components/parameters/trackingIdPath"
+      responses:
+        "200":
+          description: Submission status
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionStatus"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/submissions/{trackingId}/poll:
+    post:
+      operationId: pollSubmission
+      summary: Trigger immediate poll
+      description: |
+        Triggers an immediate poll of submission status from MyInvois.
+        Returns 409 if polling too frequently (minimum 3s interval).
+      tags:
+        - Submissions
+      parameters:
+        - $ref: "#/components/parameters/trackingIdPath"
+      responses:
+        "200":
+          description: Poll completed
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionStatus"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Polling too frequently
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+            Retry-After:
+              $ref: "#/components/headers/Retry-After"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/documents/{uuid}/cancel:
+    post:
+      operationId: cancelDocument
+      summary: Cancel a document
+      description: Cancels a submitted document (changes state to cancelled)
+      tags:
+        - Documents
+      parameters:
+        - $ref: "#/components/parameters/uuidPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentStateChangeRequest"
+      responses:
+        "200":
+          description: Document cancelled
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentStateChangeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/documents/{uuid}/reject:
+    post:
+      operationId: rejectDocument
+      summary: Reject a document
+      description: Rejects a received document (changes state to rejected)
+      tags:
+        - Documents
+      parameters:
+        - $ref: "#/components/parameters/uuidPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentStateChangeRequest"
+      responses:
+        "200":
+          description: Document rejected
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentStateChangeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/documents/{uuid}/details:
+    get:
+      operationId: getDocumentDetails
+      summary: Get document details
+      description: |
+        Returns detailed document information including validation errors.
+        Note: Use only for retrieving error details for invalid documents,
+        not for submission status monitoring.
+      tags:
+        - Documents
+      parameters:
+        - $ref: "#/components/parameters/uuidPath"
+        - $ref: "#/components/parameters/sessionIdQuery"
+      responses:
+        "200":
+          description: Document details
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentDetails"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/tin/validate:
+    get:
+      operationId: validateTin
+      summary: Validate taxpayer TIN
+      description: |
+        Validates a taxpayer's TIN against MyInvois.
+        Results are cached to reduce API calls.
+      tags:
+        - Taxpayer
+      parameters:
+        - $ref: "#/components/parameters/sessionIdQuery"
+        - name: tin
+          in: query
+          required: true
+          description: Tax Identification Number
+          schema:
+            type: string
+            minLength: 1
+        - name: idType
+          in: query
+          required: true
+          description: ID type for validation
+          schema:
+            type: string
+            enum:
+              - NRIC
+              - PASSPORT
+              - BRN
+              - ARMY
+        - name: idValue
+          in: query
+          required: true
+          description: ID value corresponding to idType
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Validation result
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TinValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  parameters:
+    sessionIdPath:
+      name: sessionId
+      in: path
+      required: true
+      description: Gateway session ID
+      schema:
+        type: string
+        pattern: "^sess_[a-zA-Z0-9]+$"
+
+    sessionIdQuery:
+      name: sessionId
+      in: query
+      required: true
+      description: Gateway session ID
+      schema:
+        type: string
+        pattern: "^sess_[a-zA-Z0-9]+$"
+
+    trackingIdPath:
+      name: trackingId
+      in: path
+      required: true
+      description: Gateway tracking ID for submission
+      schema:
+        type: string
+        pattern: "^trk_[a-zA-Z0-9]+$"
+
+    uuidPath:
+      name: uuid
+      in: path
+      required: true
+      description: MyInvois document UUID
+      schema:
+        type: string
+        format: uuid
+
+  headers:
+    X-Correlation-Id:
+      description: Correlation ID for request tracing
+      schema:
+        type: string
+
+    Retry-After:
+      description: Seconds to wait before retrying
+      schema:
+        type: integer
+        minimum: 0
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      headers:
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+    Unauthorized:
+      description: Authentication required or failed
+      headers:
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+    Forbidden:
+      description: Insufficient permissions
+      headers:
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+    NotFound:
+      description: Resource not found
+      headers:
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id"
+        Retry-After:
+          $ref: "#/components/headers/Retry-After"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+    InternalError:
+      description: Internal server error
+      headers:
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+  schemas:
+    Environment:
+      type: string
+      enum:
+        - PROD
+        - SANDBOX
+      description: MyInvois environment
+
+    Mode:
+      type: string
+      enum:
+        - TAXPAYER
+        - INTERMEDIARY
+      description: Authentication mode
+
+    SessionCreateRequest:
+      oneOf:
+        - $ref: "#/components/schemas/SessionCreateTaxpayer"
+        - $ref: "#/components/schemas/SessionCreateIntermediary"
+      discriminator:
+        propertyName: mode
+        mapping:
+          TAXPAYER: "#/components/schemas/SessionCreateTaxpayer"
+          INTERMEDIARY: "#/components/schemas/SessionCreateIntermediary"
+
+    SessionCreateTaxpayer:
+      type: object
+      required:
+        - env
+        - mode
+        - clientId
+        - clientSecret
+      properties:
+        env:
+          $ref: "#/components/schemas/Environment"
+        mode:
+          type: string
+          enum:
+            - TAXPAYER
+        clientId:
+          type: string
+          minLength: 1
+          description: MyInvois client ID
+        clientSecret:
+          type: string
+          minLength: 1
+          description: MyInvois client secret
+          format: password
+
+    SessionCreateIntermediary:
+      type: object
+      required:
+        - env
+        - mode
+        - clientId
+        - clientSecret
+        - onBehalfOf
+      properties:
+        env:
+          $ref: "#/components/schemas/Environment"
+        mode:
+          type: string
+          enum:
+            - INTERMEDIARY
+        clientId:
+          type: string
+          minLength: 1
+          description: MyInvois client ID
+        clientSecret:
+          type: string
+          minLength: 1
+          description: MyInvois client secret
+          format: password
+        onBehalfOf:
+          type: string
+          minLength: 1
+          description: TIN or TIN:ROB of taxpayer to act on behalf of
+          pattern: "^[A-Z0-9]+(:.*)?$"
+
+    Session:
+      type: object
+      required:
+        - id
+        - env
+        - mode
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Gateway session ID
+          pattern: "^sess_[a-zA-Z0-9]+$"
+        env:
+          $ref: "#/components/schemas/Environment"
+        mode:
+          $ref: "#/components/schemas/Mode"
+        onBehalfOf:
+          type: string
+          description: TIN being represented (for INTERMEDIARY mode)
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    SubmissionCreateRequest:
+      type: object
+      required:
+        - sessionId
+        - documents
+      properties:
+        sessionId:
+          type: string
+          pattern: "^sess_[a-zA-Z0-9]+$"
+        documents:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/DocumentInput"
+        autoMinify:
+          type: boolean
+          default: false
+          description: Auto-minify JSON/XML to reduce size
+        asyncPolling:
+          type: boolean
+          default: true
+          description: Enable background polling for status updates
+
+    DocumentInput:
+      type: object
+      required:
+        - format
+        - codeNumber
+      properties:
+        format:
+          type: string
+          enum:
+            - XML
+            - JSON
+          description: Document format
+        codeNumber:
+          type: string
+          minLength: 1
+          description: Invoice/document code number
+        rawDocument:
+          type: string
+          description: Raw document content (gateway will base64 encode and hash)
+        documentBase64:
+          type: string
+          format: byte
+          description: Pre-encoded base64 document
+        documentHashSha256:
+          type: string
+          description: Pre-computed SHA256 hash
+
+    SubmissionResult:
+      type: object
+      required:
+        - trackingId
+        - submissionUid
+        - acceptedDocuments
+        - rejectedDocuments
+      properties:
+        trackingId:
+          type: string
+          pattern: "^trk_[a-zA-Z0-9]+$"
+          description: Gateway tracking ID
+        submissionUid:
+          type: string
+          description: MyInvois submission UID
+        acceptedDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AcceptedDocument"
+        rejectedDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RejectedDocument"
+
+    AcceptedDocument:
+      type: object
+      required:
+        - codeNumber
+        - uuid
+      properties:
+        codeNumber:
+          type: string
+        uuid:
+          type: string
+          format: uuid
+
+    RejectedDocument:
+      type: object
+      required:
+        - codeNumber
+        - error
+      properties:
+        codeNumber:
+          type: string
+        error:
+          $ref: "#/components/schemas/GatewayError"
+
+    SubmissionStatus:
+      type: object
+      required:
+        - trackingId
+        - submissionUid
+        - status
+        - documents
+      properties:
+        trackingId:
+          type: string
+          pattern: "^trk_[a-zA-Z0-9]+$"
+        submissionUid:
+          type: string
+        status:
+          type: string
+          enum:
+            - SUBMITTED
+            - PROCESSING
+            - VALID
+            - INVALID
+            - CANCELLED
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DocumentStatus:
+      type: object
+      required:
+        - codeNumber
+        - status
+      properties:
+        codeNumber:
+          type: string
+        uuid:
+          type: string
+          format: uuid
+        status:
+          type: string
+          description: Document status from MyInvois
+        lastError:
+          $ref: "#/components/schemas/GatewayError"
+
+    DocumentStateChangeRequest:
+      type: object
+      required:
+        - sessionId
+        - reason
+      properties:
+        sessionId:
+          type: string
+          pattern: "^sess_[a-zA-Z0-9]+$"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Reason for state change
+
+    DocumentStateChangeResponse:
+      type: object
+      required:
+        - uuid
+        - status
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        status:
+          type: string
+          description: New document status
+
+    DocumentDetails:
+      type: object
+      required:
+        - uuid
+        - status
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        longId:
+          type: string
+        internalId:
+          type: string
+        status:
+          type: string
+        dateTimeIssued:
+          type: string
+          format: date-time
+        dateTimeReceived:
+          type: string
+          format: date-time
+        dateTimeValidated:
+          type: string
+          format: date-time
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+
+    ValidationError:
+      type: object
+      properties:
+        propertyName:
+          type: string
+        propertyPath:
+          type: string
+        errorCode:
+          type: string
+        error:
+          type: string
+        errorMS:
+          type: string
+
+    TinValidationResponse:
+      type: object
+      required:
+        - tin
+        - valid
+      properties:
+        tin:
+          type: string
+        valid:
+          type: boolean
+        name:
+          type: string
+          description: Taxpayer name (if available)
+        cached:
+          type: boolean
+          description: Whether result was from cache
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+
+    ReadyResponse:
+      type: object
+      required:
+        - status
+        - checks
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+            - degraded
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+              enum:
+                - ok
+                - error
+            redis:
+              type: string
+              enum:
+                - ok
+                - error
+
+    VersionResponse:
+      type: object
+      required:
+        - version
+        - name
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        commit:
+          type: string
+        buildTime:
+          type: string
+          format: date-time
+
+    ErrorEnvelope:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          $ref: "#/components/schemas/GatewayError"
+
+    GatewayError:
+      type: object
+      required:
+        - httpStatus
+        - messageEN
+      properties:
+        correlationId:
+          type: string
+          description: Correlation ID for tracing
+        httpStatus:
+          type: integer
+          description: HTTP status code
+        errorCode:
+          type: string
+          description: Application-specific error code
+        propertyName:
+          type: string
+          nullable: true
+        propertyPath:
+          type: string
+          nullable: true
+        target:
+          type: string
+          nullable: true
+        messageEN:
+          type: string
+          description: Error message in English
+        messageMS:
+          type: string
+          description: Error message in Malay
+        inner:
+          type: array
+          items:
+            $ref: "#/components/schemas/GatewayError"
+        retryAfterSeconds:
+          type: integer
+          minimum: 0
+          description: Seconds to wait before retrying
+        upstream:
+          type: object
+          properties:
+            service:
+              type: string
+              enum:
+                - MYINVOIS
+            path:
+              type: string

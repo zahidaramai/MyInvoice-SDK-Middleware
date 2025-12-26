@@ -1,0 +1,27 @@
+{
+  "name": "@myinvois/gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/server.js",
+  "types": "./dist/server.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@myinvois/core": "workspace:*",
+    "@myinvois/myinvois-client": "workspace:*",
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.1.0",
+    "yaml": "^2.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2"
+  }
+}

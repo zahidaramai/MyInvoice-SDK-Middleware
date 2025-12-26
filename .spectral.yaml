@@ -1,0 +1,102 @@
+extends:
+  - spectral:oas
+
+rules:
+  # Built-in rules - just set severity
+  operation-operationId: error
+  operation-tags: error
+  operation-operationId-unique: error
+  operation-description: warn
+
+  # Enforce 2xx response
+  operation-2xx-response:
+    description: Every operation must have at least one 2xx response
+    severity: error
+    given: "$.paths[*][get,post,put,patch,delete]"
+    then:
+      field: responses
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          anyOf:
+            - required: ["200"]
+            - required: ["201"]
+            - required: ["202"]
+            - required: ["204"]
+
+  # Enforce 429 response on all operations
+  operation-429-response:
+    description: Every operation must define a 429 (Too Many Requests) response
+    severity: error
+    given: "$.paths[*][get,post,put,patch,delete].responses"
+    then:
+      field: "429"
+      function: truthy
+
+  # Enforce Retry-After header on 429 responses (check for $ref or direct definition)
+  rate-limit-retry-after:
+    description: 429 responses must include Retry-After header
+    severity: error
+    given: "$.paths[*][get,post,put,patch,delete].responses.429"
+    then:
+      field: headers
+      function: truthy
+
+  # Versioned paths rule - v1 endpoints only (except health checks)
+  versioned-paths:
+    description: API paths must be versioned (/v1/...) except health endpoints
+    severity: error
+    given: "$.paths.*~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^/(healthz|readyz|version|v1/.*)$"
+
+  # ErrorEnvelope must have error property
+  error-envelope-structure:
+    description: ErrorEnvelope schema must have required error property
+    severity: error
+    given: "$.components.schemas.ErrorEnvelope"
+    then:
+      - field: required
+        function: schema
+        functionOptions:
+          schema:
+            type: array
+            contains:
+              const: error
+      - field: properties.error
+        function: truthy
+
+  # GatewayError must have required fields
+  gateway-error-required-fields:
+    description: GatewayError must require httpStatus and messageEN
+    severity: error
+    given: "$.components.schemas.GatewayError"
+    then:
+      field: required
+      function: schema
+      functionOptions:
+        schema:
+          type: array
+          allOf:
+            - contains:
+                const: httpStatus
+            - contains:
+                const: messageEN
+
+  # Prevent unsupported JSON Schema keywords in OAS 3.0
+  no-if-then-else:
+    description: Do not use if/then/else keywords (not supported in OAS 3.0)
+    severity: error
+    given: "$.components.schemas..if"
+    then:
+      function: falsy
+
+  no-dependent-schemas:
+    description: Do not use dependentSchemas (not supported in OAS 3.0)
+    severity: error
+    given: "$.components.schemas..dependentSchemas"
+    then:
+      function: falsy
