@@ -28,3 +28,10 @@ coverage/
 # Misc
 *.local
 .cache/
+
+# Documentation (local only)
+docs/
+
+# Claude Code guidelines (local only)
+CLAUDE.md
+**/CLAUDE.md
