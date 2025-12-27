@@ -5,6 +5,8 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 
+![MyInvois Middleware Gateway](asset/social-preview.png)
+
 **Open-source middleware gateway for Malaysia's MyInvois e-invoicing system.** Provides a simplified, production-ready REST API layer between your applications and the official LHDN MyInvois API.
 
 > **Disclaimer**: This is an unofficial community project and is not affiliated with LHDN (Lembaga Hasil Dalam Negeri Malaysia). See [DISCLAIMER.md](DISCLAIMER.md) for full terms.
