@@ -38,7 +38,8 @@ jobs:
         run: pnpm install
 
       - name: Setup database
-        run: pnpm --filter @myinvois/storage prisma migrate deploy
+        run: npx prisma migrate deploy
+        working-directory: packages/storage
         env:
           DATABASE_URL: file:./test.db
 
