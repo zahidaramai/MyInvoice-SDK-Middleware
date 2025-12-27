@@ -37,5 +37,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Setup database
+        run: pnpm --filter @myinvois/storage prisma migrate deploy
+        env:
+          DATABASE_URL: file:./test.db
+
       - name: Run CI checks
         run: pnpm check
+        env:
+          DATABASE_URL: file:${{ github.workspace }}/packages/storage/prisma/test.db
