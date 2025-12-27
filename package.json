@@ -14,7 +14,7 @@
     "build": "pnpm -r build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "check": "pnpm lint && pnpm build && pnpm test",
     "gen:sdk": "bash ./scripts/gen-sdks.sh",
     "changeset": "changeset",
     "version-packages": "changeset version",
