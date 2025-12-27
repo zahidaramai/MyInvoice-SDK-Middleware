@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "prisma generate && tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "prisma generate && tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "vitest run",
     "test:watch": "vitest",
