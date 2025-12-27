@@ -1,6 +1,6 @@
 # MyInvois Middleware Gateway
 
-[![CI](https://github.com/your-org/myinvois-middleware/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/myinvois-middleware/actions/workflows/ci.yml)
+[![CI](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml/badge.svg)](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
@@ -139,7 +139,7 @@ Integrating directly with MyInvois API presents several challenges:
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/your-org/myinvois-middleware.git
+git clone https://github.com/zahidaramai/MyInvoice-SDK-Middleware.git
 cd myinvois-middleware
 pnpm install
 ```
