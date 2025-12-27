@@ -113,8 +113,8 @@ function createUBLInvoice(invoiceNumber: string, issuerTin: string): object {
       "AccountingCustomerParty": [{
         "Party": [{
           "PartyIdentification": [
-            { "ID": [{ "_": "C00000000000", "schemeID": "TIN" }] },
-            { "ID": [{ "_": "NA", "schemeID": "BRN" }] }
+            { "ID": [{ "_": issuerTin, "schemeID": "TIN" }] },
+            { "ID": [{ "_": SUPPLIER_ID_VALUE, "schemeID": SUPPLIER_ID_TYPE }] }
           ],
           "PostalAddress": [{
             "CityName": [{ "_": "Kuala Lumpur" }],
