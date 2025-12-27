@@ -187,11 +187,11 @@ pnpm --filter @myinvois/storage prisma migrate dev
 
 ```bash
 # Development mode with hot reload
-pnpm --filter gateway dev
+pnpm --filter @myinvois/gateway dev
 
 # Or production build
 pnpm build
-pnpm --filter gateway start
+node apps/gateway/dist/server.js
 ```
 
 The gateway will be available at `http://localhost:3000`.
@@ -569,7 +569,7 @@ Configure your orchestrator to use:
 | Command | Description |
 |---------|-------------|
 | `pnpm install` | Install all dependencies |
-| `pnpm dev` | Start gateway in development mode |
+| `pnpm --filter @myinvois/gateway dev` | Start gateway in development mode |
 | `pnpm build` | Build all packages |
 | `pnpm test` | Run all tests |
 | `pnpm lint` | Run ESLint |
@@ -652,9 +652,9 @@ For security vulnerabilities, please see [SECURITY.md](SECURITY.md).
 
 ### Project Documentation
 
-- [Testing Guide](docs/testing.md)
-- [Release Process](docs/releasing.md)
 - [API Contract](openapi/openapi.yaml)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
 
 ---
 
