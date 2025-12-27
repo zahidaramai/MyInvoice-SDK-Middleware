@@ -16,12 +16,20 @@ export const RATE_LIMITS = {
   REJECT: 12,
   /** Get document details */
   GET_DOCUMENT_DETAILS: 125,
+  /** Get raw document */
+  GET_DOCUMENT: 125,
   /** Validate TIN */
   VALIDATE_TIN: 60,
   /** Get recent documents */
   GET_RECENT: 60,
+  /** Get recent documents (alias) */
+  GET_RECENT_DOCUMENTS: 60,
   /** Search documents */
   SEARCH: 60,
+  /** Search documents (alias) */
+  SEARCH_DOCUMENTS: 60,
+  /** Get document types */
+  GET_DOCUMENT_TYPES: 60,
   /** Get notifications */
   GET_NOTIFICATIONS: 60,
 } as const;

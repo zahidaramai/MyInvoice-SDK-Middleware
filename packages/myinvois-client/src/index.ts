@@ -5,6 +5,8 @@
  * - OAuth token management
  * - HTTP client with retries
  * - Rate limiting support
+ * - UBL 2.1 document builders
+ * - MyInvois codes and enums
  */
 
 export const PACKAGE_NAME = "@myinvois/myinvois-client";
@@ -15,6 +17,9 @@ export * from "./types.js";
 
 // Rate limits
 export * from "./rateLimits.js";
+
+// MyInvois Codes and Enums
+export * from "./codes.js";
 
 // Identity (login)
 export { login } from "./identity.js";
@@ -38,6 +43,9 @@ export * from "./einvoice/index.js";
 
 // Taxpayer API
 export * from "./taxpayer/index.js";
+
+// UBL Document Builders
+export * from "./ubl/index.js";
 
 /**
  * Get package info
