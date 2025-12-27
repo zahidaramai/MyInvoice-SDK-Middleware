@@ -672,4 +672,4 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 
 ---
 
-**Made with care for the Malaysian developer community.**
+**Developed and maintained by [KLCube Network Agency](https://zahidaramai.com) for the Malaysian developer community.**
