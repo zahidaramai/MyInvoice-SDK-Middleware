@@ -1,37 +1,141 @@
+# =============================================================================
 # Dependencies
+# =============================================================================
 node_modules/
+.pnpm-store/
 
+# =============================================================================
 # Build outputs
+# =============================================================================
 dist/
+build/
 *.tsbuildinfo
+.turbo/
 
-# Environment
+# =============================================================================
+# Environment & Secrets
+# =============================================================================
 .env
 .env.*
 !.env.example
+!.env.sandbox.example
+*.pem
+*.key
+credentials.json
+secrets/
 
-# IDE
+# =============================================================================
+# IDE & Editor
+# =============================================================================
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
+*.sublime-*
+.project
+.classpath
+.settings/
 
+# =============================================================================
+# OS Files
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =============================================================================
 # Logs
+# =============================================================================
 *.log
+logs/
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
+# =============================================================================
 # Testing
+# =============================================================================
 coverage/
+.nyc_output/
+test-results/
+playwright-report/
 
-# Misc
-*.local
-.cache/
-
-# Documentation (local only)
-docs/
-
-# Claude Code guidelines (local only)
+# =============================================================================
+# AI Agent & Coding Assistant Files (LOCAL ONLY)
+# =============================================================================
+# Claude Code
 CLAUDE.md
 **/CLAUDE.md
+.claude/
+.claude_*
+
+# Cursor AI
+.cursor/
+.cursorignore
+.cursorrules
+cursor-tutor/
+
+# Windsurf / Codeium
+.windsurf/
+.codeium/
+.codeiumrc
+
+# GitHub Copilot
+.copilot/
+.github/copilot/
+
+# Aider
+.aider*
+.aiderignore
+
+# Continue.dev
+.continue/
+.continuerc
+
+# Other AI assistants
+.ai/
+.assistant/
+.bolt/
+
+# =============================================================================
+# Internal Documentation (LOCAL ONLY)
+# =============================================================================
+# Project docs folder (PRD, Phase docs, playbooks, etc.)
+docs/
+
+# Keep standard public files (README, CONTRIBUTING, etc. in root)
+
+# =============================================================================
+# Temporary & Cache
+# =============================================================================
+*.local
+.cache/
+.temp/
+tmp/
+*.tmp
+
+# =============================================================================
+# Database (local development)
+# =============================================================================
+*.db
+*.sqlite
+*.sqlite3
+prisma/*.db
+prisma/*.db-journal
+
+# =============================================================================
+# Generated SDK clients (built from OpenAPI)
+# =============================================================================
+clients/
+sdks/generated/
+
+# =============================================================================
+# Load testing results
+# =============================================================================
+load/results/
+*.k6.json
