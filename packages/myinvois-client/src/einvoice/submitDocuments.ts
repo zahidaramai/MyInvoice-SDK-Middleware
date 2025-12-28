@@ -19,6 +19,16 @@ import type {
 
 const SUBMIT_PATH = "/api/v1.0/documentsubmissions/";
 const DEFAULT_RETRY_AFTER = 60;
+const DEFAULT_TIMEOUT_MS = parseInt(process.env.UPSTREAM_TIMEOUT_POST_MS || "20000", 10);
+
+/**
+ * Create AbortController with timeout
+ */
+function createTimeoutController(timeoutMs: number): { controller: AbortController; timeoutId: NodeJS.Timeout } {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return { controller, timeoutId };
+}
 
 /**
  * Extract upstream metadata from response headers
@@ -144,12 +154,18 @@ export async function submitDocuments(
     Accept: "application/json",
   };
 
+  // Create timeout controller
+  const { controller, timeoutId } = createTimeoutController(DEFAULT_TIMEOUT_MS);
+
   try {
     const response = await fetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify(request),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const meta = extractUpstreamMeta(response.headers);
 
@@ -224,13 +240,31 @@ export async function submitDocuments(
     if (response.status === 401) {
       const refreshResult = await tokenManager.refreshToken(session);
       if (refreshResult.ok) {
-        // Retry with new token
+        // Retry with new token and fresh timeout
+        const { controller: retryController, timeoutId: retryTimeoutId } = createTimeoutController(DEFAULT_TIMEOUT_MS);
         headers.Authorization = `Bearer ${refreshResult.token.accessToken}`;
-        const retryResponse = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(request),
-        });
+
+        let retryResponse: Response;
+        try {
+          retryResponse = await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(request),
+            signal: retryController.signal,
+          });
+          clearTimeout(retryTimeoutId);
+        } catch (retryError) {
+          clearTimeout(retryTimeoutId);
+          const isTimeout = retryError instanceof Error && retryError.name === "AbortError";
+          return {
+            ok: false,
+            error: {
+              status: 0,
+              message: isTimeout ? "Request timed out" : "Network error",
+              code: isTimeout ? "TIMEOUT_ERROR" : "NETWORK_ERROR",
+            },
+          };
+        }
 
         const retryMeta = extractUpstreamMeta(retryResponse.headers);
 
@@ -261,13 +295,14 @@ export async function submitDocuments(
     // Handle other errors
     return buildErrorResponse(response, meta);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Network error";
+    clearTimeout(timeoutId);
+    const isTimeout = error instanceof Error && error.name === "AbortError";
     return {
       ok: false,
       error: {
         status: 0,
-        message,
-        code: "NETWORK_ERROR",
+        message: isTimeout ? "Request timed out" : (error instanceof Error ? error.message : "Network error"),
+        code: isTimeout ? "TIMEOUT_ERROR" : "NETWORK_ERROR",
       },
     };
   }
