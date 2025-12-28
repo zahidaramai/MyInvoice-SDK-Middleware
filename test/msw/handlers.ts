@@ -9,10 +9,9 @@ import { http, HttpResponse } from "msw";
 import { mockState } from "./state.js";
 
 // MyInvois base URLs
-const SANDBOX_IDENTITY_URL = "https://preprod-identity.myinvois.hasil.gov.my";
-const SANDBOX_SYSTEM_URL = "https://preprod-api.myinvois.hasil.gov.my";
-const PROD_IDENTITY_URL = "https://identity.myinvois.hasil.gov.my";
-const PROD_SYSTEM_URL = "https://api.myinvois.hasil.gov.my";
+// Note: Both identity and system APIs use the same base URL in the actual implementation
+const SANDBOX_BASE_URL = "https://preprod-api.myinvois.hasil.gov.my";
+const PROD_BASE_URL = "https://api.myinvois.hasil.gov.my";
 
 /**
  * Create correlation ID header
@@ -64,7 +63,7 @@ function rateLimitedResponse(): HttpResponse {
 // === Token Handlers ===
 
 const tokenHandler = http.post(
-  `${SANDBOX_IDENTITY_URL}/connect/token`,
+  `${SANDBOX_BASE_URL}/connect/token`,
   async ({ request }) => {
     if (mockState.isRateLimited("token")) {
       return rateLimitedResponse();
@@ -103,7 +102,7 @@ const tokenHandler = http.post(
 );
 
 const prodTokenHandler = http.post(
-  `${PROD_IDENTITY_URL}/connect/token`,
+  `${PROD_BASE_URL}/connect/token`,
   async ({ request }) => {
     // Same logic as sandbox
     if (mockState.isRateLimited("token")) {
@@ -144,7 +143,7 @@ const prodTokenHandler = http.post(
 // === Submit Documents Handler ===
 
 const submitDocumentsHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async ({ request }) => {
     if (mockState.isRateLimited("submit")) {
       return rateLimitedResponse();
@@ -192,7 +191,7 @@ const submitDocumentsHandler = http.post(
 // === Get Submission Handler ===
 
 const getSubmissionHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/:submissionUid`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/:submissionUid`,
   async ({ params, request }) => {
     if (mockState.isRateLimited("getSubmission")) {
       return rateLimitedResponse();
@@ -241,7 +240,7 @@ const getSubmissionHandler = http.get(
 // === Change Document State Handler ===
 
 const changeDocumentStateHandler = http.put(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documents/state/:uuid/state`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documents/state/:uuid/state`,
   async ({ params, request }) => {
     if (mockState.isRateLimited("changeState")) {
       return rateLimitedResponse();
@@ -296,7 +295,7 @@ const changeDocumentStateHandler = http.put(
 // === Get Document Details Handler ===
 
 const getDocumentDetailsHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documents/:uuid/details`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documents/:uuid/details`,
   async ({ params, request }) => {
     if (mockState.isRateLimited("getDetails")) {
       return rateLimitedResponse();
@@ -344,7 +343,7 @@ const getDocumentDetailsHandler = http.get(
 // === Validate TIN Handler ===
 
 const validateTinHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/taxpayer/validate/:tin`,
+  `${SANDBOX_BASE_URL}/api/v1.0/taxpayer/validate/:tin`,
   async ({ params, request }) => {
     if (mockState.isRateLimited("validateTin")) {
       return rateLimitedResponse();
