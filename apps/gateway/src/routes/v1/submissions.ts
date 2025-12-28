@@ -3,7 +3,7 @@
  */
 
 import type { FastifyPluginAsync } from "fastify";
-import { AppError, createErrorEnvelope } from "../../lib/errors.js";
+import { AppError, createErrorEnvelope, ErrorCodes, isRetryableError } from "../../lib/errors.js";
 import { sessionStore } from "../../lib/sessionStore.js";
 import { getTokenManager, getRateLimiter } from "../../lib/myinvois.js";
 import {
@@ -66,6 +66,39 @@ interface SubmissionResultResponse {
  */
 function isValidSessionId(id: string): boolean {
   return /^sess_[a-zA-Z0-9]+$/.test(id);
+}
+
+/**
+ * Map MyInvois error codes to normalized gateway error codes
+ */
+function normalizeErrorCode(rawCode: string): { code: string; retryable: boolean; httpStatus?: number } {
+  const codeMap: Record<string, { code: string; retryable: boolean; httpStatus?: number }> = {
+    // Business validation errors
+    TaxpayerNotFound: { code: ErrorCodes.INVALID_TAXPAYER, retryable: false },
+    TotalsMismatch: { code: ErrorCodes.INVALID_TOTALS, retryable: false },
+    InvalidDocumentRelation: { code: ErrorCodes.INVALID_DOCUMENT_RELATION, retryable: false },
+    DuplicateSubmission: { code: ErrorCodes.DUPLICATE_SUBMISSION, retryable: false },
+    ValidationError: { code: ErrorCodes.DOCUMENT_VALIDATION_FAILED, retryable: false },
+    // Infrastructure errors
+    InternalError: { code: ErrorCodes.UPSTREAM_ERROR, retryable: true },
+    RateLimitExceeded: { code: ErrorCodes.UPSTREAM_RATE_LIMITED, retryable: true },
+    TIMEOUT_ERROR: { code: ErrorCodes.UPSTREAM_TIMEOUT, retryable: true, httpStatus: 504 },
+    NETWORK_ERROR: { code: ErrorCodes.NETWORK_ERROR, retryable: true, httpStatus: 503 },
+    // Auth errors
+    invalid_client: { code: ErrorCodes.AUTH_INVALID_CLIENT, retryable: false },
+    invalid_token: { code: ErrorCodes.AUTH_TOKEN_EXPIRED, retryable: false },
+  };
+
+  const mapped = codeMap[rawCode];
+  if (mapped) {
+    return mapped;
+  }
+
+  // Check if it's a retryable code based on the gateway's isRetryableError
+  return {
+    code: rawCode,
+    retryable: isRetryableError(rawCode),
+  };
 }
 
 /**
@@ -219,10 +252,11 @@ export const submissionsRoutes: FastifyPluginAsync = async (fastify) => {
       );
 
       if (!result.ok) {
-        // Store error in database
+        // Store error in database (with normalized code)
+        const normalizedForStorage = normalizeErrorCode(result.error.code || "UPSTREAM_ERROR");
         await markSubmissionError({
           trackingId,
-          errorCode: result.error.code || "UPSTREAM_ERROR",
+          errorCode: normalizedForStorage.code,
           errorMessage: result.error.message,
           correlationId: result.error.meta?.correlationId,
           retryAfterSeconds: result.error.meta?.rateLimitReset
@@ -247,15 +281,16 @@ export const submissionsRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(422).send(envelope);
         }
 
-        if (result.error.status === 429 || result.error.code === "UPSTREAM_RATE_LIMIT") {
+        if (result.error.status === 429 || result.error.code === "UPSTREAM_RATE_LIMIT" || result.error.code === "RATE_LIMIT_EXCEEDED") {
           const retryAfter = result.error.meta?.rateLimitReset
             ? result.error.meta.rateLimitReset - Math.floor(Date.now() / 1000)
             : 60;
 
           const envelope = createErrorEnvelope(429, result.error.message, {
             correlationId: result.error.meta?.correlationId || correlationId,
-            errorCode: result.error.code || "RATE_LIMIT_EXCEEDED",
+            errorCode: ErrorCodes.UPSTREAM_RATE_LIMITED,
             retryAfterSeconds: retryAfter,
+            retryable: true,
           });
 
           reply.header("X-Correlation-Id", result.error.meta?.correlationId || correlationId);
@@ -263,13 +298,43 @@ export const submissionsRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(429).send(envelope);
         }
 
-        // Generic upstream error
+        // Normalize error code
+        const normalized = normalizeErrorCode(result.error.code || "UPSTREAM_ERROR");
+
+        // Handle timeout/network errors (status 0) - these need special httpStatus
+        if (result.error.status === 0) {
+          throw new AppError(
+            normalized.httpStatus || 504,
+            result.error.message,
+            normalized.code,
+            {
+              correlationId: result.error.meta?.correlationId,
+              retryable: normalized.retryable,
+            }
+          );
+        }
+
+        // Handle 5xx upstream errors (retryable)
+        if (result.error.status && result.error.status >= 500) {
+          throw new AppError(
+            result.error.status,
+            result.error.message,
+            normalized.code,
+            {
+              correlationId: result.error.meta?.correlationId,
+              retryable: true,
+            }
+          );
+        }
+
+        // Generic upstream error (4xx business errors)
         throw new AppError(
-          result.error.status || 500,
+          normalized.httpStatus || result.error.status || 500,
           result.error.message,
-          result.error.code || "UPSTREAM_ERROR",
+          normalized.code,
           {
             correlationId: result.error.meta?.correlationId,
+            retryable: normalized.retryable,
           }
         );
       }
