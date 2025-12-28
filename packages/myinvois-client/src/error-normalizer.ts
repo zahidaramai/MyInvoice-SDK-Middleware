@@ -139,14 +139,20 @@ const AUTH_ERROR_PATTERNS: ErrorPattern[] = [
  * Extract TIN field from error body or message
  */
 function extractTinField(body: unknown, message: string): string | undefined {
-  // First, try to extract from body if it has property information (more specific)
+  // First, try to extract from validationSteps structure (real MyInvois format)
+  const parsedStep = parseValidationSteps(body);
+  if (parsedStep?.propertyName) {
+    return parsedStep.propertyName;
+  }
+
+  // Then try to extract from body at root level
   if (body && typeof body === "object") {
     const bodyObj = body as Record<string, unknown>;
-    if (bodyObj.propertyPath && typeof bodyObj.propertyPath === "string") {
-      return bodyObj.propertyPath;
-    }
     if (bodyObj.propertyName && typeof bodyObj.propertyName === "string") {
       return bodyObj.propertyName;
+    }
+    if (bodyObj.propertyPath && typeof bodyObj.propertyPath === "string") {
+      return bodyObj.propertyPath;
     }
   }
 
@@ -171,6 +177,100 @@ function extractTinField(body: unknown, message: string): string | undefined {
 }
 
 /**
+ * Parsed validation step from MyInvois response
+ */
+interface ParsedValidationStep {
+  status: string;
+  name: string;
+  errorCode?: string;
+  errorMessage?: string;
+  errorMessageMs?: string;
+  propertyName?: string;
+  propertyPath?: string;
+}
+
+/**
+ * Parse validationResults.validationSteps array from MyInvois response
+ * This is the actual structure returned by MyInvois API for document validation
+ */
+function parseValidationSteps(body: unknown): ParsedValidationStep | undefined {
+  if (!body || typeof body !== "object") return undefined;
+
+  const obj = body as Record<string, unknown>;
+
+  // Look for validationResults.validationSteps structure
+  let validationResults = obj.validationResults as Record<string, unknown> | undefined;
+
+  // Also check for direct validationSteps at root level
+  if (!validationResults && obj.validationSteps) {
+    validationResults = obj as Record<string, unknown>;
+  }
+
+  if (!validationResults) return undefined;
+
+  const steps = validationResults.validationSteps;
+  if (!Array.isArray(steps)) return undefined;
+
+  // Find the first Invalid step
+  for (const step of steps) {
+    if (!step || typeof step !== "object") continue;
+    const stepObj = step as Record<string, unknown>;
+
+    if (stepObj.status === "Invalid") {
+      const result: ParsedValidationStep = {
+        status: "Invalid",
+        name: typeof stepObj.name === "string" ? stepObj.name : "",
+      };
+
+      // Extract error details
+      const error = stepObj.error as Record<string, unknown> | undefined;
+      if (error && typeof error === "object") {
+        result.errorCode = typeof error.errorCode === "string" ? error.errorCode : undefined;
+        result.propertyName = typeof error.propertyName === "string" ? error.propertyName : undefined;
+        result.propertyPath = typeof error.propertyPath === "string" ? error.propertyPath : undefined;
+
+        // Get message from error object
+        if (typeof error.error === "string") {
+          result.errorMessage = error.error;
+        }
+        if (typeof error.errorMs === "string") {
+          result.errorMessageMs = error.errorMs;
+        }
+
+        // Check innerError for more detailed message (this is where the actual user-facing message is)
+        const innerErrors = error.innerError;
+        if (Array.isArray(innerErrors) && innerErrors.length > 0) {
+          const firstInner = innerErrors[0] as Record<string, unknown>;
+          if (firstInner && typeof firstInner === "object") {
+            // Inner error has the actual human-readable message
+            if (typeof firstInner.error === "string") {
+              result.errorMessage = firstInner.error;
+            }
+            if (typeof firstInner.errorMs === "string") {
+              result.errorMessageMs = firstInner.errorMs;
+            }
+            // Inner error may have more specific property info
+            if (typeof firstInner.propertyName === "string" && !result.propertyName) {
+              result.propertyName = firstInner.propertyName;
+            }
+            if (typeof firstInner.propertyPath === "string" && !result.propertyPath) {
+              result.propertyPath = firstInner.propertyPath;
+            }
+            if (typeof firstInner.errorCode === "string" && !result.errorCode) {
+              result.errorCode = firstInner.errorCode;
+            }
+          }
+        }
+      }
+
+      return result;
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Extract error message from various body formats
  */
 function extractErrorMessage(body: unknown): string | undefined {
@@ -178,10 +278,18 @@ function extractErrorMessage(body: unknown): string | undefined {
 
   const obj = body as Record<string, unknown>;
 
-  // Standard patterns
+  // First, try to get message from validationSteps (real MyInvois structure)
+  const parsedStep = parseValidationSteps(body);
+  if (parsedStep?.errorMessage) {
+    return parsedStep.errorMessage;
+  }
+
+  // Standard patterns - prefer full message over error codes
   if (typeof obj.message === "string") return obj.message;
-  if (typeof obj.error === "string") return obj.error;
+  // OAuth error_description has the human-readable message (error is just the code)
   if (typeof obj.error_description === "string") return obj.error_description;
+  // error field might be a code like "invalid_client" or a full message
+  if (typeof obj.error === "string" && obj.error.length > 30) return obj.error;
 
   // MyInvois specific patterns
   if (typeof obj.Message === "string") return obj.Message;
@@ -193,6 +301,9 @@ function extractErrorMessage(body: unknown): string | undefined {
     if (typeof errorObj.message === "string") return errorObj.message;
   }
 
+  // Fallback to short error field (could be an error code)
+  if (typeof obj.error === "string") return obj.error;
+
   return undefined;
 }
 
@@ -201,6 +312,12 @@ function extractErrorMessage(body: unknown): string | undefined {
  */
 function extractErrorCode(body: unknown): string | undefined {
   if (!body || typeof body !== "object") return undefined;
+
+  // First, try to get from validationSteps (real MyInvois structure)
+  const parsedStep = parseValidationSteps(body);
+  if (parsedStep?.errorCode) {
+    return parsedStep.errorCode;
+  }
 
   const obj = body as Record<string, unknown>;
 
@@ -219,6 +336,12 @@ function extractErrorCode(body: unknown): string | undefined {
 function extractStepName(body: unknown): string | undefined {
   if (!body || typeof body !== "object") return undefined;
 
+  // First, try to get from validationSteps (real MyInvois structure)
+  const parsedStep = parseValidationSteps(body);
+  if (parsedStep?.name) {
+    return parsedStep.name;
+  }
+
   const obj = body as Record<string, unknown>;
 
   if (typeof obj.stepName === "string") return obj.stepName;
@@ -233,6 +356,45 @@ function extractStepName(body: unknown): string | undefined {
     const stepMatch = message.match(/Step\d+[-\s]*([^:]+)/i);
     if (stepMatch) return stepMatch[0];
   }
+
+  return undefined;
+}
+
+/**
+ * Extract property path from body (for validation errors)
+ */
+function extractPropertyPath(body: unknown): string | undefined {
+  if (!body || typeof body !== "object") return undefined;
+
+  // First, try to get from validationSteps (real MyInvois structure)
+  const parsedStep = parseValidationSteps(body);
+  if (parsedStep?.propertyPath) {
+    return parsedStep.propertyPath;
+  }
+
+  const obj = body as Record<string, unknown>;
+  if (typeof obj.propertyPath === "string") return obj.propertyPath;
+  if (typeof obj.PropertyPath === "string") return obj.PropertyPath;
+
+  return undefined;
+}
+
+/**
+ * Extract property name (field) from body
+ */
+function extractPropertyName(body: unknown): string | undefined {
+  if (!body || typeof body !== "object") return undefined;
+
+  // First, try to get from validationSteps (real MyInvois structure)
+  const parsedStep = parseValidationSteps(body);
+  if (parsedStep?.propertyName) {
+    return parsedStep.propertyName;
+  }
+
+  const obj = body as Record<string, unknown>;
+  if (typeof obj.propertyName === "string") return obj.propertyName;
+  if (typeof obj.PropertyName === "string") return obj.PropertyName;
+  if (typeof obj.field === "string") return obj.field;
 
   return undefined;
 }
@@ -376,15 +538,22 @@ export function normalizeMyinvoisError(input: MyInvoisErrorInput): ErrorEnvelope
   // Try to match against known patterns
   const matchedPattern = matchErrorPattern(input, rawMessage || "");
   if (matchedPattern) {
-    const field = matchedPattern.extractField?.(body, rawMessage || "");
+    // Extract field and propertyPath from body
+    const field = matchedPattern.extractField?.(body, rawMessage || "") || extractPropertyName(body);
+    const propertyPath = extractPropertyPath(body);
+
+    // Use the actual error message from MyInvois if available, otherwise use template
+    const message = rawMessage || matchedPattern.messageTemplate;
+
     return createErrorEnvelope(
       matchedPattern.code,
-      matchedPattern.messageTemplate,
+      message,
       matchedPattern.httpStatus,
       {
         retryable: matchedPattern.retryable,
         upstream,
         field,
+        propertyPath,
         correlationId,
       }
     );
