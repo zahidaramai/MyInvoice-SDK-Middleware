@@ -97,7 +97,7 @@ describe("Sessions Routes", () => {
       expect(response.statusCode).toBe(400);
       const body = response.json();
       expect(body.error).toBeDefined();
-      expect(body.error.errorCode).toBe("VALIDATION_ERROR");
+      expect(body.error.code).toBe("VALIDATION_ERROR");
     });
 
     it("returns 400 for invalid mode", async () => {
@@ -114,7 +114,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("VALIDATION_ERROR");
+      expect(body.error.code).toBe("VALIDATION_ERROR");
     });
 
     it("returns 400 when INTERMEDIARY missing onBehalfOf", async () => {
@@ -131,7 +131,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.messageEN).toContain("onBehalfOf is required");
+      expect(body.error.message).toContain("onBehalfOf is required");
     });
 
     it("returns 400 when TAXPAYER has onBehalfOf", async () => {
@@ -149,7 +149,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.messageEN).toContain("not allowed for TAXPAYER");
+      expect(body.error.message).toContain("not allowed for TAXPAYER");
     });
 
     it("returns 400 for missing clientId", async () => {
@@ -199,7 +199,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.messageEN).toContain("valid TIN");
+      expect(body.error.message).toContain("valid TIN");
     });
   });
 
@@ -240,7 +240,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("NOT_FOUND");
+      expect(body.error.code).toBe("NOT_FOUND");
     });
 
     it("does not expose secrets in response", async () => {
@@ -311,7 +311,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("NOT_FOUND");
+      expect(body.error.code).toBe("NOT_FOUND");
     });
   });
 
