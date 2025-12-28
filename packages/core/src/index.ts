@@ -27,6 +27,9 @@ export * from "./crypto/index.js";
 // Observability (metrics + redaction)
 export * from "./observability/index.js";
 
+// Error handling
+export * from "./errors/index.js";
+
 /**
  * Get package info
  */

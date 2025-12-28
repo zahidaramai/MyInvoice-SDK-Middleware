@@ -77,7 +77,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_UUID");
+      expect(body.error.code).toBe("INVALID_UUID");
     });
 
     it("returns 400 for missing sessionId", async () => {
@@ -91,7 +91,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 400 for invalid sessionId format", async () => {
@@ -106,7 +106,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 404 for non-existent session", async () => {
@@ -121,7 +121,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
+      expect(body.error.code).toBe("SESSION_NOT_FOUND");
     });
 
     it("returns 400 for missing reason", async () => {
@@ -135,7 +135,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("MISSING_REASON");
+      expect(body.error.code).toBe("MISSING_REASON");
     });
 
     it("returns 400 for empty reason", async () => {
@@ -150,7 +150,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("MISSING_REASON");
+      expect(body.error.code).toBe("MISSING_REASON");
     });
 
     it("returns 400 for reason exceeding max length", async () => {
@@ -165,7 +165,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("REASON_TOO_LONG");
+      expect(body.error.code).toBe("REASON_TOO_LONG");
     });
 
     it("returns 200 on successful cancellation", async () => {
@@ -260,7 +260,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("DOCUMENT_NOT_FOUND");
+      expect(body.error.code).toBe("DOCUMENT_NOT_FOUND");
     });
 
     it("returns 429 on rate limit from upstream", async () => {
@@ -355,7 +355,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.messageEN).toContain("72 hours");
+      expect(body.error.message).toContain("72 hours");
     });
   });
 
@@ -374,7 +374,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_UUID");
+      expect(body.error.code).toBe("INVALID_UUID");
     });
 
     it("returns 400 for missing sessionId", async () => {
@@ -388,7 +388,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 404 for non-existent session", async () => {
@@ -403,7 +403,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
+      expect(body.error.code).toBe("SESSION_NOT_FOUND");
     });
 
     it("returns 400 for missing reason", async () => {
@@ -417,7 +417,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("MISSING_REASON");
+      expect(body.error.code).toBe("MISSING_REASON");
     });
 
     it("returns 200 on successful rejection", async () => {
@@ -512,7 +512,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("DOCUMENT_NOT_FOUND");
+      expect(body.error.code).toBe("DOCUMENT_NOT_FOUND");
     });
 
     it("returns 403 when not the receiver", async () => {
@@ -558,7 +558,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(403);
       const body = response.json();
-      expect(body.error.errorCode).toBe("FORBIDDEN");
+      expect(body.error.code).toBe("FORBIDDEN");
     });
 
     it("returns 429 on rate limit from upstream", async () => {
@@ -621,7 +621,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_UUID");
+      expect(body.error.code).toBe("INVALID_UUID");
     });
 
     it("returns 400 for missing sessionId", async () => {
@@ -632,7 +632,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 400 for invalid sessionId format", async () => {
@@ -643,7 +643,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 404 for non-existent session", async () => {
@@ -654,7 +654,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
+      expect(body.error.code).toBe("SESSION_NOT_FOUND");
     });
 
     it("returns 200 with document details on success", async () => {
@@ -758,7 +758,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("DOCUMENT_NOT_FOUND");
+      expect(body.error.code).toBe("DOCUMENT_NOT_FOUND");
     });
 
     it("returns 429 on rate limit from upstream", async () => {
