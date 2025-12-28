@@ -16,6 +16,8 @@ import {
 } from "../../../../test/msw/server.js";
 import { createTaxpayerSession } from "../../../../test/fixtures/sessions.js";
 import { ErrorCodes } from "@myinvois/core";
+import { resetInstances } from "../../src/lib/myinvois.js";
+import { sessionStore } from "../../src/lib/sessionStore.js";
 
 describe("Negative Tests: TIN Validation", () => {
   let app: FastifyInstance;
@@ -34,6 +36,8 @@ describe("Negative Tests: TIN Validation", () => {
 
   beforeEach(async () => {
     resetMockServer();
+    resetInstances();
+    sessionStore.clear();
 
     const response = await app.inject({
       method: "POST",
@@ -48,18 +52,19 @@ describe("Negative Tests: TIN Validation", () => {
   });
 
   describe("TIN Not Found", () => {
-    it("returns NOT_FOUND for invalid TIN", async () => {
+    it("returns valid=false for TIN not found in MyInvois", async () => {
       useMockHandlers(negativeHandlers.tinNotFound);
 
       const response = await app.inject({
         method: "GET",
-        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C00000000000&idType=NRIC&idValue=123456789012`,
+        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C00000000000&idType=NRIC&idValue=123456789012&forceRefresh=1`,
       });
 
-      expect(response.statusCode).toBe(404);
+      // Gateway returns 200 with valid=false when upstream returns 404
+      expect(response.statusCode).toBe(200);
       const body = response.json();
-      expect(body.error).toBeDefined();
-      expect(body.error.retryable).toBe(false);
+      expect(body.valid).toBe(false);
+      expect(body.tin).toBe("C00000000000");
     });
   });
 
@@ -69,7 +74,7 @@ describe("Negative Tests: TIN Validation", () => {
 
       const response = await app.inject({
         method: "GET",
-        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C12345678901&idType=NRIC&idValue=123456789012`,
+        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C12345678901&idType=NRIC&idValue=123456789012&forceRefresh=1`,
       });
 
       expect(response.statusCode).toBe(429);
