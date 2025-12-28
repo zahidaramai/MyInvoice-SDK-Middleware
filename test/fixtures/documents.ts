@@ -8,10 +8,11 @@
  * Create a minimal valid document payload
  */
 export function createDocumentPayload(codeNumber: string = "INV-001"): {
+  format: "XML" | "JSON";
   codeNumber: string;
-  document: string;
+  rawDocument: string;
 } {
-  // Create a minimal base64 "document" - just enough to pass size checks
+  // Create a minimal document content
   // In real tests, this would be a properly formatted UBL invoice
   const content = JSON.stringify({
     invoiceNumber: codeNumber,
@@ -21,8 +22,9 @@ export function createDocumentPayload(codeNumber: string = "INV-001"): {
   });
 
   return {
+    format: "JSON",
     codeNumber,
-    document: Buffer.from(content).toString("base64"),
+    rawDocument: content,
   };
 }
 
@@ -32,7 +34,7 @@ export function createDocumentPayload(codeNumber: string = "INV-001"): {
 export function createDocumentPayloads(
   count: number,
   prefix: string = "INV"
-): Array<{ codeNumber: string; document: string }> {
+): Array<{ format: "XML" | "JSON"; codeNumber: string; rawDocument: string }> {
   return Array.from({ length: count }, (_, i) =>
     createDocumentPayload(`${prefix}-${String(i + 1).padStart(3, "0")}`)
   );
@@ -43,10 +45,11 @@ export function createDocumentPayloads(
  * Generates a document close to 300KB
  */
 export function createLargeDocument(codeNumber: string = "LARGE-001"): {
+  format: "XML" | "JSON";
   codeNumber: string;
-  document: string;
+  rawDocument: string;
 } {
-  // Create content that's about 280KB when base64 encoded
+  // Create content that's about 280KB
   const padding = "x".repeat(200 * 1024);
   const content = JSON.stringify({
     invoiceNumber: codeNumber,
@@ -54,8 +57,9 @@ export function createLargeDocument(codeNumber: string = "LARGE-001"): {
   });
 
   return {
+    format: "JSON",
     codeNumber,
-    document: Buffer.from(content).toString("base64"),
+    rawDocument: content,
   };
 }
 
@@ -64,10 +68,11 @@ export function createLargeDocument(codeNumber: string = "LARGE-001"): {
  * Generates a document over 300KB
  */
 export function createOversizedDocument(codeNumber: string = "OVERSIZED-001"): {
+  format: "XML" | "JSON";
   codeNumber: string;
-  document: string;
+  rawDocument: string;
 } {
-  // Create content that's about 350KB when base64 encoded
+  // Create content that's about 350KB
   const padding = "x".repeat(300 * 1024);
   const content = JSON.stringify({
     invoiceNumber: codeNumber,
@@ -75,7 +80,8 @@ export function createOversizedDocument(codeNumber: string = "OVERSIZED-001"): {
   });
 
   return {
+    format: "JSON",
     codeNumber,
-    document: Buffer.from(content).toString("base64"),
+    rawDocument: content,
   };
 }
