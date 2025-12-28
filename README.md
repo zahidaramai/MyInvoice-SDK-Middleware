@@ -22,7 +22,10 @@
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [API Reference](#api-reference)
+  - [Error Response Format (ErrorEnvelope)](#error-response-format-errorenvelope)
+  - [Error Codes Reference](#error-codes-reference)
 - [Testing](#testing)
+  - [Negative Tests (Error Handling)](#negative-tests-error-handling)
 - [SDKs](#sdks)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
@@ -373,24 +376,112 @@ GET /v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567
 X-Session-Id: sess_xxxxx
 ```
 
-### Error Response Format
+### Error Response Format (ErrorEnvelope)
 
-All errors follow a consistent format:
+All 4xx/5xx errors follow a consistent, unified format called `ErrorEnvelope`:
 
 ```json
 {
   "error": {
-    "httpStatus": 400,
-    "errorCode": "VALIDATION_ERROR",
-    "messageEN": "Invalid document format",
-    "messageMS": "Format dokumen tidak sah",
-    "correlationId": "upstream-correlation-id",
-    "retryAfterSeconds": 60,
+    "code": "DUPLICATE_SUBMISSION",
+    "message": "This document has already been submitted. Each invoice can only be submitted once.",
+    "httpStatus": 409,
+    "retryable": false,
     "upstream": {
-      "service": "MYINVOIS",
-      "path": "/api/v1.0/documentsubmissions/"
-    }
+      "source": "MYINVOIS",
+      "status": 422,
+      "errorCode": "ERR003",
+      "errorName": "Step03-Duplicated Submission Validator"
+    },
+    "correlationId": "req_abc123xyz",
+    "field": "Customer.TIN"
   }
+}
+```
+
+#### ErrorEnvelope Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | string | Machine-readable error code (e.g., `DUPLICATE_SUBMISSION`, `INVALID_TAXPAYER`) |
+| `message` | string | Human-readable English message, safe to display to users |
+| `httpStatus` | number | HTTP status code returned |
+| `retryable` | boolean | `true` if client should retry with backoff, `false` if error is permanent |
+| `upstream` | object | Context from MyInvois (when applicable) |
+| `upstream.source` | string | `"MYINVOIS"` or `"MIDDLEWARE"` |
+| `upstream.status` | number | Original HTTP status from MyInvois |
+| `upstream.errorCode` | string | MyInvois error code (e.g., `ERR045`) |
+| `upstream.errorName` | string | Validation step name (e.g., `Step05-Taxpayer Profile Validator`) |
+| `field` | string | Field that caused the error (e.g., `Customer.TIN`) |
+| `propertyPath` | string | JSON path to the field (e.g., `documents[0].Customer.TIN`) |
+| `correlationId` | string | Unique request ID for debugging |
+| `trackingId` | string | Submission tracking ID (when applicable) |
+| `retryAfterSeconds` | number | Seconds to wait before retry (for rate limiting) |
+
+#### Error Codes Reference
+
+##### Business Validation Errors (Non-Retryable)
+
+These errors indicate problems with document data that must be fixed before resubmitting:
+
+| Error Code | HTTP Status | Description | MyInvois Validator |
+|------------|-------------|-------------|-------------------|
+| `DUPLICATE_SUBMISSION` | 409 | Document already submitted | Step03-Duplicated Submission Validator |
+| `INVALID_TAXPAYER` | 400 | TIN invalid or not found | Step05-Taxpayer Profile Validator |
+| `INVALID_TOTALS` | 400 | Invoice totals mismatch | Amount/Totals Validator |
+| `INVALID_DOCUMENT_RELATION` | 400 | Invalid credit/debit note reference | Document Relation Validator |
+| `INVALID_DOCUMENT_STRUCTURE` | 400 | Missing/invalid UBL fields | Document Structure Validator |
+| `DOCUMENT_VALIDATION_FAILED` | 400 | Generic validation failure | Various |
+
+##### Infrastructure Errors (Retryable)
+
+Temporary errors that should be retried with exponential backoff:
+
+| Error Code | HTTP Status | Description | Retry Strategy |
+|------------|-------------|-------------|----------------|
+| `UPSTREAM_TIMEOUT` | 504 | MyInvois request timed out | Retry after 5-30 seconds |
+| `UPSTREAM_ERROR` | 502 | MyInvois 5xx server error | Retry with exponential backoff |
+| `UPSTREAM_RATE_LIMITED` | 429 | Rate limit exceeded | Respect `Retry-After` header |
+| `NETWORK_ERROR` | 503 | Network connectivity issue | Retry with backoff |
+| `INTERNAL_ERROR` | 500 | Unexpected gateway error | Retry with backoff |
+
+##### Authentication Errors
+
+| Error Code | HTTP Status | Retryable | Description |
+|------------|-------------|-----------|-------------|
+| `AUTH_INVALID_CLIENT` | 401 | No | Client ID/secret invalid |
+| `AUTH_INVALID_CREDENTIALS` | 401 | No | Credentials rejected |
+| `AUTH_TOKEN_EXPIRED` | 401 | Yes (auto) | Token expired, auto-refresh |
+| `AUTH_UNAVAILABLE` | 503 | Yes | Auth service temporarily down |
+
+##### Local Validation Errors (Non-Retryable)
+
+Caught before sending to MyInvois:
+
+| Error Code | HTTP Status | Description | Limit |
+|------------|-------------|-------------|-------|
+| `PAYLOAD_TOO_LARGE` | 413 | Document or submission too large | 300KB/doc, 5MB total |
+| `TOO_MANY_DOCUMENTS` | 400 | Too many documents in batch | Max 100 |
+| `VALIDATION_ERROR` | 400 | Missing/invalid field | Check `propertyPath` |
+| `IDEMPOTENCY_CONFLICT` | 409 | Duplicate within 10-min window | Wait for window expiry |
+
+#### Retry Strategy Example
+
+```typescript
+async function submitWithRetry(fn: () => Promise<Response>, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fn();
+    if (response.ok) return response;
+
+    const { error } = await response.json();
+    if (!error.retryable) throw new Error(error.message);
+
+    const delay = error.retryAfterSeconds
+      ? error.retryAfterSeconds * 1000
+      : Math.pow(2, attempt) * 1000;
+    await new Promise(r => setTimeout(r, delay));
+  }
+  throw new Error('Max retries exceeded');
 }
 ```
 
@@ -406,6 +497,7 @@ All errors follow a consistent format:
 | E2E Tests | `test/e2e/*.e2e.test.ts` | `pnpm test` |
 | Contract Tests | `test/openapi/contract.test.ts` | `pnpm vitest run test/openapi` |
 | Integration Tests | `test/integration/*.test.ts` | See below |
+| **Negative Tests** | `apps/*/test/negative/*.test.ts` | `pnpm vitest run apps/gateway/test/negative` |
 | Load Tests | `load/k6-smoke.js` | `k6 run load/k6-smoke.js` |
 
 ### Run All Tests
@@ -417,6 +509,141 @@ pnpm test
 # Skip Testcontainers (unit tests only)
 SKIP_TESTCONTAINERS=true pnpm test
 ```
+
+### Negative Tests (Error Handling)
+
+The middleware includes comprehensive negative tests that verify correct behavior under failure conditions. These tests use MSW (Mock Service Worker) to simulate MyInvois API errors without real network calls.
+
+#### MyInvois Validation Pipeline
+
+When MyInvois validates a document submission, it runs through sequential validation steps. Each step can pass (`Valid`) or fail (`Invalid`). The middleware normalizes these into stable error codes:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    MyInvois Validation Steps                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Step03  │  Duplicated Submission Validator  │  DUPLICATE_SUBMISSION   │
+│  Step04  │  Code Field Validator             │  INVALID_DOCUMENT_STRUCTURE │
+│  Step05  │  Taxpayer Profile Validator       │  INVALID_TAXPAYER       │
+│  Step06  │  Document References Validator    │  INVALID_DOCUMENT_RELATION │
+│  Step07  │  Amount/Totals Validator          │  INVALID_TOTALS         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Example: Invalid Taxpayer Error (from MyInvois)
+
+```json
+{
+  "validationResults": {
+    "status": "Invalid",
+    "validationSteps": [
+      { "status": "Valid", "name": "Step03-Duplicated Submission Validator" },
+      { "status": "Valid", "name": "Step04-Code Field Validator" },
+      {
+        "status": "Invalid",
+        "name": "Step05-Taxpayer Profile Validator",
+        "error": {
+          "propertyName": "CustomerTin",
+          "propertyPath": "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID",
+          "errorCode": "ERR406",
+          "error": "Step05-Invalid Taxpayer Profile Validator",
+          "errorMs": "Step05-Pengesah Profil Pembayar Cukai Tidak Sah",
+          "innerError": [{
+            "propertyName": "CustomerTin",
+            "errorCode": "ERR406",
+            "error": "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
+            "errorMs": "TIN pembeli tidak sah. Sila gunakan fungsi Carian TIN untuk mendapatkan TIN yang betul"
+          }]
+        }
+      }
+    ]
+  }
+}
+```
+
+**Normalized to ErrorEnvelope:**
+
+```json
+{
+  "error": {
+    "code": "INVALID_TAXPAYER",
+    "message": "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
+    "httpStatus": 400,
+    "retryable": false,
+    "upstream": {
+      "source": "MYINVOIS",
+      "status": 200,
+      "errorCode": "ERR406",
+      "errorName": "Step05-Taxpayer Profile Validator"
+    },
+    "field": "CustomerTin",
+    "propertyPath": "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID"
+  }
+}
+```
+
+#### Negative Test Matrix
+
+##### MyInvois Business Validation Failures
+
+| Scenario | MyInvois Step | Error Code | Middleware Code | HTTP | Retryable |
+|----------|---------------|------------|-----------------|------|-----------|
+| Duplicate Submission | Step03-Duplicated Submission Validator | ERR003 | `DUPLICATE_SUBMISSION` | 409 | No |
+| Invalid TIN | Step05-Taxpayer Profile Validator | ERR406 | `INVALID_TAXPAYER` | 400 | No |
+| Totals Mismatch | Step07-Amount/Totals Validator | ERR045 | `INVALID_TOTALS` | 400 | No |
+| Invalid Reference | Step06-Document References Validator | ERR050 | `INVALID_DOCUMENT_RELATION` | 400 | No |
+| Bad Structure | Step04-Code Field Validator | ERR044 | `INVALID_DOCUMENT_STRUCTURE` | 400 | No |
+
+##### Infrastructure/Platform Failures
+
+| Scenario | Upstream Response | Middleware Code | HTTP | Retryable |
+|----------|-------------------|-----------------|------|-----------|
+| Timeout | No response (>30s) | `UPSTREAM_TIMEOUT` | 504 | Yes |
+| Server Error | 500 Internal Error | `UPSTREAM_ERROR` | 502 | Yes |
+| Rate Limited | 429 Too Many Requests | `UPSTREAM_RATE_LIMITED` | 429 | Yes |
+| Network Error | Connection refused | `NETWORK_ERROR` | 503 | Yes |
+
+##### Authentication Failures
+
+| Scenario | Upstream Response | Middleware Code | HTTP | Retryable |
+|----------|-------------------|-----------------|------|-----------|
+| Invalid Client | 401 invalid_client | `AUTH_INVALID_CLIENT` | 401 | No |
+| Bad Credentials | 400 invalid_client | `AUTH_INVALID_CREDENTIALS` | 401 | No |
+| Expired Token | 401 token expired | `AUTH_TOKEN_EXPIRED` | 401 | Yes (auto) |
+| Auth Unavailable | 503 Service Down | `AUTH_UNAVAILABLE` | 503 | Yes |
+
+##### Local Validation Failures (Pre-submission)
+
+| Scenario | Trigger | Middleware Code | HTTP | Retryable |
+|----------|---------|-----------------|------|-----------|
+| Doc Too Large | Document >300KB | `PAYLOAD_TOO_LARGE` | 413 | No |
+| Batch Too Large | Submission >5MB | `PAYLOAD_TOO_LARGE` | 413 | No |
+| Too Many Docs | >100 documents | `TOO_MANY_DOCUMENTS` | 400 | No |
+| Missing Field | Required field null | `VALIDATION_ERROR` | 400 | No |
+| Idempotency | Same request <10min | `IDEMPOTENCY_CONFLICT` | 409 | No |
+
+#### Running Negative Tests
+
+```bash
+# All negative tests
+SKIP_TESTCONTAINERS=true pnpm vitest run apps/gateway/test/negative apps/worker/test/negative
+
+# Gateway submission tests
+SKIP_TESTCONTAINERS=true pnpm vitest run apps/gateway/test/negative/submissions.negative.test.ts
+
+# Worker polling tests
+SKIP_TESTCONTAINERS=true pnpm vitest run apps/worker/test/negative/poll-worker.negative.test.ts
+
+# Error normalizer unit tests (33 tests)
+SKIP_TESTCONTAINERS=true pnpm vitest run packages/myinvois-client/src/error-normalizer.test.ts
+```
+
+#### Test Principles
+
+- **No real network calls** - All tests use MSW mocks
+- **Assert on normalized ErrorEnvelope** - Never assert on raw MyInvois payloads
+- **Deterministic** - No random delays or flaky tests
+- **No secrets in logs** - Test fixtures don't contain real credentials
 
 ### Real Sandbox Integration Tests
 
@@ -655,6 +882,8 @@ For security vulnerabilities, please see [SECURITY.md](SECURITY.md).
 ### Project Documentation
 
 - [API Contract](openapi/openapi.yaml)
+- [Testing Guide](docs/testing.md) - Detailed testing strategy and MSW usage
+- [Troubleshooting Guide](docs/troubleshooting.md) - Error codes reference and debugging
 - [Contributing Guide](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
 
