@@ -25,47 +25,92 @@ apps/worker/test/
     └── poll-worker.negative.test.ts
 ```
 
+## MyInvois Validation Pipeline
+
+When MyInvois validates a document submission, it runs through sequential validation steps. Each step can pass (`Valid`) or fail (`Invalid`). The middleware normalizes these results into stable error codes.
+
+### Validation Steps Flow
+
+```
+Document Submitted → Step03 → Step04 → Step05 → Step06 → Step07 → Valid/Invalid
+                       ↓         ↓         ↓         ↓         ↓
+                   Duplicate   Code    Taxpayer  Document  Totals
+                   Check      Fields   Profile   Relations Validation
+```
+
+### Example: Real MyInvois Validation Response
+
+```json
+{
+  "validationResults": {
+    "status": "Invalid",
+    "validationSteps": [
+      { "status": "Valid", "name": "Step03-Duplicated Submission Validator" },
+      { "status": "Valid", "name": "Step04-Code Field Validator" },
+      {
+        "status": "Invalid",
+        "name": "Step05-Taxpayer Profile Validator",
+        "error": {
+          "propertyName": "CustomerTin",
+          "propertyPath": "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID",
+          "errorCode": "ERR406",
+          "error": "Step05-Invalid Taxpayer Profile Validator",
+          "errorMs": "Step05-Pengesah Profil Pembayar Cukai Tidak Sah",
+          "innerError": [{
+            "propertyName": "CustomerTin",
+            "errorCode": "ERR406",
+            "error": "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
+            "errorMs": "TIN pembeli tidak sah. Sila gunakan fungsi Carian TIN untuk mendapatkan TIN yang betul"
+          }]
+        }
+      },
+      { "status": "Valid", "name": "Step06-Document References Validator" }
+    ]
+  }
+}
+```
+
 ## Negative Test Matrix
 
 The following scenarios are covered by negative tests:
 
 ### 3.1 Business Validation Failures (from MyInvois)
 
-| Scenario | MyInvois Step | Error Code | HTTP Status | Retryable |
-|----------|---------------|------------|-------------|-----------|
-| Duplicate Submission | Duplicated Submission Validator | `DUPLICATE_SUBMISSION` | 409 | No |
-| Invalid Taxpayer / Wrong TIN | Taxpayer Profile Validator | `INVALID_TAXPAYER` | 400 | No |
-| Totals Mismatch | Amount/Totals Validator | `INVALID_TOTALS` | 400 | No |
-| Invalid Document Relation | Document Relation Validator | `INVALID_DOCUMENT_RELATION` | 400 | No |
-| Invalid Document Structure | Document Structure Validator | `INVALID_DOCUMENT_STRUCTURE` | 400 | No |
+| Scenario | MyInvois Step | MyInvois Error | Middleware Code | HTTP | Retryable |
+|----------|---------------|----------------|-----------------|------|-----------|
+| Duplicate Submission | Step03-Duplicated Submission Validator | ERR003 | `DUPLICATE_SUBMISSION` | 409 | No |
+| Invalid Taxpayer | Step05-Taxpayer Profile Validator | ERR406 | `INVALID_TAXPAYER` | 400 | No |
+| Totals Mismatch | Step07-Amount/Totals Validator | ERR045 | `INVALID_TOTALS` | 400 | No |
+| Invalid Reference | Step06-Document References Validator | ERR050 | `INVALID_DOCUMENT_RELATION` | 400 | No |
+| Invalid Structure | Step04-Code Field Validator | ERR044 | `INVALID_DOCUMENT_STRUCTURE` | 400 | No |
 
 ### 3.2 Infrastructure / Platform Failures
 
-| Scenario | Error Code | HTTP Status | Retryable |
-|----------|------------|-------------|-----------|
-| Upstream Timeout | `UPSTREAM_TIMEOUT` | 504 | Yes |
-| Upstream 500 | `UPSTREAM_ERROR` | 502 | Yes |
-| Upstream 429 (Rate Limit) | `UPSTREAM_RATE_LIMITED` | 429 | Yes |
-| Network Error | `NETWORK_ERROR` | 503 | Yes |
+| Scenario | Upstream Response | Middleware Code | HTTP | Retryable |
+|----------|-------------------|-----------------|------|-----------|
+| Upstream Timeout | No response (>30s) | `UPSTREAM_TIMEOUT` | 504 | Yes |
+| Upstream 500 | 500 Internal Error | `UPSTREAM_ERROR` | 502 | Yes |
+| Rate Limited | 429 Too Many Requests | `UPSTREAM_RATE_LIMITED` | 429 | Yes |
+| Network Error | Connection refused | `NETWORK_ERROR` | 503 | Yes |
 
 ### 3.3 Auth / Session Failures
 
-| Scenario | Error Code | HTTP Status | Retryable |
-|----------|------------|-------------|-----------|
-| Invalid Client Credentials | `AUTH_INVALID_CLIENT` | 401 | No |
-| Invalid Credentials | `AUTH_INVALID_CREDENTIALS` | 401 | No |
-| Expired Token | `AUTH_TOKEN_EXPIRED` | 401 | Yes (refresh) |
-| Auth Unavailable | `AUTH_UNAVAILABLE` | 503 | Yes |
+| Scenario | Upstream Response | Middleware Code | HTTP | Retryable |
+|----------|-------------------|-----------------|------|-----------|
+| Invalid Client | 401 invalid_client | `AUTH_INVALID_CLIENT` | 401 | No |
+| Bad Credentials | 400 invalid_client | `AUTH_INVALID_CREDENTIALS` | 401 | No |
+| Expired Token | 401 token expired | `AUTH_TOKEN_EXPIRED` | 401 | Yes (auto) |
+| Auth Unavailable | 503 Service Down | `AUTH_UNAVAILABLE` | 503 | Yes |
 
-### 3.4 Local Validation / Guardrails
+### 3.4 Local Validation / Guardrails (Pre-submission)
 
-| Scenario | Error Code | HTTP Status | Retryable |
-|----------|------------|-------------|-----------|
-| Payload Too Large (>300KB/doc) | `PAYLOAD_TOO_LARGE` | 413 | No |
-| Too Many Documents (>100) | `TOO_MANY_DOCUMENTS` | 400 | No |
-| Submission Too Large (>5MB) | `PAYLOAD_TOO_LARGE` | 413 | No |
-| Missing Required Field | `VALIDATION_ERROR` | 400 | No |
-| Idempotency Conflict | `IDEMPOTENCY_CONFLICT` | 409 | No |
+| Scenario | Trigger | Middleware Code | HTTP | Retryable |
+|----------|---------|-----------------|------|-----------|
+| Doc Too Large | Document >300KB | `PAYLOAD_TOO_LARGE` | 413 | No |
+| Batch Too Large | Submission >5MB | `PAYLOAD_TOO_LARGE` | 413 | No |
+| Too Many Docs | >100 documents | `TOO_MANY_DOCUMENTS` | 400 | No |
+| Missing Field | Required field null | `VALIDATION_ERROR` | 400 | No |
+| Idempotency | Same request <10min | `IDEMPOTENCY_CONFLICT` | 409 | No |
 
 ## Running Tests
 
