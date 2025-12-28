@@ -33,7 +33,8 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.DUPLICATE_SUBMISSION);
       expect(result.httpStatus).toBe(409);
       expect(result.retryable).toBe(false);
-      expect(result.message).toContain("already been submitted");
+      // Now uses actual MyInvois message when available
+      expect(result.message).toContain("already submitted");
       expect(result.upstream).toEqual({
         source: "MYINVOIS",
         status: 422,
@@ -76,8 +77,9 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.INVALID_TAXPAYER);
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
-      expect(result.message).toContain("verify the TIN");
-      expect(result.field).toBe("Customer.TIN");
+      // Now uses actual MyInvois message when available
+      expect(result.message).toContain("Taxpayer");
+      expect(result.propertyPath).toBe("Customer.TIN");
       expect(result.upstream?.errorCode).toBe("ERR045");
     });
 
@@ -96,8 +98,8 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.INVALID_TAXPAYER);
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
-      // Our message should be in English regardless of upstream message
-      expect(result.message).toContain("verify the TIN");
+      // Now preserves original message (even if Malay)
+      expect(result.message).toContain("TIN pembeli");
     });
 
     it("normalizes totals mismatch error (Amount/Totals Validator)", () => {
@@ -115,7 +117,8 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.INVALID_TOTALS);
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
-      expect(result.message).toContain("totals do not match");
+      // Now uses actual MyInvois message
+      expect(result.message).toContain("does not match");
     });
 
     it("normalizes document relation error (credit note without reference)", () => {
@@ -151,6 +154,88 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.INVALID_DOCUMENT_STRUCTURE);
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
+    });
+
+    it("normalizes real MyInvois validationSteps response with innerError (Invalid TIN)", () => {
+      // This matches the exact structure returned by MyInvois API
+      const input = {
+        httpStatus: 200, // MyInvois returns 200 with validation results
+        body: {
+          validationResults: {
+            status: "Invalid",
+            validationSteps: [
+              { status: "Valid", name: "Step03-Duplicated Submission Validator" },
+              { status: "Valid", name: "Step04-Code Field Validator" },
+              {
+                status: "Invalid",
+                name: "Step05-Taxpayer Profile Validator",
+                error: {
+                  propertyName: "CustomerTin",
+                  propertyPath: "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID",
+                  errorCode: "ERR406",
+                  error: "Step05-Invalid Taxpayer Profile Validator",
+                  errorMs: "Step05-Pengesah Profil Pembayar Cukai Tidak Sah",
+                  innerError: [{
+                    propertyName: "CustomerTin",
+                    errorCode: "ERR406",
+                    error: "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
+                    errorMs: "TIN pembeli tidak sah. Sila gunakan fungsi Carian TIN untuk mendapatkan TIN yang betul"
+                  }]
+                }
+              },
+              { status: "Valid", name: "Step06-Document References Validator" }
+            ]
+          }
+        },
+      };
+
+      const result = normalizeMyinvoisError(input);
+
+      // Should extract from nested validationSteps structure
+      expect(result.code).toBe(ErrorCodes.INVALID_TAXPAYER);
+      expect(result.httpStatus).toBe(400);
+      expect(result.retryable).toBe(false);
+      // Should use the message from innerError (actual user-facing message)
+      expect(result.message).toBe("Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN");
+      // Should preserve the field name
+      expect(result.field).toBe("CustomerTin");
+      // Should preserve the full property path
+      expect(result.propertyPath).toBe("document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID");
+      // Should have upstream context
+      expect(result.upstream?.errorCode).toBe("ERR406");
+      expect(result.upstream?.errorName).toBe("Step05-Taxpayer Profile Validator");
+    });
+
+    it("normalizes real MyInvois duplicate submission from validationSteps", () => {
+      const input = {
+        httpStatus: 200,
+        body: {
+          validationResults: {
+            status: "Invalid",
+            validationSteps: [
+              {
+                status: "Invalid",
+                name: "Step03-Duplicated Submission Validator",
+                error: {
+                  errorCode: "ERR003",
+                  error: "Document has been submitted before",
+                  innerError: [{
+                    error: "This invoice number has already been submitted to MyInvois"
+                  }]
+                }
+              }
+            ]
+          }
+        },
+      };
+
+      const result = normalizeMyinvoisError(input);
+
+      expect(result.code).toBe(ErrorCodes.DUPLICATE_SUBMISSION);
+      expect(result.httpStatus).toBe(409);
+      expect(result.retryable).toBe(false);
+      expect(result.upstream?.errorCode).toBe("ERR003");
+      expect(result.upstream?.errorName).toBe("Step03-Duplicated Submission Validator");
     });
   });
 
