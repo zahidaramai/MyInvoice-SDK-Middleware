@@ -79,7 +79,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+    expect(body.error.code).toBe("INVALID_SESSION_ID");
   });
 
   it("returns 400 for invalid sessionId format", async () => {
@@ -100,7 +100,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+    expect(body.error.code).toBe("INVALID_SESSION_ID");
   });
 
   it("returns 404 for non-existent session", async () => {
@@ -121,7 +121,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(404);
     const body = response.json();
-    expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
+    expect(body.error.code).toBe("SESSION_NOT_FOUND");
   });
 
   it("returns 400 for empty documents array", async () => {
@@ -136,7 +136,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.error.errorCode).toBe("NO_DOCUMENTS");
+    expect(body.error.code).toBe("NO_DOCUMENTS");
   });
 
   it("returns 400 for document without content", async () => {
@@ -157,7 +157,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.error.errorCode).toBe("INVALID_DOCUMENT");
+    expect(body.error.code).toBe("INVALID_DOCUMENT");
   });
 
   it("returns 400 for too many documents", async () => {
@@ -178,7 +178,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.error.errorCode).toBe("TOO_MANY_DOCUMENTS");
+    expect(body.error.code).toBe("TOO_MANY_DOCUMENTS");
   });
 
   it("returns 400 for document exceeding max size", async () => {
@@ -202,7 +202,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.error.errorCode).toBe("DOCUMENT_TOO_LARGE");
+    expect(body.error.code).toBe("DOCUMENT_TOO_LARGE");
   });
 
   it("returns 202 on successful submission", async () => {
@@ -324,7 +324,7 @@ describe("POST /v1/submissions", () => {
 
     expect(response.statusCode).toBe(422);
     const body = response.json();
-    expect(body.error.errorCode).toBe("DUPLICATE_SUBMISSION");
+    expect(body.error.code).toBe("DUPLICATE_SUBMISSION");
     expect(response.headers["retry-after"]).toBeDefined();
   });
 
@@ -482,6 +482,6 @@ describe("GET /v1/submissions/:trackingId", () => {
 
     expect(response.statusCode).toBe(404);
     const body = response.json();
-    expect(body.error.errorCode).toBe("SUBMISSION_NOT_FOUND");
+    expect(body.error.code).toBe("SUBMISSION_NOT_FOUND");
   });
 });

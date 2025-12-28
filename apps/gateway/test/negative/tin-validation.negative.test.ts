@@ -40,7 +40,7 @@ describe("Negative Tests: TIN Validation", () => {
       url: "/v1/sessions",
       payload: createTaxpayerSession(),
     });
-    sessionId = response.json().sessionId;
+    sessionId = response.json().id;
   });
 
   afterEach(() => {
@@ -53,8 +53,7 @@ describe("Negative Tests: TIN Validation", () => {
 
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C00000000000&idType=NRIC&idValue=123456789012",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C00000000000&idType=NRIC&idValue=123456789012`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -70,8 +69,7 @@ describe("Negative Tests: TIN Validation", () => {
 
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=NRIC&idValue=123456789012",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C12345678901&idType=NRIC&idValue=123456789012`,
       });
 
       expect(response.statusCode).toBe(429);
@@ -87,8 +85,7 @@ describe("Negative Tests: TIN Validation", () => {
     it("returns validation error for missing idType", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idValue=123456789012",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C12345678901&idValue=123456789012`,
       });
 
       expect(response.statusCode).toBe(400);
@@ -99,8 +96,7 @@ describe("Negative Tests: TIN Validation", () => {
     it("returns validation error for missing idValue", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=NRIC",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?sessionId=${sessionId}&tin=C12345678901&idType=NRIC`,
       });
 
       expect(response.statusCode).toBe(400);

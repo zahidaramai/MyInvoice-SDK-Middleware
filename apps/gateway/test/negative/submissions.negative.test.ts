@@ -45,7 +45,7 @@ describe("Negative Tests: Submissions", () => {
       url: "/v1/sessions",
       payload: createTaxpayerSession(),
     });
-    sessionId = response.json().sessionId;
+    sessionId = response.json().id;
   });
 
   afterEach(() => {
@@ -61,8 +61,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-DUPE-001")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-DUPE-001")] },
         });
 
         expect(response.statusCode).toBe(422); // Current behavior - may adjust to 409
@@ -81,14 +80,12 @@ describe("Negative Tests: Submissions", () => {
           app.inject({
             method: "POST",
             url: "/v1/submissions",
-            headers: { "x-session-id": sessionId },
-            payload: { documents: [createDocumentPayload("INV-DUPE-001")] },
+            payload: { sessionId, documents: [createDocumentPayload("INV-DUPE-001")] },
           }),
           app.inject({
             method: "POST",
             url: "/v1/submissions",
-            headers: { "x-session-id": sessionId },
-            payload: { documents: [createDocumentPayload("INV-DUPE-002")] },
+            payload: { sessionId, documents: [createDocumentPayload("INV-DUPE-002")] },
           }),
         ]);
 
@@ -106,8 +103,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-BAD-TIN")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-BAD-TIN")] },
         });
 
         expect(response.statusCode).toBe(400);
@@ -123,8 +119,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-BAD-TIN-MY")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-BAD-TIN-MY")] },
         });
 
         const body = response.json();
@@ -141,8 +136,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-BAD-TOTALS")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-BAD-TOTALS")] },
         });
 
         expect(response.statusCode).toBe(400);
@@ -159,8 +153,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("CN-NO-REF")] },
+          payload: { sessionId, documents: [createDocumentPayload("CN-NO-REF")] },
         });
 
         expect(response.statusCode).toBe(400);
@@ -182,8 +175,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-TIMEOUT")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-TIMEOUT")] },
         });
 
         // Should timeout or return error
@@ -198,8 +190,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-500")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-500")] },
         });
 
         expect(response.statusCode).toBe(500);
@@ -216,8 +207,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-429")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-429")] },
         });
 
         expect(response.statusCode).toBe(429);
@@ -234,8 +224,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-429-CUSTOM")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-429-CUSTOM")] },
         });
 
         expect(response.statusCode).toBe(429);
@@ -254,8 +243,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-AUTH-FAIL")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-AUTH-FAIL")] },
         });
 
         expect(response.statusCode).toBe(401);
@@ -270,8 +258,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-AUTH-400")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-AUTH-400")] },
         });
 
         // Should be converted to 401
@@ -288,8 +275,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [createDocumentPayload("INV-TOKEN-EXP")] },
+          payload: { sessionId, documents: [createDocumentPayload("INV-TOKEN-EXP")] },
         });
 
         expect(response.statusCode).toBe(401);
@@ -313,8 +299,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [largeDocument] },
+          payload: { sessionId, documents: [largeDocument] },
         });
 
         expect(response.statusCode).toBe(400);
@@ -332,8 +317,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents },
+          payload: { sessionId, documents },
         });
 
         expect(response.statusCode).toBe(400);
@@ -361,8 +345,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: { documents: [] },
+          payload: { sessionId, documents: [] },
         });
 
         expect(response.statusCode).toBe(400);
@@ -375,8 +358,7 @@ describe("Negative Tests: Submissions", () => {
         const response = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload: {},
+          payload: { sessionId },
         });
 
         expect(response.statusCode).toBe(400);
@@ -386,13 +368,12 @@ describe("Negative Tests: Submissions", () => {
     describe("3.4.12 Idempotency Violation", () => {
       it("returns cached result for duplicate payload within window", async () => {
         // First submission
-        const payload = { documents: [createDocumentPayload("INV-IDEMP-001")] };
+        const documents = [createDocumentPayload("INV-IDEMP-001")];
 
         const response1 = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload,
+          payload: { sessionId, documents },
         });
 
         expect(response1.statusCode).toBe(202);
@@ -402,8 +383,7 @@ describe("Negative Tests: Submissions", () => {
         const response2 = await app.inject({
           method: "POST",
           url: "/v1/submissions",
-          headers: { "x-session-id": sessionId },
-          payload,
+          payload: { sessionId, documents },
         });
 
         expect(response2.statusCode).toBe(202);
@@ -422,8 +402,7 @@ describe("Negative Tests: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload()] },
+        payload: { sessionId, documents: [createDocumentPayload()] },
       });
 
       const body = response.json();
@@ -446,8 +425,7 @@ describe("Negative Tests: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload()] },
+        payload: { sessionId, documents: [createDocumentPayload()] },
       });
 
       expect(response.headers["x-correlation-id"]).toBeDefined();
@@ -459,8 +437,7 @@ describe("Negative Tests: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload()] },
+        payload: { sessionId, documents: [createDocumentPayload()] },
       });
 
       const body = response.json();
