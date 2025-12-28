@@ -71,7 +71,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 400 for invalid sessionId format", async () => {
@@ -82,7 +82,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
 
     it("returns 404 for non-existent session", async () => {
@@ -93,7 +93,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
+      expect(body.error.code).toBe("SESSION_NOT_FOUND");
     });
 
     it("returns 400 for missing TIN", async () => {
@@ -104,7 +104,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("MISSING_TIN");
+      expect(body.error.code).toBe("MISSING_TIN");
     });
 
     it("returns 400 for empty TIN", async () => {
@@ -115,7 +115,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("MISSING_TIN");
+      expect(body.error.code).toBe("MISSING_TIN");
     });
 
     it("returns 400 for invalid idType", async () => {
@@ -126,7 +126,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_ID_TYPE");
+      expect(body.error.code).toBe("INVALID_ID_TYPE");
     });
 
     it("returns 400 for missing idValue", async () => {
@@ -137,7 +137,7 @@ describe("Taxpayer Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("MISSING_ID_VALUE");
+      expect(body.error.code).toBe("MISSING_ID_VALUE");
     });
 
     it("returns 200 with valid=true when TIN is valid", async () => {
