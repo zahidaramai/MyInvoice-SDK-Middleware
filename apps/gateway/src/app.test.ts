@@ -97,8 +97,8 @@ describe("Gateway App", () => {
       const body = response.json();
       expect(body.error).toBeDefined();
       expect(body.error.httpStatus).toBe(404);
-      expect(body.error.messageEN).toContain("not found");
-      expect(body.error.errorCode).toBe("NOT_FOUND");
+      expect(body.error.message).toContain("not found");
+      expect(body.error.code).toBe("NOT_FOUND");
     });
   });
 
@@ -114,7 +114,7 @@ describe("Gateway App", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("SESSION_NOT_FOUND");
+      expect(body.error.code).toBe("SESSION_NOT_FOUND");
     });
 
     it("GET /v1/tin/validate returns 400 for invalid sessionId format", async () => {
@@ -125,7 +125,7 @@ describe("Gateway App", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.errorCode).toBe("INVALID_SESSION_ID");
+      expect(body.error.code).toBe("INVALID_SESSION_ID");
     });
   });
 
@@ -138,7 +138,7 @@ describe("Gateway App", () => {
 
       expect(response.statusCode).toBe(404);
       const body = response.json();
-      expect(body.error.errorCode).toBe("SUBMISSION_NOT_FOUND");
+      expect(body.error.code).toBe("SUBMISSION_NOT_FOUND");
     });
 
     it("poll endpoint includes correlationId header", async () => {
