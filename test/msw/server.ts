@@ -51,3 +51,12 @@ export function useMockHandlers(...additionalHandlers: Parameters<typeof server.
 // Re-export state and handlers for convenience
 export { mockState } from "./state.js";
 export { handlers } from "./handlers.js";
+
+// Export negative scenario handlers
+export {
+  negativeHandlers,
+  createCustomErrorHandler,
+  createTimeoutHandler,
+  createRateLimitHandler,
+  type NegativeHandlerName,
+} from "./handlers-negative.js";
