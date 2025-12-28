@@ -190,8 +190,9 @@ export const taxpayerRoutes: FastifyPluginAsync = async (fastify) => {
 
         const envelope = createErrorEnvelope(429, result.error.message, {
           correlationId: result.error.meta?.correlationId || correlationId,
-          errorCode: result.error.code || "RATE_LIMIT_EXCEEDED",
+          errorCode: "UPSTREAM_RATE_LIMITED",
           retryAfterSeconds: retryAfter,
+          retryable: true,
         });
 
         reply.header("X-Correlation-Id", result.error.meta?.correlationId || correlationId);

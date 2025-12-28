@@ -20,6 +20,8 @@ import {
 import { createTaxpayerSession } from "../../../../test/fixtures/sessions.js";
 import { createDocumentPayload } from "../../../../test/fixtures/documents.js";
 import { ErrorCodes } from "@myinvois/core";
+import { resetInstances } from "../../src/lib/myinvois.js";
+import { sessionStore } from "../../src/lib/sessionStore.js";
 
 describe("Negative Tests: Submissions", () => {
   let app: FastifyInstance;
@@ -38,6 +40,8 @@ describe("Negative Tests: Submissions", () => {
 
   beforeEach(async () => {
     resetMockServer();
+    resetInstances();
+    sessionStore.clear();
 
     // Create a fresh session for each test
     const response = await app.inject({

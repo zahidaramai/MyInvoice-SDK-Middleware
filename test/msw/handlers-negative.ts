@@ -9,8 +9,8 @@ import { http, HttpResponse, delay } from "msw";
 import { mockState } from "./state.js";
 
 // MyInvois base URLs
-const SANDBOX_IDENTITY_URL = "https://preprod-identity.myinvois.hasil.gov.my";
-const SANDBOX_SYSTEM_URL = "https://preprod-api.myinvois.hasil.gov.my";
+// Note: Both identity and system APIs use the same base URL in the actual implementation
+const SANDBOX_BASE_URL = "https://preprod-api.myinvois.hasil.gov.my";
 
 /**
  * Create correlation ID header
@@ -32,7 +32,7 @@ function correlationHeaders(): Record<string, string> {
  * Step03-Duplicated Submission Validator
  */
 export const duplicateSubmissionHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -51,7 +51,7 @@ export const duplicateSubmissionHandler = http.post(
  * Step05-Taxpayer Profile Validator
  */
 export const invalidTaxpayerHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -70,7 +70,7 @@ export const invalidTaxpayerHandler = http.post(
  * Simulate invalid taxpayer with Malay message
  */
 export const invalidTaxpayerMalayHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -90,7 +90,7 @@ export const invalidTaxpayerMalayHandler = http.post(
  * Step08-Amount/Totals Validator
  */
 export const invalidTotalsHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -110,7 +110,7 @@ export const invalidTotalsHandler = http.post(
  * Document Relation Validator
  */
 export const invalidDocumentRelationHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -129,7 +129,7 @@ export const invalidDocumentRelationHandler = http.post(
  * Simulate document structure validation error
  */
 export const invalidDocumentStructureHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -150,17 +150,16 @@ export const invalidDocumentStructureHandler = http.post(
 
 /**
  * Simulate upstream timeout
- * Delays response beyond typical client timeout
+ * Uses MSW's network error to simulate a timeout
+ * Note: Using HttpResponse.error() to trigger a network-level error
  */
 export const upstreamTimeoutHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
-    // Delay for 30 seconds - should trigger client timeout
-    await delay(30000);
-    return HttpResponse.json(
-      { message: "This should never be received" },
-      { status: 200 }
-    );
+    // Short delay to simulate initial connection, then return network error
+    await delay(100);
+    // HttpResponse.error() simulates a network failure (like a timeout)
+    return HttpResponse.error();
   }
 );
 
@@ -168,7 +167,7 @@ export const upstreamTimeoutHandler = http.post(
  * Simulate upstream 500 error
  */
 export const upstream500Handler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -184,7 +183,7 @@ export const upstream500Handler = http.post(
  * Simulate upstream 502 error
  */
 export const upstream502Handler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -200,7 +199,7 @@ export const upstream502Handler = http.post(
  * Simulate upstream 503 error
  */
 export const upstream503Handler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -216,7 +215,7 @@ export const upstream503Handler = http.post(
  * Simulate upstream 429 rate limit with Retry-After header
  */
 export const upstream429Handler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -240,7 +239,7 @@ export const upstream429Handler = http.post(
  */
 export function createRateLimitHandler(retryAfterSeconds: number) {
   return http.post(
-    `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+    `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
     async () => {
       return HttpResponse.json(
         {
@@ -268,7 +267,7 @@ export function createRateLimitHandler(retryAfterSeconds: number) {
  * Simulate invalid client credentials (invalid_client)
  */
 export const invalidClientHandler = http.post(
-  `${SANDBOX_IDENTITY_URL}/connect/token`,
+  `${SANDBOX_BASE_URL}/connect/token`,
   async () => {
     return HttpResponse.json(
       {
@@ -284,7 +283,7 @@ export const invalidClientHandler = http.post(
  * Simulate invalid credentials (400 response)
  */
 export const invalidCredentials400Handler = http.post(
-  `${SANDBOX_IDENTITY_URL}/connect/token`,
+  `${SANDBOX_BASE_URL}/connect/token`,
   async () => {
     return HttpResponse.json(
       {
@@ -300,7 +299,7 @@ export const invalidCredentials400Handler = http.post(
  * Simulate expired token on API call
  */
 export const expiredTokenHandler = http.post(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
   async () => {
     return HttpResponse.json(
       {
@@ -316,7 +315,7 @@ export const expiredTokenHandler = http.post(
  * Simulate token endpoint unavailable (503)
  */
 export const tokenUnavailableHandler = http.post(
-  `${SANDBOX_IDENTITY_URL}/connect/token`,
+  `${SANDBOX_BASE_URL}/connect/token`,
   async () => {
     return HttpResponse.json(
       {
@@ -332,7 +331,7 @@ export const tokenUnavailableHandler = http.post(
  * Simulate token endpoint timeout
  */
 export const tokenTimeoutHandler = http.post(
-  `${SANDBOX_IDENTITY_URL}/connect/token`,
+  `${SANDBOX_BASE_URL}/connect/token`,
   async () => {
     await delay(30000);
     return HttpResponse.json(
@@ -350,7 +349,7 @@ export const tokenTimeoutHandler = http.post(
  * Simulate submission not found on polling
  */
 export const submissionNotFoundHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/:submissionUid`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/:submissionUid`,
   async () => {
     return HttpResponse.json(
       {
@@ -366,7 +365,7 @@ export const submissionNotFoundHandler = http.get(
  * Simulate submission with invalid document status
  */
 export const submissionInvalidHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/:submissionUid`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/:submissionUid`,
   async () => {
     return HttpResponse.json(
       {
@@ -405,7 +404,7 @@ export const submissionInvalidHandler = http.get(
  * Simulate submission with duplicate status
  */
 export const submissionDuplicateHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/documentsubmissions/:submissionUid`,
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/:submissionUid`,
   async () => {
     return HttpResponse.json(
       {
@@ -448,7 +447,7 @@ export const submissionDuplicateHandler = http.get(
  * Simulate TIN not found
  */
 export const tinNotFoundHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/taxpayer/validate/:tin`,
+  `${SANDBOX_BASE_URL}/api/v1.0/taxpayer/validate/:tin`,
   async () => {
     return HttpResponse.json(
       {
@@ -464,7 +463,7 @@ export const tinNotFoundHandler = http.get(
  * Simulate TIN validation rate limit
  */
 export const tinRateLimitHandler = http.get(
-  `${SANDBOX_SYSTEM_URL}/api/v1.0/taxpayer/validate/:tin`,
+  `${SANDBOX_BASE_URL}/api/v1.0/taxpayer/validate/:tin`,
   async () => {
     return HttpResponse.json(
       {
@@ -497,8 +496,8 @@ export function createCustomErrorHandler(
   headers?: Record<string, string>
 ) {
   const baseUrl = path.startsWith("/connect")
-    ? SANDBOX_IDENTITY_URL
-    : SANDBOX_SYSTEM_URL;
+    ? SANDBOX_BASE_URL
+    : SANDBOX_BASE_URL;
 
   const httpMethod = {
     GET: http.get,
@@ -524,8 +523,8 @@ export function createTimeoutHandler(
   delayMs: number
 ) {
   const baseUrl = path.startsWith("/connect")
-    ? SANDBOX_IDENTITY_URL
-    : SANDBOX_SYSTEM_URL;
+    ? SANDBOX_BASE_URL
+    : SANDBOX_BASE_URL;
 
   const httpMethod = {
     GET: http.get,
