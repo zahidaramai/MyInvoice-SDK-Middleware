@@ -2,6 +2,20 @@
 
 This document explains the error codes returned by the MyInvois Middleware Gateway and how to handle them.
 
+## Understanding MyInvois Validation
+
+When you submit documents to MyInvois, they go through a validation pipeline with multiple steps. Each step validates specific aspects of your document:
+
+```
+Step03 → Step04 → Step05 → Step06 → Step07 → Result
+  │         │        │        │        │
+  ▼         ▼        ▼        ▼        ▼
+Duplicate  Code   Taxpayer Document Totals
+Check     Fields  Profile  Refs     Check
+```
+
+If any step fails, the document is marked `Invalid` and processing stops. The middleware normalizes these validation results into consistent error codes.
+
 ## How to Read Errors
 
 All error responses follow a consistent structure called the **ErrorEnvelope**. When you receive a 4xx or 5xx response, the body will contain:
@@ -9,17 +23,19 @@ All error responses follow a consistent structure called the **ErrorEnvelope**. 
 ```json
 {
   "error": {
-    "code": "DUPLICATE_SUBMISSION",
-    "message": "This document has already been submitted.",
-    "httpStatus": 409,
+    "code": "INVALID_TAXPAYER",
+    "message": "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
+    "httpStatus": 400,
     "retryable": false,
     "upstream": {
       "source": "MYINVOIS",
-      "status": 422,
-      "errorCode": "ERR003",
-      "errorName": "Step03-Duplicated Submission Validator"
+      "status": 200,
+      "errorCode": "ERR406",
+      "errorName": "Step05-Taxpayer Profile Validator"
     },
-    "correlationId": "req_abc123"
+    "field": "CustomerTin",
+    "propertyPath": "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID",
+    "correlationId": "req_abc123xyz"
   }
 }
 ```
@@ -33,7 +49,21 @@ All error responses follow a consistent structure called the **ErrorEnvelope**. 
 | `httpStatus` | HTTP status code returned. |
 | `retryable` | `true` if the client should retry, `false` if the error is permanent. |
 | `upstream` | Context about the original MyInvois error (if applicable). |
+| `upstream.errorCode` | MyInvois error code (e.g., ERR406, ERR003). |
+| `upstream.errorName` | MyInvois validation step name. |
+| `field` | Field name that caused the error. |
+| `propertyPath` | Full JSON path to the problematic field. |
 | `correlationId` | Unique ID for tracking this request in logs. |
+
+## MyInvois Validation Step Reference
+
+| Step | Validator Name | Middleware Code | MyInvois Error |
+|------|----------------|-----------------|----------------|
+| Step03 | Duplicated Submission Validator | `DUPLICATE_SUBMISSION` | ERR003 |
+| Step04 | Code Field Validator | `INVALID_DOCUMENT_STRUCTURE` | ERR044 |
+| Step05 | Taxpayer Profile Validator | `INVALID_TAXPAYER` | ERR406 |
+| Step06 | Document References Validator | `INVALID_DOCUMENT_RELATION` | ERR050 |
+| Step07 | Amount/Totals Validator | `INVALID_TOTALS` | ERR045 |
 
 ## Error Code Reference
 
@@ -44,33 +74,47 @@ These errors indicate problems with the document data. They are **not retryable*
 #### DUPLICATE_SUBMISSION
 - **HTTP Status**: 409 Conflict
 - **Retryable**: No
+- **MyInvois Step**: Step03-Duplicated Submission Validator
+- **MyInvois Error Code**: ERR003
 - **Description**: This document has already been submitted to MyInvois.
 - **Action**: Each invoice can only be submitted once. If you need to correct an invoice, cancel the original and submit a new one.
 
 #### INVALID_TAXPAYER
 - **HTTP Status**: 400 Bad Request
 - **Retryable**: No
+- **MyInvois Step**: Step05-Taxpayer Profile Validator
+- **MyInvois Error Codes**: ERR406, ERR045
 - **Description**: The TIN (Tax Identification Number) is invalid or not found.
+- **Common Messages**:
+  - "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN"
+  - "TIN pembeli tidak sah. Sila gunakan fungsi Carian TIN untuk mendapatkan TIN yang betul" (Malay)
 - **Action**:
-  1. Verify the TIN format is correct (e.g., C12345678901)
-  2. Use the TIN validation endpoint to check before submitting
+  1. Verify the TIN format is correct (e.g., C12345678901 for company, IG12345678901 for individual)
+  2. Use the TIN validation endpoint (`GET /v1/tin/validate`) to check before submitting
   3. Ensure the buyer/seller TIN is registered with LHDN
+  4. Check the `propertyPath` field to identify which TIN failed (e.g., `CustomerTin` for buyer)
 
 #### INVALID_TOTALS
 - **HTTP Status**: 400 Bad Request
 - **Retryable**: No
+- **MyInvois Step**: Step07-Amount/Totals Validator
+- **MyInvois Error Code**: ERR045
 - **Description**: Invoice totals don't match the sum of line items.
 - **Action**: Recalculate line totals, taxes, and final amounts. Ensure all monetary values are consistent.
 
 #### INVALID_DOCUMENT_RELATION
 - **HTTP Status**: 400 Bad Request
 - **Retryable**: No
+- **MyInvois Step**: Step06-Document References Validator
+- **MyInvois Error Code**: ERR050
 - **Description**: Credit notes or debit notes must reference a valid original invoice.
 - **Action**: Include the correct BillingReference pointing to an existing valid invoice.
 
 #### INVALID_DOCUMENT_STRUCTURE
 - **HTTP Status**: 400 Bad Request
 - **Retryable**: No
+- **MyInvois Step**: Step04-Code Field Validator
+- **MyInvois Error Code**: ERR044
 - **Description**: The document format is invalid or missing required fields.
 - **Action**: Check the UBL 2.1 schema requirements. Common issues:
   - Missing InvoiceTypeCode
