@@ -47,6 +47,9 @@ export * from "./taxpayer/index.js";
 // UBL Document Builders
 export * from "./ubl/index.js";
 
+// Error Normalizer
+export * from "./error-normalizer.js";
+
 /**
  * Get package info
  */
