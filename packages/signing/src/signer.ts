@@ -169,7 +169,7 @@ export function injectSignature(
   // Helper to inject extensions into a document element
   const injectIntoElement = (
     element: unknown,
-    docType: string
+    _docType: string
   ): unknown => {
     // Handle array-wrapped documents (MyInvois format: Invoice: [{...}])
     if (Array.isArray(element) && element.length > 0) {
