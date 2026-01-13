@@ -27,39 +27,68 @@ function sortKeysRecursively(obj: unknown): unknown {
 }
 
 /**
- * Remove UBLExtensions from document for hashing
- * The signature block is stored in UBLExtensions and must be excluded from the hash
+ * Remove UBLExtensions and Signature from a document element
+ * Handles both array-wrapped (MyInvois format) and object formats
+ *
+ * Both UBLExtensions and Signature blocks must be excluded from the document
+ * hash calculation as they are added during the signing process.
+ */
+function removeSignatureElementsFromElement(element: unknown): unknown {
+  if (!element || typeof element !== 'object') {
+    return element;
+  }
+
+  // Handle array-wrapped documents (MyInvois format: Invoice: [{UBLExtensions: [...], ...}])
+  if (Array.isArray(element)) {
+    return element.map((item, index) => {
+      if (index === 0 && typeof item === 'object' && item !== null) {
+        const obj = { ...(item as Record<string, unknown>) };
+        delete obj.UBLExtensions;
+        delete obj.Signature;
+        return obj;
+      }
+      return item;
+    });
+  }
+
+  // Handle object-wrapped documents (simple format: Invoice: {UBLExtensions: {...}, ...})
+  const obj = { ...(element as Record<string, unknown>) };
+  delete obj.UBLExtensions;
+  delete obj.Signature;
+  return obj;
+}
+
+/**
+ * Remove signature elements from document for hashing
+ * Both UBLExtensions and Signature blocks must be excluded from the hash
  */
 function removeSignatureExtension(doc: Record<string, unknown>): Record<string, unknown> {
   const result = { ...doc };
 
   // Handle Invoice wrapper
-  if (result.Invoice && typeof result.Invoice === 'object') {
-    const invoice = { ...(result.Invoice as Record<string, unknown>) };
-    delete invoice.UBLExtensions;
-    result.Invoice = invoice;
+  if (result.Invoice) {
+    result.Invoice = removeSignatureElementsFromElement(result.Invoice);
     return result;
   }
 
   // Handle CreditNote wrapper
-  if (result.CreditNote && typeof result.CreditNote === 'object') {
-    const creditNote = { ...(result.CreditNote as Record<string, unknown>) };
-    delete creditNote.UBLExtensions;
-    result.CreditNote = creditNote;
+  if (result.CreditNote) {
+    result.CreditNote = removeSignatureElementsFromElement(result.CreditNote);
     return result;
   }
 
   // Handle DebitNote wrapper
-  if (result.DebitNote && typeof result.DebitNote === 'object') {
-    const debitNote = { ...(result.DebitNote as Record<string, unknown>) };
-    delete debitNote.UBLExtensions;
-    result.DebitNote = debitNote;
+  if (result.DebitNote) {
+    result.DebitNote = removeSignatureElementsFromElement(result.DebitNote);
     return result;
   }
 
   // Handle direct document without wrapper
   if (result.UBLExtensions) {
     delete result.UBLExtensions;
+  }
+  if (result.Signature) {
+    delete result.Signature;
   }
 
   return result;

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import {
   sign,
@@ -15,6 +16,18 @@ import { parseCertificate } from '../src/certificate-loader.js';
 import { generateDocumentHash } from '../src/hash.js';
 import type { CertificateInfo } from '../src/types.js';
 import type { KeyObject } from 'crypto';
+
+/**
+ * Helper to compute certificate digest (SHA256 of DER, base64 encoded)
+ */
+function computeCertDigest(certPem: string): string {
+  const certContent = certPem
+    .replace(/-----BEGIN CERTIFICATE-----/g, '')
+    .replace(/-----END CERTIFICATE-----/g, '')
+    .replace(/\s/g, '');
+  const derBuffer = Buffer.from(certContent, 'base64');
+  return crypto.createHash('sha256').update(derBuffer).digest('base64');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,18 +58,22 @@ describe('Document Signer', () => {
   describe('createSignatureBlock', () => {
     it('creates signature block with required properties', () => {
       const digestValue = 'dGVzdGRpZ2VzdA==';
+      const propsDigest = 'cHJvcHNkaWdlc3Q=';
       const signatureValue = 'dGVzdHNpZ25hdHVyZQ==';
+      const certDigestBase64 = computeCertDigest(certPem);
       const signingTime = new Date('2026-01-13T12:00:00Z');
 
       const block = createSignatureBlock(
         digestValue,
+        propsDigest,
         signatureValue,
         certPem,
+        certDigestBase64,
         certInfo,
         signingTime
       );
 
-      expect(block.signatureMethod).toBe(SIGNATURE_URIS.SIGNATURE_METHOD);
+      expect(block.signatureMethod).toBe('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
       expect(block.signatureValue).toBe(signatureValue);
       expect(block.digestMethod).toBe(SIGNATURE_URIS.DIGEST_METHOD);
       expect(block.digestValue).toBe(digestValue);
@@ -64,10 +81,13 @@ describe('Document Signer', () => {
     });
 
     it('includes certificate info', () => {
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
@@ -78,17 +98,24 @@ describe('Document Signer', () => {
     });
 
     it('includes raw UBL structure', () => {
+      const certDigestBase64 = computeCertDigest(certPem);
+      const signingTime = new Date('2026-01-13T12:00:00Z');
+      const timestamp = signingTime.getTime().toString();
+
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
-        certInfo
+        certDigestBase64,
+        certInfo,
+        signingTime
       );
 
       expect(block._raw).toBeDefined();
-      expect(block._raw.Id).toBe('signature');
+      expect(block._raw.Id).toBe(`DocSig-${timestamp}`);
       expect(block._raw.SignedInfo).toBeDefined();
-      expect(block._raw.SignatureValue).toBe('signature');
+      expect(block._raw.SignatureValue).toBeDefined();
       expect(block._raw.KeyInfo).toBeDefined();
       expect(block._raw.Object).toBeDefined();
     });
@@ -96,10 +123,13 @@ describe('Document Signer', () => {
 
   describe('createUBLExtensions', () => {
     it('creates correct UBL extension structure', () => {
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
@@ -109,33 +139,45 @@ describe('Document Signer', () => {
       expect(extensions.UBLExtension).toHaveLength(1);
     });
 
-    it('includes correct extension URI', () => {
+    it('includes correct extension URI in UBL array format', () => {
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
       const extensions = createUBLExtensions(block);
       const ext = (extensions.UBLExtension as Array<Record<string, unknown>>)[0];
 
-      expect(ext.ExtensionURI).toBe(SIGNATURE_URIS.EXTENSION_URI);
+      // UBL array format: ExtensionURI is array with [{_: value}]
+      expect(ext.ExtensionURI).toBeInstanceOf(Array);
+      const extUri = (ext.ExtensionURI as Array<Record<string, unknown>>)[0];
+      expect(extUri._).toBe(SIGNATURE_URIS.EXTENSION_URI);
       expect(ext.ExtensionContent).toBeDefined();
     });
 
     it('includes signature information', () => {
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
       const extensions = createUBLExtensions(block);
       const ext = (extensions.UBLExtension as Array<Record<string, unknown>>)[0];
-      const content = ext.ExtensionContent as Record<string, unknown>;
-      const sigs = content.UBLDocumentSignatures as Record<string, unknown>;
+      // ExtensionContent is now array format
+      const contentArr = ext.ExtensionContent as Array<Record<string, unknown>>;
+      const content = contentArr[0];
+      const sigsArr = content.UBLDocumentSignatures as Array<Record<string, unknown>>;
+      const sigs = sigsArr[0];
 
       expect(sigs.SignatureInformation).toBeDefined();
     });
@@ -150,10 +192,13 @@ describe('Document Signer', () => {
         }
       };
 
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
@@ -172,10 +217,13 @@ describe('Document Signer', () => {
         }
       };
 
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
@@ -192,10 +240,13 @@ describe('Document Signer', () => {
         }
       };
 
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
@@ -205,7 +256,7 @@ describe('Document Signer', () => {
       expect(debitNote.UBLExtensions).toBeDefined();
     });
 
-    it('places UBLExtensions at beginning of document', () => {
+    it('places UBLExtensions and Signature at end of document', () => {
       const doc = {
         Invoice: {
           ID: 'INV-001',
@@ -213,10 +264,13 @@ describe('Document Signer', () => {
         }
       };
 
+      const certDigestBase64 = computeCertDigest(certPem);
       const block = createSignatureBlock(
         'digest',
+        'propsDigest',
         'signature',
         certPem,
+        certDigestBase64,
         certInfo
       );
 
@@ -224,7 +278,10 @@ describe('Document Signer', () => {
       const invoice = signedDoc.Invoice as Record<string, unknown>;
       const keys = Object.keys(invoice);
 
-      expect(keys[0]).toBe('UBLExtensions');
+      // Per MyInvois v1.1, UBLExtensions and Signature must be at the END
+      expect(keys[0]).toBe('ID'); // Original content first
+      expect(keys[keys.length - 2]).toBe('UBLExtensions'); // Second to last
+      expect(keys[keys.length - 1]).toBe('Signature'); // Last
     });
   });
 
