@@ -705,6 +705,34 @@ When MyInvois validates a document submission, it runs through sequential valida
 | Expired Token | 401 token expired | `AUTH_TOKEN_EXPIRED` | 401 | Yes (auto) |
 | Auth Unavailable | 503 Service Down | `AUTH_UNAVAILABLE` | 503 | Yes |
 
+##### Signature Validation Failures (v1.1 Documents)
+
+These errors occur when MyInvois rejects a digitally signed v1.1 document:
+
+| Scenario | Upstream Code | Middleware Code | HTTP | Retryable |
+|----------|---------------|-----------------|------|-----------|
+| Missing Signature | SignatureRequired | `SIGNING_REQUIRED` | 400 | No |
+| Digest Mismatch | DigestMismatch | `DIGEST_MISMATCH` | 400 | No |
+| Invalid Signature | SignatureInvalid | `SIGNATURE_INVALID` | 400 | No |
+| Certificate Rejected | CertificateRejected | `CERTIFICATE_REJECTED` | 400 | No |
+| Certificate Expired | CertificateExpired | `CERTIFICATE_EXPIRED` | 400 | No |
+| TIN Mismatch | TinMismatch | Error message contains "TIN" | 400 | No |
+
+##### Local Signing Failures (Pre-submission)
+
+These errors are caught by the gateway before sending to MyInvois:
+
+| Scenario | Trigger | Middleware Code | HTTP | Retryable |
+|----------|---------|-----------------|------|-----------|
+| Signing Disabled | v1.1 requested, signing off | `SIGNING_DISABLED` | 503 | No |
+| Not Configured | v1.1 requested, no certificate | `SIGNING_NOT_CONFIGURED` | 503 | No |
+| Cert Load Failed | Cannot read certificate file | `CERTIFICATE_LOAD_FAILED` | 500 | No |
+| Key Load Failed | Cannot read private key file | `PRIVATE_KEY_LOAD_FAILED` | 500 | No |
+| Key Mismatch | Key doesn't match certificate | `KEY_CERTIFICATE_MISMATCH` | 500 | No |
+| Cert Expired | Certificate past validity | `CERTIFICATE_EXPIRED` | 503 | No |
+| Cert Not Valid Yet | Certificate future validity | `CERTIFICATE_NOT_YET_VALID` | 503 | No |
+| Signing Failed | Crypto operation failed | `SIGNING_FAILED` | 500 | No |
+
 ##### Local Validation Failures (Pre-submission)
 
 | Scenario | Trigger | Middleware Code | HTTP | Retryable |
@@ -724,10 +752,16 @@ SKIP_TESTCONTAINERS=true pnpm vitest run apps/gateway/test/negative apps/worker/
 # Gateway submission tests
 SKIP_TESTCONTAINERS=true pnpm vitest run apps/gateway/test/negative/submissions.negative.test.ts
 
+# Gateway signing tests (v1.1)
+SKIP_TESTCONTAINERS=true pnpm vitest run apps/gateway/test/negative/signing.negative.test.ts
+
 # Worker polling tests
 SKIP_TESTCONTAINERS=true pnpm vitest run apps/worker/test/negative/poll-worker.negative.test.ts
 
-# Error normalizer unit tests (33 tests)
+# Signing error transformation tests (25 tests)
+SKIP_TESTCONTAINERS=true pnpm vitest run apps/gateway/test/unit/signing-errors.test.ts
+
+# Error normalizer unit tests (35 tests)
 SKIP_TESTCONTAINERS=true pnpm vitest run packages/myinvois-client/src/error-normalizer.test.ts
 ```
 
