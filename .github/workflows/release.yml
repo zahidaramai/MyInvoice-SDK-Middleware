@@ -51,21 +51,25 @@ jobs:
           cp openapi/openapi.yaml release-assets/openapi.yaml
 
       - name: Package TypeScript SDK
+        if: hashFiles('sdks/typescript/**') != ''
         run: |
           cd sdks/typescript
           tar -czvf ../../release-assets/sdk-typescript.tar.gz .
 
       - name: Package Python SDK
+        if: hashFiles('sdks/python/**') != ''
         run: |
           cd sdks/python
           tar -czvf ../../release-assets/sdk-python.tar.gz .
 
       - name: Package C# SDK
+        if: hashFiles('sdks/dotnet/**') != ''
         run: |
           cd sdks/dotnet
           tar -czvf ../../release-assets/sdk-dotnet.tar.gz .
 
       - name: Package Java SDK
+        if: hashFiles('sdks/java/**') != ''
         run: |
           cd sdks/java
           tar -czvf ../../release-assets/sdk-java.tar.gz .
@@ -79,13 +83,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: |
-            release-assets/openapi.yaml
-            release-assets/sdk-typescript.tar.gz
-            release-assets/sdk-python.tar.gz
-            release-assets/sdk-dotnet.tar.gz
-            release-assets/sdk-java.tar.gz
-            release-assets/checksums.txt
+          files: release-assets/*
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
