@@ -71,6 +71,9 @@ importers:
       '@myinvois/myinvois-client':
         specifier: workspace:*
         version: link:../../packages/myinvois-client
+      '@myinvois/signing':
+        specifier: workspace:*
+        version: link:../../packages/signing
       '@myinvois/storage':
         specifier: workspace:*
         version: link:../../packages/storage

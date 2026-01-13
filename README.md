@@ -68,6 +68,28 @@ Integrating directly with MyInvois API presents several challenges:
 | **Background Polling** | BullMQ worker polls submission status at safe intervals |
 | **Duplicate Detection** | 10-minute deduplication window prevents resubmission |
 | **Error Normalization** | Consistent error envelope with upstream correlationId |
+| **Document Signing (v1.1)** | X.509 digital signatures for MyInvois v1.1 compliance |
+
+### Document Signing (MyInvois v1.1)
+
+Starting from a date mandated by LHDN, all e-invoices must be digitally signed using X.509 certificates. This middleware provides:
+
+| Feature | Description |
+|---------|-------------|
+| **Automatic Signing** | Documents are automatically signed when `documentVersion: "1.1"` |
+| **Certificate Management** | Load certificates from file, base64, or environment variables |
+| **Key Validation** | Verifies private key matches certificate before signing |
+| **Expiry Monitoring** | Health checks report certificate expiry status |
+| **Performance** | Signing completes in <2ms per document |
+
+#### Document Version Modes
+
+| Version | Signing | Use Case |
+|---------|---------|----------|
+| `1.0` | Not required | Legacy submissions (unsigned) |
+| `1.1` | **Required** | New submissions (signed, LHDN mandate) |
+
+See [Configuration > Signing](#signing-configuration) for setup instructions.
 
 ### Supported MyInvois Operations
 
@@ -116,6 +138,7 @@ Integrating directly with MyInvois API presents several challenges:
 │   └── worker/            # Background job processor (BullMQ)
 ├── packages/
 │   ├── core/              # Rate limiter, error normalization, hashing
+│   ├── signing/           # X.509 certificate signing for v1.1 documents
 │   ├── myinvois-client/   # Typed client for MyInvois endpoints
 │   ├── storage/           # Prisma + database adapters
 │   └── contracts/         # Shared types & Zod schemas
@@ -250,6 +273,76 @@ curl http://localhost:3000/version
 |---------------|------------|---------|----------|
 | Individual | `IG` + digits | `NRIC` | IC number (e.g., 901120125931) |
 | Company | `C` + digits | `BRN` | Business registration number |
+
+### Signing Configuration
+
+For MyInvois v1.1 document signing, you need an X.509 certificate and private key.
+
+#### Signing Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SIGNING_ENABLED` | No | `true` | Enable/disable document signing |
+| `SIGNING_DEFAULT_VERSION` | No | `1.0` | Default document version (`1.0` or `1.1`) |
+| `SIGNING_CERT_PATH` | Yes* | - | Path to certificate PEM file |
+| `SIGNING_KEY_PATH` | Yes* | - | Path to private key PEM file |
+| `SIGNING_CERT_BASE64` | Yes* | - | Base64-encoded certificate (alternative to file) |
+| `SIGNING_KEY_BASE64` | Yes* | - | Base64-encoded private key (alternative to file) |
+| `SIGNING_KEY_PASSPHRASE` | No | - | Passphrase for encrypted private key |
+
+*One of `SIGNING_CERT_PATH` or `SIGNING_CERT_BASE64` is required for v1.1 submissions.
+
+#### Certificate Setup
+
+1. **Obtain a Certificate**: Get an X.509 certificate from a certificate authority or generate a self-signed certificate for testing.
+
+2. **Prepare Files**:
+   ```bash
+   # Your certificate and key files
+   ls -la certs/
+   # cert.pem     - X.509 certificate in PEM format
+   # key.pem      - RSA private key in PEM format
+   ```
+
+3. **Configure via File Path**:
+   ```env
+   SIGNING_ENABLED=true
+   SIGNING_DEFAULT_VERSION=1.1
+   SIGNING_CERT_PATH=/app/certs/cert.pem
+   SIGNING_KEY_PATH=/app/certs/key.pem
+   ```
+
+4. **Or Configure via Base64** (for containerized deployments):
+   ```bash
+   # Encode your certificate
+   base64 -i certs/cert.pem | tr -d '\n'
+   base64 -i certs/key.pem | tr -d '\n'
+   ```
+   ```env
+   SIGNING_CERT_BASE64=LS0tLS1CRUdJTi...
+   SIGNING_KEY_BASE64=LS0tLS1CRUdJTi...
+   ```
+
+#### Certificate Requirements
+
+| Requirement | Value |
+|-------------|-------|
+| Format | PEM (-----BEGIN CERTIFICATE-----) |
+| Key Type | RSA (2048-bit or higher recommended) |
+| Signature Algorithm | SHA-256 or higher |
+| Validity | Must be valid (not expired, not future-dated) |
+
+#### Verifying Your Certificate
+
+```bash
+# Check certificate details
+openssl x509 -in cert.pem -text -noout
+
+# Verify key matches certificate
+openssl x509 -in cert.pem -pubkey -noout | md5
+openssl rsa -in key.pem -pubout 2>/dev/null | md5
+# Both should output the same hash
+```
 
 ---
 

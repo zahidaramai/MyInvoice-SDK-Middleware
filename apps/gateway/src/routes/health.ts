@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getSigningHealthStatus } from "../config/signing.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -28,12 +29,15 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get("/readyz", async (_request, reply) => {
+    const signingStatus = getSigningHealthStatus();
+
     return reply.send({
       status: "ok",
       checks: {
         database: "ok",
         redis: "ok",
       },
+      signing: signingStatus,
     });
   });
 
