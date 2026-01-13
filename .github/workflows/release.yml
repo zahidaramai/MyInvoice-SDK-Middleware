@@ -31,11 +31,19 @@ jobs:
       - name: Generate test certificates
         run: ./packages/signing/test/fixtures/generate-certs.sh
 
+      - name: Setup database
+        run: npx prisma migrate deploy
+        working-directory: packages/storage
+        env:
+          DATABASE_URL: file:./test.db
+
       - name: Build all packages
         run: pnpm build
 
       - name: Run tests
         run: pnpm test
+        env:
+          DATABASE_URL: file:${{ github.workspace }}/packages/storage/prisma/test.db
 
       - name: Package OpenAPI spec
         run: |
