@@ -4,6 +4,8 @@
 
 import type { Environment, Mode } from "@myinvois/core";
 import { sessionFingerprint, nowMs } from "@myinvois/core";
+import type { DocumentVersion } from "@myinvois/signing";
+import { getDefaultDocumentVersion } from "../config/signing.js";
 
 export interface StoredSession {
   sessionId: string;
@@ -13,6 +15,8 @@ export interface StoredSession {
   clientSecret: string;
   scope?: string;
   onBehalfOf?: string;
+  /** Document version preference (1.0 or 1.1) */
+  documentVersion?: DocumentVersion;
   createdAt: number;
   lastUsedAt: number;
   fingerprint: string;
@@ -23,6 +27,8 @@ export interface SessionResponse {
   env: Environment;
   mode: Mode;
   onBehalfOf?: string;
+  /** Document version for this session */
+  documentVersion: DocumentVersion;
   createdAt: string;
   expiresAt?: string;
 }
@@ -74,6 +80,7 @@ export class SessionStore {
     clientSecret: string;
     scope?: string;
     onBehalfOf?: string;
+    documentVersion?: DocumentVersion;
   }): StoredSession {
     const now = nowMs();
     const sessionId = generateSessionId();
@@ -92,6 +99,7 @@ export class SessionStore {
       clientSecret: params.clientSecret,
       scope: params.scope,
       onBehalfOf: params.onBehalfOf,
+      documentVersion: params.documentVersion,
       createdAt: now,
       lastUsedAt: now,
       fingerprint,
@@ -141,6 +149,7 @@ export class SessionStore {
       id: session.sessionId,
       env: session.env,
       mode: session.mode,
+      documentVersion: session.documentVersion || getDefaultDocumentVersion(),
       createdAt: new Date(session.createdAt).toISOString(),
       expiresAt: new Date(session.createdAt + this.ttlMs).toISOString(),
     };
