@@ -15,6 +15,11 @@ import {
   isRetryableError,
 } from "../lib/errors.js";
 import { createErrorEnvelopeResponse, type ErrorEnvelope } from "@myinvois/core";
+import {
+  isSigningError,
+  transformSigningError,
+  type SigningErrorEnvelope,
+} from "../errors/signing-errors.js";
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.setErrorHandler((error, request, reply) => {
@@ -41,6 +46,28 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       reply.header("X-Correlation-Id", correlationId);
       return reply.status(error.statusCode).send(envelope);
+    }
+
+    // Handle signing package errors
+    if (isSigningError(error)) {
+      const signingEnvelope: SigningErrorEnvelope = transformSigningError(
+        error,
+        { phase: "signing" },
+        correlationId
+      );
+
+      request.log.error(
+        {
+          err: error,
+          correlationId,
+          code: signingEnvelope.code,
+          signingPhase: signingEnvelope.signing?.phase,
+        },
+        "Signing error"
+      );
+
+      reply.header("X-Correlation-Id", correlationId);
+      return reply.status(signingEnvelope.httpStatus).send({ error: signingEnvelope });
     }
 
     // Handle generic errors

@@ -59,6 +59,61 @@ export {
   getSigningErrorHttpStatus
 } from './errors.js';
 
+// Certificate Loader
+export {
+  loadCertificate,
+  loadAndValidateCertificate,
+  loadCertificatePem,
+  loadCertificateFromFile,
+  loadCertificateFromBase64,
+  loadCertificateFromEnv,
+  parseCertificate,
+  validateCertificate,
+  getX509Certificate
+} from './certificate-loader.js';
+
+// Private Key Loader
+export {
+  loadPrivateKey,
+  loadAndVerifyPrivateKey,
+  loadPrivateKeyPem,
+  loadPrivateKeyFromFile,
+  loadPrivateKeyFromBase64,
+  loadPrivateKeyFromEnv,
+  parsePrivateKey,
+  verifyKeyMatchesCertificate,
+  getPrivateKeyInfo
+} from './private-key-loader.js';
+
+export type { PrivateKeyInfo } from './private-key-loader.js';
+
+// Hash Generation
+export {
+  canonicalizeDocument,
+  generateDocumentHash,
+  generateDocumentHashHex,
+  hashString,
+  verifyDocumentHash
+} from './hash.js';
+
+// Document Signer
+export {
+  sign,
+  SigningService,
+  createSignatureBlock,
+  createUBLExtensions,
+  injectSignature,
+  SIGNATURE_URIS
+} from './signer.js';
+
+// Signature Verifier
+export {
+  verify,
+  VerificationService,
+  extractSignature,
+  recalculateHash
+} from './verifier.js';
+
 // Placeholder exports - will be expanded in subsequent user stories
 export function getPackageInfo(): { name: string; version: string } {
   return {
