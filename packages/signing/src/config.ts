@@ -73,6 +73,30 @@ export const RotationConfigSchema = z
 export type RotationConfig = z.infer<typeof RotationConfigSchema>;
 
 /**
+ * PKCS#12 (.p12/.pfx) source configuration
+ */
+export const PKCS12SourceSchema = z
+  .object({
+    /** Load PKCS#12 from file path */
+    path: z.string().optional(),
+    /** Load PKCS#12 from base64-encoded string */
+    base64: z.string().optional(),
+    /** Passphrase for the PKCS#12 file */
+    passphrase: z.string().optional()
+  })
+  .refine(
+    (data) => {
+      const sources = [data.path, data.base64].filter(Boolean);
+      return sources.length === 1;
+    },
+    {
+      message: 'Exactly one PKCS#12 source must be specified: path or base64'
+    }
+  );
+
+export type PKCS12Source = z.infer<typeof PKCS12SourceSchema>;
+
+/**
  * Full signing configuration schema
  */
 export const SigningConfigSchema = z.object({
@@ -80,22 +104,37 @@ export const SigningConfigSchema = z.object({
   enabled: z.boolean().default(false),
   /** Default document version when not specified per-session */
   defaultVersion: DocumentVersionSchema.default('1.0'),
-  /** Primary certificate configuration */
+  /** Primary certificate configuration (PEM format) */
   certificate: CertificateSourceSchema.optional(),
-  /** Primary private key configuration */
+  /** Primary private key configuration (PEM format) */
   privateKey: PrivateKeySourceSchema.optional(),
+  /** PKCS#12 (.p12/.pfx) file containing both certificate and key */
+  pkcs12: PKCS12SourceSchema.optional(),
   /** Optional rotation configuration for zero-downtime certificate updates */
   rotation: RotationConfigSchema
 }).refine(
   (data) => {
-    // If enabled, certificate and privateKey must be provided
+    // If enabled, either pkcs12 OR both certificate and privateKey must be provided
     if (data.enabled) {
-      return data.certificate !== undefined && data.privateKey !== undefined;
+      const hasPKCS12 = data.pkcs12 !== undefined;
+      const hasPEM = data.certificate !== undefined && data.privateKey !== undefined;
+      return hasPKCS12 || hasPEM;
     }
     return true;
   },
   {
-    message: 'When signing is enabled, both certificate and privateKey must be configured'
+    message: 'When signing is enabled, either pkcs12 OR both certificate and privateKey must be configured'
+  }
+).refine(
+  (data) => {
+    // Cannot specify both pkcs12 and separate cert/key
+    if (data.pkcs12 && (data.certificate || data.privateKey)) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'Cannot specify both pkcs12 and separate certificate/privateKey - use one or the other'
   }
 );
 
@@ -112,6 +151,9 @@ export const SIGNING_ENV_VARS = {
   KEY_PATH: 'SIGNING_KEY_PATH',
   KEY_BASE64: 'SIGNING_KEY_BASE64',
   KEY_PASSPHRASE: 'SIGNING_KEY_PASSPHRASE',
+  PKCS12_PATH: 'SIGNING_PKCS12_PATH',
+  PKCS12_BASE64: 'SIGNING_PKCS12_BASE64',
+  PKCS12_PASSPHRASE: 'SIGNING_PKCS12_PASSPHRASE',
   CERT_PATH_2: 'SIGNING_CERT_PATH_2',
   KEY_PATH_2: 'SIGNING_KEY_PATH_2'
 } as const;
@@ -122,26 +164,44 @@ export const SIGNING_ENV_VARS = {
 export function loadSigningConfig(): SigningConfig {
   const env = process.env;
 
-  // Determine certificate source
-  let certificate: CertificateSource | undefined;
-  if (env[SIGNING_ENV_VARS.CERT_PATH]) {
-    certificate = { path: env[SIGNING_ENV_VARS.CERT_PATH] };
-  } else if (env[SIGNING_ENV_VARS.CERT_BASE64]) {
-    certificate = { base64: env[SIGNING_ENV_VARS.CERT_BASE64] };
+  // Check for PKCS#12 source first (takes precedence)
+  let pkcs12: PKCS12Source | undefined;
+  if (env[SIGNING_ENV_VARS.PKCS12_PATH]) {
+    pkcs12 = {
+      path: env[SIGNING_ENV_VARS.PKCS12_PATH],
+      passphrase: env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE]
+    };
+  } else if (env[SIGNING_ENV_VARS.PKCS12_BASE64]) {
+    pkcs12 = {
+      base64: env[SIGNING_ENV_VARS.PKCS12_BASE64],
+      passphrase: env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE]
+    };
   }
 
-  // Determine private key source
+  // Determine certificate source (PEM format)
+  let certificate: CertificateSource | undefined;
+  if (!pkcs12) {
+    if (env[SIGNING_ENV_VARS.CERT_PATH]) {
+      certificate = { path: env[SIGNING_ENV_VARS.CERT_PATH] };
+    } else if (env[SIGNING_ENV_VARS.CERT_BASE64]) {
+      certificate = { base64: env[SIGNING_ENV_VARS.CERT_BASE64] };
+    }
+  }
+
+  // Determine private key source (PEM format)
   let privateKey: PrivateKeySource | undefined;
-  if (env[SIGNING_ENV_VARS.KEY_PATH]) {
-    privateKey = {
-      path: env[SIGNING_ENV_VARS.KEY_PATH],
-      passphrase: env[SIGNING_ENV_VARS.KEY_PASSPHRASE]
-    };
-  } else if (env[SIGNING_ENV_VARS.KEY_BASE64]) {
-    privateKey = {
-      base64: env[SIGNING_ENV_VARS.KEY_BASE64],
-      passphrase: env[SIGNING_ENV_VARS.KEY_PASSPHRASE]
-    };
+  if (!pkcs12) {
+    if (env[SIGNING_ENV_VARS.KEY_PATH]) {
+      privateKey = {
+        path: env[SIGNING_ENV_VARS.KEY_PATH],
+        passphrase: env[SIGNING_ENV_VARS.KEY_PASSPHRASE]
+      };
+    } else if (env[SIGNING_ENV_VARS.KEY_BASE64]) {
+      privateKey = {
+        base64: env[SIGNING_ENV_VARS.KEY_BASE64],
+        passphrase: env[SIGNING_ENV_VARS.KEY_PASSPHRASE]
+      };
+    }
   }
 
   // Determine rotation config
@@ -161,6 +221,7 @@ export function loadSigningConfig(): SigningConfig {
     defaultVersion: (env[SIGNING_ENV_VARS.DEFAULT_VERSION] as DocumentVersion) || '1.0',
     certificate,
     privateKey,
+    pkcs12,
     rotation
   };
 
