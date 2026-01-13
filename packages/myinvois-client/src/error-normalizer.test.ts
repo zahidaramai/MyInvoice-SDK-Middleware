@@ -34,7 +34,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.httpStatus).toBe(409);
       expect(result.retryable).toBe(false);
       // Now uses actual MyInvois message when available
-      expect(result.message).toContain("already submitted");
+      expect(result.messageEN).toContain("already submitted");
       expect(result.upstream).toEqual({
         source: "MYINVOIS",
         status: 422,
@@ -78,7 +78,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
       // Now uses actual MyInvois message when available
-      expect(result.message).toContain("Taxpayer");
+      expect(result.messageEN).toContain("Taxpayer");
       expect(result.propertyPath).toBe("Customer.TIN");
       expect(result.upstream?.errorCode).toBe("ERR045");
     });
@@ -99,7 +99,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
       // Now preserves original message (even if Malay)
-      expect(result.message).toContain("TIN pembeli");
+      expect(result.messageEN).toContain("TIN pembeli");
     });
 
     it("normalizes totals mismatch error (Amount/Totals Validator)", () => {
@@ -118,7 +118,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
       // Now uses actual MyInvois message
-      expect(result.message).toContain("does not match");
+      expect(result.messageEN).toContain("does not match");
     });
 
     it("normalizes document relation error (credit note without reference)", () => {
@@ -136,7 +136,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.INVALID_DOCUMENT_RELATION);
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
-      expect(result.message).toContain("reference");
+      expect(result.messageEN).toContain("reference");
     });
 
     it("normalizes document structure error", () => {
@@ -196,7 +196,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
       // Should use the message from innerError (actual user-facing message)
-      expect(result.message).toBe("Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN");
+      expect(result.messageEN).toBe("Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN");
       // Should preserve the field name
       expect(result.field).toBe("CustomerTin");
       // Should preserve the full property path
@@ -253,7 +253,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.UPSTREAM_TIMEOUT);
       expect(result.httpStatus).toBe(504);
       expect(result.retryable).toBe(true);
-      expect(result.message).toContain("timed out");
+      expect(result.messageEN).toContain("timed out");
     });
 
     it("normalizes timeout error (status 408)", () => {
@@ -361,7 +361,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.AUTH_INVALID_CLIENT);
       expect(result.httpStatus).toBe(401);
       expect(result.retryable).toBe(false);
-      expect(result.message).toContain("client credentials");
+      expect(result.messageEN).toContain("client credentials");
     });
 
     it("normalizes invalid_client from 400 response", () => {
@@ -427,7 +427,7 @@ describe("normalizeMyinvoisError", () => {
       expect(result.code).toBe(ErrorCodes.NOT_FOUND);
       expect(result.httpStatus).toBe(404);
       expect(result.retryable).toBe(false);
-      expect(result.message).toBe("Submission not found");
+      expect(result.messageEN).toBe("Submission not found");
     });
 
     it("normalizes 403 forbidden error", () => {
@@ -476,7 +476,7 @@ describe("normalizeMyinvoisError", () => {
           httpStatus: 404,
           body,
         });
-        expect(result.message).toBe(expected);
+        expect(result.messageEN).toBe(expected);
       }
     });
 
@@ -486,7 +486,7 @@ describe("normalizeMyinvoisError", () => {
         body: undefined,
       });
 
-      expect(result.message).toBe("MyInvois service is temporarily unavailable.");
+      expect(result.messageEN).toBe("MyInvois service is temporarily unavailable.");
     });
 
     it("uses default message when body has no message field", () => {
@@ -495,7 +495,7 @@ describe("normalizeMyinvoisError", () => {
         body: { someOtherField: "value" },
       });
 
-      expect(result.message).toBe("The requested resource was not found.");
+      expect(result.messageEN).toBe("The requested resource was not found.");
     });
   });
 
@@ -576,7 +576,7 @@ describe("normalizeNetworkError", () => {
     expect(result.code).toBe(ErrorCodes.NETWORK_ERROR);
     expect(result.httpStatus).toBe(503);
     expect(result.retryable).toBe(true);
-    expect(result.message).toContain("ECONNREFUSED");
+    expect(result.messageEN).toContain("ECONNREFUSED");
   });
 });
 
@@ -593,7 +593,7 @@ describe("createLocalValidationError", () => {
     );
 
     expect(result.code).toBe(ErrorCodes.PAYLOAD_TOO_LARGE);
-    expect(result.message).toBe("Request payload exceeds maximum allowed size of 5MB");
+    expect(result.messageEN).toBe("Request payload exceeds maximum allowed size of 5MB");
     expect(result.httpStatus).toBe(413);
     expect(result.retryable).toBe(false);
     expect(result.propertyPath).toBe("documents");

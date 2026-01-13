@@ -4,9 +4,11 @@
 
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import { isValidEnvironment, isValidMode } from "@myinvois/core";
+import type { DocumentVersion } from "@myinvois/signing";
 import { sessionStore, type SessionResponse } from "../../lib/sessionStore.js";
 import { getTokenManager } from "../../lib/myinvois.js";
 import { AppError, createErrorEnvelope } from "../../lib/errors.js";
+import { getSigningStatus } from "../../middleware/signing.js";
 
 interface CreateSessionBody {
   env: string;
@@ -15,6 +17,8 @@ interface CreateSessionBody {
   clientSecret: string;
   scope?: string;
   onBehalfOf?: string;
+  /** Document version preference (1.0 or 1.1). Default: 1.0 */
+  documentVersion?: string;
 }
 
 interface SessionParams {
@@ -94,6 +98,31 @@ function validateCreateRequest(body: CreateSessionBody): void {
       { propertyPath: "onBehalfOf" }
     );
   }
+
+  // Validate documentVersion if provided
+  if (body.documentVersion !== undefined) {
+    if (body.documentVersion !== "1.0" && body.documentVersion !== "1.1") {
+      throw new AppError(
+        400,
+        "documentVersion must be '1.0' or '1.1'",
+        "VALIDATION_ERROR",
+        { propertyPath: "documentVersion" }
+      );
+    }
+
+    // Check if v1.1 is requested but signing is not available
+    if (body.documentVersion === "1.1") {
+      const status = getSigningStatus("1.1");
+      if (!status.canProceed) {
+        throw new AppError(
+          503,
+          status.reason || "Signing not available for v1.1 documents",
+          "SIGNING_NOT_CONFIGURED",
+          { propertyPath: "documentVersion" }
+        );
+      }
+    }
+  }
 }
 
 export const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
@@ -117,6 +146,7 @@ export const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
         clientSecret: body.clientSecret,
         scope: body.scope,
         onBehalfOf: body.onBehalfOf,
+        documentVersion: body.documentVersion as DocumentVersion | undefined,
       });
 
       // Optionally validate upstream login

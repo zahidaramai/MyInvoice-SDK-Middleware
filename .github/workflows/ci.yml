@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate test certificates
+        run: ./packages/signing/test/fixtures/generate-certs.sh
+
       - name: Setup database
         run: npx prisma migrate deploy
         working-directory: packages/storage
