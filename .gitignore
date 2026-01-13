@@ -21,8 +21,11 @@ build/
 !.env.sandbox.example
 *.pem
 *.key
+*.p12
+*.pfx
 credentials.json
 secrets/
+private/
 
 # =============================================================================
 # IDE & Editor
