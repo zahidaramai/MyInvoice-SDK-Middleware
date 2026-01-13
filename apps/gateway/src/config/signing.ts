@@ -2,6 +2,7 @@ import {
   loadSigningConfig,
   loadCertificate,
   loadPrivateKey,
+  loadPKCS12,
   verifyKeyMatchesCertificate,
   SigningService,
   PrivateKeyLoadError,
@@ -85,16 +86,68 @@ export function initializeSigning(logger?: {
   let privateKey: KeyObject;
 
   try {
-    // Load certificate
-    if (!config.certificate) {
-      throw new Error('No certificate configuration provided');
-    }
-    const certResult = loadCertificate(config.certificate);
-    certPem = certResult.pem;
-    certInfo = certResult.info;
+    // Check for PKCS#12 source first (contains both cert and key)
+    if (config.pkcs12) {
+      log.info('Loading certificate and key from PKCS#12...');
 
-    log.info(`Certificate loaded: ${certInfo.subject.commonName || certInfo.subject.raw}`);
-    log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
+      const p12Source = config.pkcs12.path
+        ? { path: config.pkcs12.path, passphrase: config.pkcs12.passphrase }
+        : config.pkcs12.base64
+          ? { base64: config.pkcs12.base64, passphrase: config.pkcs12.passphrase }
+          : null;
+
+      if (!p12Source) {
+        throw new Error('Invalid PKCS#12 configuration');
+      }
+
+      const p12Result = loadPKCS12(p12Source);
+      certPem = p12Result.certPem;
+      certInfo = p12Result.certInfo;
+      privateKey = p12Result.privateKey;
+
+      log.info(`Certificate loaded from PKCS#12: ${certInfo.subject.commonName || certInfo.subject.raw}`);
+      log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
+      log.info('Private key extracted from PKCS#12');
+
+    } else {
+      // Fall back to separate certificate and key files
+      if (!config.certificate) {
+        throw new Error('No certificate configuration provided');
+      }
+      const certResult = loadCertificate(config.certificate);
+      certPem = certResult.pem;
+      certInfo = certResult.info;
+
+      log.info(`Certificate loaded: ${certInfo.subject.commonName || certInfo.subject.raw}`);
+      log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
+
+      // Load private key
+      if (!config.privateKey) {
+        throw new PrivateKeyLoadError('No private key configuration provided');
+      }
+
+      const keySource = config.privateKey.path
+        ? { path: config.privateKey.path, passphrase: config.privateKey.passphrase }
+        : config.privateKey.base64
+          ? { base64: config.privateKey.base64, passphrase: config.privateKey.passphrase }
+          : null;
+
+      if (!keySource) {
+        throw new PrivateKeyLoadError('No private key source configured');
+      }
+
+      privateKey = loadPrivateKey(keySource);
+
+      // Verify key matches certificate
+      if (!verifyKeyMatchesCertificate(privateKey, certPem)) {
+        throw new KeyCertificateMismatchError(
+          'Private key does not match certificate',
+          { certificateSubject: certInfo.subject.commonName || certInfo.subject.raw }
+        );
+      }
+
+      log.info('Private key loaded and verified');
+    }
 
     // Check for expiry warning
     let warning: string | undefined;
@@ -105,33 +158,6 @@ export function initializeSigning(logger?: {
       warning = 'Certificate has expired';
       log.warn(warning);
     }
-
-    // Load private key
-    if (!config.privateKey) {
-      throw new PrivateKeyLoadError('No private key configuration provided');
-    }
-
-    const keySource = config.privateKey.path
-      ? { path: config.privateKey.path, passphrase: config.privateKey.passphrase }
-      : config.privateKey.base64
-        ? { base64: config.privateKey.base64, passphrase: config.privateKey.passphrase }
-        : null;
-
-    if (!keySource) {
-      throw new PrivateKeyLoadError('No private key source configured');
-    }
-
-    privateKey = loadPrivateKey(keySource);
-
-    // Verify key matches certificate
-    if (!verifyKeyMatchesCertificate(privateKey, certPem)) {
-      throw new KeyCertificateMismatchError(
-        'Private key does not match certificate',
-        { certificateSubject: certInfo.subject.commonName || certInfo.subject.raw }
-      );
-    }
-
-    log.info('Private key loaded and verified');
 
     // Create signing service
     const service = new SigningService(privateKey, certPem, certInfo);
