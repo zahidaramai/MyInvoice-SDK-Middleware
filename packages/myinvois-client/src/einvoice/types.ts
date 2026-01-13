@@ -11,13 +11,32 @@ export type DocumentFormat = "XML" | "JSON";
 
 /**
  * Single document in a submission request to MyInvois
+ *
+ * IMPORTANT: Document Hash Encoding
+ * ---------------------------------
+ * The documentHash MUST be SHA256 encoded as HEXADECIMAL (not base64!).
+ * This is a MyInvois requirement that differs from common practice.
+ *
+ * Correct:
+ *   const jsonString = JSON.stringify(signedDocument);
+ *   const documentHash = crypto.createHash('sha256').update(jsonString, 'utf-8').digest('hex');
+ *
+ * Incorrect (will cause "Document hash is not valid" error):
+ *   const documentHash = crypto.createHash('sha256').update(jsonString).digest('base64');
+ *
+ * Use the `computeDocumentHash` or `prepareDocumentForSubmission` helpers from @myinvois/core
+ * for correct hash computation.
  */
 export interface SubmitDocumentInput {
   /** Document format: XML or JSON */
   format: DocumentFormat;
-  /** Base64-encoded document content */
+  /** Base64-encoded document content (UTF-8 JSON stringified, then base64 encoded) */
   document: string;
-  /** SHA256 hash of the document (caller-provided, not verified by gateway) */
+  /**
+   * SHA256 hash of the document content.
+   * IMPORTANT: Must be HEX encoded (not base64!)
+   * Hash the UTF-8 JSON string, encode result as lowercase hex.
+   */
   documentHash: string;
   /** Code number (invoice/document reference) */
   codeNumber: string;
