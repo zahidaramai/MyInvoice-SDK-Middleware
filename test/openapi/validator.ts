@@ -98,28 +98,41 @@ function resolveRef(ref: string, spec: OpenAPISpec): unknown {
 
 /**
  * Recursively resolve all $refs in a schema
+ * Uses a visited set to prevent infinite recursion on circular references
  */
-function resolveAllRefs(schema: unknown, spec: OpenAPISpec): unknown {
+function resolveAllRefs(
+  schema: unknown,
+  spec: OpenAPISpec,
+  visited: Set<string> = new Set()
+): unknown {
   if (schema === null || typeof schema !== "object") {
     return schema;
   }
 
   if (Array.isArray(schema)) {
-    return schema.map((item) => resolveAllRefs(item, spec));
+    return schema.map((item) => resolveAllRefs(item, spec, visited));
   }
 
   const obj = schema as Record<string, unknown>;
 
   // Handle $ref
   if ("$ref" in obj && typeof obj.$ref === "string") {
-    const resolved = resolveRef(obj.$ref, spec);
-    return resolveAllRefs(resolved, spec);
+    const refPath = obj.$ref;
+
+    // Detect circular reference - return the $ref as-is to let validator handle it
+    if (visited.has(refPath)) {
+      return obj; // Return original $ref to avoid infinite loop
+    }
+
+    visited.add(refPath);
+    const resolved = resolveRef(refPath, spec);
+    return resolveAllRefs(resolved, spec, visited);
   }
 
   // Recursively resolve in object properties
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
-    result[key] = resolveAllRefs(value, spec);
+    result[key] = resolveAllRefs(value, spec, visited);
   }
 
   return result;

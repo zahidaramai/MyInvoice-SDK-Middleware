@@ -131,7 +131,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.message).toContain("onBehalfOf is required");
+      expect(body.error.messageEN).toContain("onBehalfOf is required");
     });
 
     it("returns 400 when TAXPAYER has onBehalfOf", async () => {
@@ -149,7 +149,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.message).toContain("not allowed for TAXPAYER");
+      expect(body.error.messageEN).toContain("not allowed for TAXPAYER");
     });
 
     it("returns 400 for missing clientId", async () => {
@@ -199,7 +199,7 @@ describe("Sessions Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.message).toContain("valid TIN");
+      expect(body.error.messageEN).toContain("valid TIN");
     });
   });
 
