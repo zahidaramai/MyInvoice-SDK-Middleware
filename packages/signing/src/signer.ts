@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import type { KeyObject } from 'crypto';
 import type { CertificateInfo, SignatureBlock, SigningResult } from './types.js';
-import { generateDocumentHash } from './hash.js';
+import { generateDocumentHash, canonicalizeDocument } from './hash.js';
 import { SignatureGenerationError } from './errors.js';
 
 /**
@@ -17,19 +17,44 @@ export const SIGNATURE_URIS = {
 } as const;
 
 /**
- * Create the SignedInfo structure for signing
+ * Create the SignedInfo structure in MyInvois UBL JSON array format
  */
-function createSignedInfo(digestValue: string): Record<string, unknown> {
-  return {
-    SignatureMethod: SIGNATURE_URIS.SIGNATURE_METHOD,
-    Reference: {
-      DigestMethod: SIGNATURE_URIS.DIGEST_METHOD,
-      DigestValue: digestValue,
-      Transforms: {
-        Transform: SIGNATURE_URIS.TRANSFORM
-      }
+function createSignedInfoUBL(digestValue: string, propsDigest: string, timestamp: string): unknown[] {
+  return [
+    {
+      SignatureMethod: [
+        {
+          _: '',
+          Algorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
+        }
+      ],
+      Reference: [
+        {
+          Id: `id-doc-signed-data-${timestamp}`,
+          URI: '',
+          Type: '',
+          DigestMethod: [
+            {
+              _: '',
+              Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
+            }
+          ],
+          DigestValue: [{ _: digestValue }]
+        },
+        {
+          URI: `#id-xades-signed-props-${timestamp}`,
+          Type: 'http://uri.etsi.org/01903/v1.3.2#SignedProperties',
+          DigestMethod: [
+            {
+              _: '',
+              Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
+            }
+          ],
+          DigestValue: [{ _: propsDigest }]
+        }
+      ]
     }
-  };
+  ];
 }
 
 /**
@@ -49,68 +74,153 @@ function signData(data: string, privateKey: KeyObject): string {
 }
 
 /**
- * Create the KeyInfo structure with certificate details
+ * Create the KeyInfo structure in MyInvois UBL JSON array format
  */
-function createKeyInfo(
+function createKeyInfoUBL(
   certPem: string,
   certInfo: CertificateInfo
-): Record<string, unknown> {
+): unknown[] {
   // Extract certificate content without headers
   const certContent = certPem
     .replace(/-----BEGIN CERTIFICATE-----/g, '')
     .replace(/-----END CERTIFICATE-----/g, '')
     .replace(/\s/g, '');
 
-  return {
-    X509Data: {
-      X509Certificate: certContent,
-      X509SubjectName: certInfo.subject.raw,
-      X509IssuerSerial: {
-        X509IssuerName: certInfo.issuer.raw,
-        X509SerialNumber: certInfo.serialNumber
-      }
-    }
-  };
-}
-
-/**
- * Create the QualifyingProperties structure
- */
-function createQualifyingProperties(signingTime: Date): Record<string, unknown> {
-  return {
-    QualifyingProperties: {
-      SignedProperties: {
-        SignedSignatureProperties: {
-          SigningTime: signingTime.toISOString()
-        },
-        SignedDataObjectProperties: {
-          DataObjectFormat: {
-            MimeType: 'text/json'
-          }
+  return [
+    {
+      X509Data: [
+        {
+          X509Certificate: [{ _: certContent }],
+          X509SubjectName: [{ _: certInfo.subject.raw }],
+          X509IssuerSerial: [
+            {
+              X509IssuerName: [{ _: certInfo.issuer.raw }],
+              X509SerialNumber: [{ _: certInfo.serialNumber }]
+            }
+          ]
         }
-      }
+      ]
     }
+  ];
+}
+
+/**
+ * Create the XadesQualifyingProperties structure in MyInvois UBL JSON array format
+ */
+function createXadesQualifyingPropertiesUBL(
+  signingTime: Date,
+  certDigestBase64: string,
+  certInfo: CertificateInfo,
+  timestamp: string
+): unknown[] {
+  return [
+    {
+      Target: `#DocSig-${timestamp}`,
+      SignedProperties: [
+        {
+          Id: `id-xades-signed-props-${timestamp}`,
+          SignedSignatureProperties: [
+            {
+              SigningTime: [{ _: signingTime.toISOString() }],
+              SigningCertificate: [
+                {
+                  Cert: [
+                    {
+                      CertDigest: [
+                        {
+                          DigestMethod: [
+                            {
+                              _: '',
+                              Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
+                            }
+                          ],
+                          DigestValue: [{ _: certDigestBase64 }]
+                        }
+                      ],
+                      IssuerSerial: [
+                        {
+                          X509IssuerName: [{ _: certInfo.issuer.raw }],
+                          X509SerialNumber: [{ _: certInfo.serialNumber }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ];
+}
+
+/**
+ * Create the SignedProperties structure for hashing (to generate propsDigest)
+ */
+function createSignedPropertiesForHashing(
+  signingTime: Date,
+  certDigestBase64: string,
+  certInfo: CertificateInfo,
+  timestamp: string
+): Record<string, unknown> {
+  return {
+    Id: `id-xades-signed-props-${timestamp}`,
+    SignedSignatureProperties: [
+      {
+        SigningTime: [{ _: signingTime.toISOString() }],
+        SigningCertificate: [
+          {
+            Cert: [
+              {
+                CertDigest: [
+                  {
+                    DigestMethod: [
+                      {
+                        _: '',
+                        Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
+                      }
+                    ],
+                    DigestValue: [{ _: certDigestBase64 }]
+                  }
+                ],
+                IssuerSerial: [
+                  {
+                    X509IssuerName: [{ _: certInfo.issuer.raw }],
+                    X509SerialNumber: [{ _: certInfo.serialNumber }]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
   };
 }
 
 /**
- * Create the complete signature block
+ * Create the complete signature block in MyInvois UBL JSON format
  */
 export function createSignatureBlock(
   digestValue: string,
+  propsDigest: string,
   signatureValue: string,
   certPem: string,
+  certDigestBase64: string,
   certInfo: CertificateInfo,
   signingTime: Date = new Date()
 ): SignatureBlock {
-  const signedInfo = createSignedInfo(digestValue);
-  const keyInfo = createKeyInfo(certPem, certInfo);
-  const qualifyingProperties = createQualifyingProperties(signingTime);
+  const timestamp = signingTime.getTime().toString();
+
+  const signedInfoUBL = createSignedInfoUBL(digestValue, propsDigest, timestamp);
+  const keyInfoUBL = createKeyInfoUBL(certPem, certInfo);
+  const xadesPropsUBL = createXadesQualifyingPropertiesUBL(signingTime, certDigestBase64, certInfo, timestamp);
 
   return {
-    signatureMethod: SIGNATURE_URIS.SIGNATURE_METHOD,
+    signatureMethod: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
     signatureValue,
-    digestMethod: SIGNATURE_URIS.DIGEST_METHOD,
+    digestMethod: 'http://www.w3.org/2001/04/xmlenc#sha256',
     digestValue,
     certificateInfo: {
       issuer: certInfo.issuer.raw,
@@ -119,54 +229,84 @@ export function createSignatureBlock(
     },
     signingTime: signingTime.toISOString(),
     _raw: {
-      Id: 'signature',
-      SignedInfo: signedInfo,
-      SignatureValue: signatureValue,
-      KeyInfo: keyInfo,
-      Object: qualifyingProperties
+      Id: `DocSig-${timestamp}`,
+      SignedInfo: signedInfoUBL,
+      SignatureValue: [{ _: signatureValue }],
+      KeyInfo: keyInfoUBL,
+      Object: [
+        {
+          QualifyingProperties: xadesPropsUBL
+        }
+      ]
     }
   };
 }
 
 /**
  * Create UBL Extensions structure with signature
+ * Uses MyInvois UBL JSON array-wrapped format: [{"_": value}] for simple values
  */
 export function createUBLExtensions(signatureBlock: SignatureBlock): Record<string, unknown> {
   return {
     UBLExtension: [
       {
-        ExtensionURI: SIGNATURE_URIS.EXTENSION_URI,
-        ExtensionContent: {
-          UBLDocumentSignatures: {
-            SignatureInformation: {
-              ID: SIGNATURE_URIS.SIGNATURE_ID,
-              ReferencedSignatureID: SIGNATURE_URIS.REFERENCED_SIGNATURE_ID,
-              Signature: signatureBlock._raw
-            }
+        ExtensionURI: [{ _: SIGNATURE_URIS.EXTENSION_URI }],
+        ExtensionContent: [
+          {
+            UBLDocumentSignatures: [
+              {
+                SignatureInformation: [
+                  {
+                    ID: [{ _: SIGNATURE_URIS.SIGNATURE_ID }],
+                    ReferencedSignatureID: [{ _: SIGNATURE_URIS.REFERENCED_SIGNATURE_ID }],
+                    Signature: [signatureBlock._raw]
+                  }
+                ]
+              }
+            ]
           }
-        }
+        ]
       }
     ]
   };
 }
 
 /**
+ * Create the Signature reference block for MyInvois
+ * This block is placed at the Invoice level (not in UBLExtensions) and
+ * acts as a reference pointer to the actual signature in UBLExtensions.
+ *
+ * Per MyInvois v1.1 requirements, both UBLExtensions (containing the full
+ * digital signature) AND this Signature reference block must be present.
+ */
+function createSignatureReferenceBlock(): Record<string, unknown> {
+  return {
+    ID: [{ _: SIGNATURE_URIS.REFERENCED_SIGNATURE_ID }],
+    SignatureMethod: [{ _: SIGNATURE_URIS.SIGNATURE_METHOD }]
+  };
+}
+
+/**
  * Inject signature into document
- * Places the UBLExtensions at the beginning of the document wrapper.
+ * Places the UBLExtensions at the beginning of the document wrapper
+ * and adds a Signature reference block.
  *
  * For MyInvois JSON format, documents are wrapped in arrays:
  * { "_D": "...", "_A": "...", "_B": "...", "Invoice": [{...}] }
  *
- * The UBLExtensions should be placed INSIDE the array element as the first property:
- * { "_D": "...", "_A": "...", "_B": "...", "Invoice": [{ "UBLExtensions": [{...}], ...rest }] }
+ * The UBLExtensions should be placed INSIDE the array element as the first property,
+ * and a Signature reference block is added to satisfy MyInvois v1.1 requirements:
+ * { "_D": "...", "_A": "...", "_B": "...", "Invoice": [{ "UBLExtensions": [{...}], ...rest, "Signature": [{...}] }] }
  */
 export function injectSignature(
   document: Record<string, unknown>,
   signatureBlock: SignatureBlock
 ): Record<string, unknown> {
   const extensions = createUBLExtensions(signatureBlock);
+  const signatureRef = createSignatureReferenceBlock();
 
-  // Helper to inject extensions into a document element
+  // Helper to inject extensions and signature reference into a document element
+  // Per MyInvois v1.1 spec, UBLExtensions and Signature must be at the END of the document
   const injectIntoElement = (
     element: unknown,
     _docType: string
@@ -174,10 +314,11 @@ export function injectSignature(
     // Handle array-wrapped documents (MyInvois format: Invoice: [{...}])
     if (Array.isArray(element) && element.length > 0) {
       const firstElement = element[0] as Record<string, unknown>;
-      // Place UBLExtensions as first property in the element
+      // Place UBLExtensions and Signature at end (after all document content)
       const signedElement = {
+        ...firstElement,
         UBLExtensions: [extensions],  // MyInvois expects UBLExtensions as array
-        ...firstElement
+        Signature: [signatureRef]     // MyInvois v1.1 requires Signature reference block
       };
       return [signedElement, ...element.slice(1)];
     }
@@ -185,8 +326,9 @@ export function injectSignature(
     // Handle object-wrapped documents (simple format: Invoice: {...})
     if (typeof element === 'object' && element !== null) {
       return {
+        ...(element as Record<string, unknown>),
         UBLExtensions: [extensions],  // MyInvois expects UBLExtensions as array
-        ...(element as Record<string, unknown>)
+        Signature: [signatureRef]     // MyInvois v1.1 requires Signature reference block
       };
     }
 
@@ -232,6 +374,22 @@ export function injectSignature(
 }
 
 /**
+ * Calculate SHA256 hash of certificate (DER format from PEM)
+ */
+function calculateCertificateDigest(certPem: string): string {
+  // Extract certificate content without headers
+  const certContent = certPem
+    .replace(/-----BEGIN CERTIFICATE-----/g, '')
+    .replace(/-----END CERTIFICATE-----/g, '')
+    .replace(/\s/g, '');
+
+  // Decode base64 to get DER bytes, then hash
+  const derBuffer = Buffer.from(certContent, 'base64');
+  const hash = crypto.createHash('sha256').update(derBuffer).digest();
+  return hash.toString('base64');
+}
+
+/**
  * Sign a document using RSA-SHA256
  *
  * @param document - The document to sign
@@ -248,24 +406,36 @@ export function sign(
   certInfo: CertificateInfo,
   signingTime: Date = new Date()
 ): SigningResult {
-  // Step 1: Generate document hash
+  const timestamp = signingTime.getTime().toString();
+
+  // Step 1: Generate document hash (SHA256 of canonicalized document, base64)
   const digestValue = generateDocumentHash(document);
 
-  // Step 2: Create SignedInfo and sign it
-  const signedInfo = createSignedInfo(digestValue);
-  const signedInfoJson = JSON.stringify(signedInfo);
-  const signatureValue = signData(signedInfoJson, privateKey);
+  // Step 2: Calculate certificate digest (SHA256 of DER certificate, base64)
+  const certDigestBase64 = calculateCertificateDigest(certPem);
 
-  // Step 3: Create signature block
+  // Step 3: Create SignedProperties and calculate its digest
+  const signedProps = createSignedPropertiesForHashing(signingTime, certDigestBase64, certInfo, timestamp);
+  const signedPropsJson = JSON.stringify(signedProps);
+  const propsDigest = crypto.createHash('sha256').update(signedPropsJson, 'utf8').digest('base64');
+
+  // Step 4: Sign the document bytes (canonicalized document)
+  // Per MyInvois, sign the minified document JSON, not SignedInfo
+  const docBytesToSign = canonicalizeDocument(document);
+  const signatureValue = signData(docBytesToSign, privateKey);
+
+  // Step 5: Create signature block
   const signatureBlock = createSignatureBlock(
     digestValue,
+    propsDigest,
     signatureValue,
     certPem,
+    certDigestBase64,
     certInfo,
     signingTime
   );
 
-  // Step 4: Inject signature into document
+  // Step 6: Inject signature into document
   const signedDocument = injectSignature(document, signatureBlock);
 
   return {
