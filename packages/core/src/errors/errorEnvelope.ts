@@ -106,7 +106,7 @@ export interface ErrorEnvelope {
   /** Internal error code (e.g., "DUPLICATE_SUBMISSION", "INVALID_TAXPAYER") */
   code: ErrorCode | string;
   /** Human-readable English message */
-  message: string;
+  messageEN: string;
   /** HTTP status code to send to client */
   httpStatus: number;
   /** Whether clients should automatically retry this request */
@@ -132,7 +132,7 @@ export interface ErrorEnvelope {
  */
 export interface ErrorEnvelopeDetail {
   code: string;
-  message: string;
+  messageEN: string;
   field?: string;
   propertyPath?: string;
 }
@@ -161,13 +161,13 @@ export const MyInvoisValidationSteps = {
  */
 export function createErrorEnvelope(
   code: ErrorCode | string,
-  message: string,
+  messageEN: string,
   httpStatus: number,
-  options: Partial<Omit<ErrorEnvelope, "code" | "message" | "httpStatus">> = {}
+  options: Partial<Omit<ErrorEnvelope, "code" | "messageEN" | "httpStatus">> = {}
 ): ErrorEnvelope {
   return {
     code,
-    message,
+    messageEN,
     httpStatus,
     retryable: options.retryable ?? false,
     ...options,

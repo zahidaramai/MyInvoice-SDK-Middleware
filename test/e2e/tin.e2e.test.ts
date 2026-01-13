@@ -34,7 +34,7 @@ describe("E2E: TIN Validation", () => {
       url: "/v1/sessions",
       payload: createTaxpayerSession(),
     });
-    sessionId = response.json().sessionId;
+    sessionId = response.json().id;
 
     // Set up valid TINs in mock state
     mockState.addValidTin({
@@ -62,8 +62,7 @@ describe("E2E: TIN Validation", () => {
     it("returns valid=true for a valid TIN", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -77,8 +76,7 @@ describe("E2E: TIN Validation", () => {
     it("returns valid=false for an invalid TIN", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=INVALID123&idType=BRN&idValue=999999999999",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=INVALID123&idType=BRN&idValue=999999999999&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -92,8 +90,7 @@ describe("E2E: TIN Validation", () => {
     it("validates individual TIN with NRIC", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=IG12345678901&idType=NRIC&idValue=880101015001",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=IG12345678901&idType=NRIC&idValue=880101015001&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -107,14 +104,13 @@ describe("E2E: TIN Validation", () => {
       // Missing idValue
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(400);
     });
 
-    it("requires x-session-id header", async () => {
+    it("requires sessionId query param", async () => {
       const response = await app.inject({
         method: "GET",
         url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
@@ -126,8 +122,7 @@ describe("E2E: TIN Validation", () => {
     it("validates idType enum", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=INVALID&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=INVALID&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(400);
@@ -139,8 +134,7 @@ describe("E2E: TIN Validation", () => {
       // First request - MISS (goes to upstream)
       const response1 = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       expect(response1.statusCode).toBe(200);
@@ -155,8 +149,7 @@ describe("E2E: TIN Validation", () => {
 
       const response2 = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       // If caching works, this should succeed despite rate limit
@@ -169,8 +162,7 @@ describe("E2E: TIN Validation", () => {
       // First session validates TIN
       await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       // Create a new session
@@ -179,7 +171,7 @@ describe("E2E: TIN Validation", () => {
         url: "/v1/sessions",
         payload: createTaxpayerSession({ clientId: "different-client" }),
       });
-      const newSessionId = newSessionResponse.json().sessionId;
+      const newSessionId = newSessionResponse.json().id;
 
       // Set rate limit to verify new request goes upstream
       mockState.setRateLimited("validateTin");
@@ -187,8 +179,7 @@ describe("E2E: TIN Validation", () => {
       // New session should NOT use cache from first session
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": newSessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${newSessionId}`,
       });
 
       // Should hit rate limit since cache is session-scoped
@@ -200,8 +191,7 @@ describe("E2E: TIN Validation", () => {
     it("does not expose raw idValue in response", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -220,8 +210,7 @@ describe("E2E: TIN Validation", () => {
 
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=NEWTIN123&idType=BRN&idValue=999999999999",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=NEWTIN123&idType=BRN&idValue=999999999999&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(429);
@@ -240,8 +229,7 @@ describe("E2E: TIN Validation", () => {
       it(`accepts idType=${idType}`, async () => {
         const response = await app.inject({
           method: "GET",
-          url: `/v1/tin/validate?tin=TEST123&idType=${idType}&idValue=TESTVALUE`,
-          headers: { "x-session-id": sessionId },
+          url: `/v1/tin/validate?tin=TEST123&idType=${idType}&idValue=TESTVALUE&sessionId=${sessionId}`,
         });
 
         // Should not reject based on idType

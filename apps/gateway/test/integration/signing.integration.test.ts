@@ -74,7 +74,7 @@ describe("signing integration", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.message).toContain("documentVersion");
+      expect(body.error.messageEN).toContain("documentVersion");
     });
 
     it("returns session with document version", async () => {
@@ -177,7 +177,7 @@ describe("signing integration", () => {
 
       expect(body).toHaveProperty("error");
       expect(body.error).toHaveProperty("code");
-      expect(body.error).toHaveProperty("message");
+      expect(body.error).toHaveProperty("messageEN");
       expect(body.error).toHaveProperty("httpStatus");
       expect(body.error).toHaveProperty("retryable");
     });

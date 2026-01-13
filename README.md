@@ -289,8 +289,10 @@ For MyInvois v1.1 document signing, you need an X.509 certificate and private ke
 | `SIGNING_CERT_BASE64` | Yes* | - | Base64-encoded certificate (alternative to file) |
 | `SIGNING_KEY_BASE64` | Yes* | - | Base64-encoded private key (alternative to file) |
 | `SIGNING_KEY_PASSPHRASE` | No | - | Passphrase for encrypted private key |
+| `SIGNING_PKCS12_PATH` | Yes* | - | Path to PKCS#12 (.p12/.pfx) file |
+| `SIGNING_PKCS12_PASSPHRASE` | No | - | Passphrase for PKCS#12 file |
 
-*One of `SIGNING_CERT_PATH` or `SIGNING_CERT_BASE64` is required for v1.1 submissions.
+*One of `SIGNING_CERT_PATH`, `SIGNING_CERT_BASE64`, or `SIGNING_PKCS12_PATH` is required for v1.1 submissions.
 
 #### Certificate Setup
 
@@ -323,17 +325,45 @@ For MyInvois v1.1 document signing, you need an X.509 certificate and private ke
    SIGNING_KEY_BASE64=LS0tLS1CRUdJTi...
    ```
 
+5. **Or Configure via PKCS#12** (.p12/.pfx file):
+
+   PKCS#12 is a common format that bundles the certificate and private key in a single encrypted file. This is often provided by certificate authorities or exported from Windows Certificate Manager.
+
+   ```env
+   SIGNING_ENABLED=true
+   SIGNING_DEFAULT_VERSION=1.1
+   SIGNING_PKCS12_PATH=/app/certs/certificate.p12
+   SIGNING_PKCS12_PASSPHRASE=your-p12-password
+   ```
+
+   **Converting PKCS#12 to PEM** (if needed):
+   ```bash
+   # Extract certificate
+   openssl pkcs12 -in certificate.p12 -clcerts -nokeys -out cert.pem
+
+   # Extract private key
+   openssl pkcs12 -in certificate.p12 -nocerts -nodes -out key.pem
+   ```
+
+   **Creating PKCS#12 from PEM files**:
+   ```bash
+   openssl pkcs12 -export -out certificate.p12 \
+     -inkey key.pem -in cert.pem \
+     -passout pass:your-p12-password
+   ```
+
 #### Certificate Requirements
 
 | Requirement | Value |
 |-------------|-------|
-| Format | PEM (-----BEGIN CERTIFICATE-----) |
+| Format | PEM (-----BEGIN CERTIFICATE-----) or PKCS#12 (.p12/.pfx) |
 | Key Type | RSA (2048-bit or higher recommended) |
 | Signature Algorithm | SHA-256 or higher |
 | Validity | Must be valid (not expired, not future-dated) |
 
 #### Verifying Your Certificate
 
+**PEM format:**
 ```bash
 # Check certificate details
 openssl x509 -in cert.pem -text -noout
@@ -342,6 +372,18 @@ openssl x509 -in cert.pem -text -noout
 openssl x509 -in cert.pem -pubkey -noout | md5
 openssl rsa -in key.pem -pubout 2>/dev/null | md5
 # Both should output the same hash
+```
+
+**PKCS#12 format:**
+```bash
+# View certificate details from .p12 file
+openssl pkcs12 -in certificate.p12 -nokeys -clcerts | openssl x509 -text -noout
+
+# List contents of .p12 file
+openssl pkcs12 -in certificate.p12 -info -noout
+
+# Verify .p12 file is valid (prompts for password)
+openssl pkcs12 -in certificate.p12 -passin pass:your-password -info
 ```
 
 ---
@@ -850,66 +892,534 @@ const submission = await submissionsApi.submitDocuments(
 
 ## Deployment
 
-### Docker
+This section provides step-by-step deployment guides for different architectures.
 
-```dockerfile
-# Build
-docker build -t myinvois-gateway .
+### Deployment Options Overview
 
-# Run
-docker run -p 3000:3000 \
-  -e DATABASE_URL=postgresql://... \
-  -e REDIS_URL=redis://... \
-  -e MYINVOIS_CLIENT_ID=... \
-  myinvois-gateway
+| Architecture | Best For | Complexity | Scalability |
+|--------------|----------|------------|-------------|
+| **Monolith** | Small teams, startups, MVPs | Low | Vertical |
+| **Microservices** | Enterprise, high-traffic | Medium-High | Horizontal |
+
+---
+
+### Option 1: Monolith Deployment (Single Server)
+
+Deploy the gateway and worker as a single unit on one server. Ideal for:
+- Small to medium businesses (< 10,000 invoices/month)
+- Development and staging environments
+- Quick proof-of-concept deployments
+
+#### Step 1: Prepare Your Server
+
+```bash
+# Requirements: Ubuntu 22.04+ or similar Linux
+# Minimum: 2 CPU cores, 4GB RAM, 20GB SSD
+
+# Install Node.js 22.x
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install pnpm
+npm install -g pnpm
+
+# Install Docker and Docker Compose
+sudo apt-get install -y docker.io docker-compose-plugin
+sudo usermod -aG docker $USER
 ```
 
-### Docker Compose (Production)
+#### Step 2: Clone and Configure
 
-```yaml
+```bash
+# Clone the repository
+git clone https://github.com/zahidaramai/MyInvoice-SDK-Middleware.git
+cd myinvois-middleware
+
+# Install dependencies
+pnpm install
+
+# Create production environment file
+cp .env.example .env.production
+```
+
+#### Step 3: Configure Environment Variables
+
+Edit `.env.production`:
+
+```env
+# Server Configuration
+NODE_ENV=production
+PORT=3000
+HOST=0.0.0.0
+LOG_LEVEL=info
+
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://myinvois:your-secure-password@localhost:5432/myinvois_prod
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# MyInvois Credentials (from LHDN portal)
+MYINVOIS_CLIENT_ID=your-client-id
+MYINVOIS_CLIENT_SECRET_1=your-primary-secret
+MYINVOIS_CLIENT_SECRET_2=your-backup-secret
+MYINVOIS_ENV=PROD
+MYINVOIS_SUPPLIER_TIN=your-tin
+MYINVOIS_SUPPLIER_ID_TYPE=BRN
+MYINVOIS_SUPPLIER_ID_VALUE=your-brn
+
+# Document Signing (v1.1)
+SIGNING_ENABLED=true
+SIGNING_DEFAULT_VERSION=1.1
+SIGNING_PKCS12_PATH=/opt/myinvois/certs/certificate.p12
+SIGNING_PKCS12_PASSPHRASE=your-cert-password
+
+# Metrics
+METRICS_ENABLED=true
+```
+
+#### Step 4: Start Infrastructure Services
+
+```bash
+# Create docker-compose.monolith.yml
+cat > docker-compose.monolith.yml << 'EOF'
 version: '3.8'
 services:
-  gateway:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/myinvois
-      - REDIS_URL=redis://redis:6379
-      - MYINVOIS_CLIENT_ID=${MYINVOIS_CLIENT_ID}
-      - MYINVOIS_CLIENT_SECRET_1=${MYINVOIS_CLIENT_SECRET_1}
-      - MYINVOIS_ENV=PROD
-    depends_on:
-      - db
-      - redis
-
-  worker:
-    build: .
-    command: node apps/worker/dist/index.js
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/myinvois
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - db
-      - redis
-
   db:
     image: postgres:16-alpine
+    container_name: myinvois-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: myinvois_prod
+      POSTGRES_USER: myinvois
+      POSTGRES_PASSWORD: your-secure-password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=myinvois
-      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myinvois"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
+    container_name: myinvois-redis
+    restart: always
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
   redis_data:
+EOF
+
+# Start database and Redis
+docker compose -f docker-compose.monolith.yml up -d
+
+# Wait for services to be ready
+sleep 10
+docker compose -f docker-compose.monolith.yml ps
 ```
+
+#### Step 5: Build and Deploy Application
+
+```bash
+# Build the application
+pnpm build
+
+# Run database migrations
+DATABASE_URL=postgresql://myinvois:your-secure-password@localhost:5432/myinvois_prod \
+  pnpm --filter @myinvois/storage prisma migrate deploy
+
+# Create systemd service for Gateway
+sudo cat > /etc/systemd/system/myinvois-gateway.service << 'EOF'
+[Unit]
+Description=MyInvois Gateway
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/myinvois
+EnvironmentFile=/opt/myinvois/.env.production
+ExecStart=/usr/bin/node /opt/myinvois/apps/gateway/dist/server.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Create systemd service for Worker
+sudo cat > /etc/systemd/system/myinvois-worker.service << 'EOF'
+[Unit]
+Description=MyInvois Worker
+After=network.target myinvois-gateway.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/myinvois
+EnvironmentFile=/opt/myinvois/.env.production
+ExecStart=/usr/bin/node /opt/myinvois/apps/worker/dist/index.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start services
+sudo systemctl daemon-reload
+sudo systemctl enable myinvois-gateway myinvois-worker
+sudo systemctl start myinvois-gateway myinvois-worker
+```
+
+#### Step 6: Configure Nginx Reverse Proxy (Optional but Recommended)
+
+```bash
+# Install Nginx
+sudo apt-get install -y nginx
+
+# Configure Nginx
+sudo cat > /etc/nginx/sites-available/myinvois << 'EOF'
+upstream myinvois_gateway {
+    server 127.0.0.1:3000;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    # SSL Configuration (use Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://myinvois_gateway;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 300s;
+    }
+
+    # Health check endpoints (no auth)
+    location /healthz {
+        proxy_pass http://myinvois_gateway/healthz;
+    }
+
+    location /readyz {
+        proxy_pass http://myinvois_gateway/readyz;
+    }
+}
+EOF
+
+sudo ln -sf /etc/nginx/sites-available/myinvois /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+#### Step 7: Verify Deployment
+
+```bash
+# Check service status
+sudo systemctl status myinvois-gateway
+sudo systemctl status myinvois-worker
+
+# Test health endpoints
+curl http://localhost:3000/healthz
+curl http://localhost:3000/readyz
+curl http://localhost:3000/version
+
+# View logs
+sudo journalctl -u myinvois-gateway -f
+sudo journalctl -u myinvois-worker -f
+```
+
+---
+
+### Option 2: Microservices Deployment (Kubernetes)
+
+Deploy as containerized microservices for high availability and horizontal scaling. Ideal for:
+- Enterprise deployments (> 100,000 invoices/month)
+- Multi-region deployments
+- Teams with Kubernetes expertise
+
+#### Step 1: Build Docker Images
+
+```dockerfile
+# Dockerfile
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages ./packages
+COPY apps ./apps
+
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN pnpm build
+
+# Gateway image
+FROM node:22-alpine AS gateway
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/gateway ./apps/gateway
+EXPOSE 3000
+CMD ["node", "apps/gateway/dist/server.js"]
+
+# Worker image
+FROM node:22-alpine AS worker
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/worker ./apps/worker
+CMD ["node", "apps/worker/dist/index.js"]
+```
+
+```bash
+# Build and push images
+docker build --target gateway -t your-registry/myinvois-gateway:1.1.0 .
+docker build --target worker -t your-registry/myinvois-worker:1.1.0 .
+docker push your-registry/myinvois-gateway:1.1.0
+docker push your-registry/myinvois-worker:1.1.0
+```
+
+#### Step 2: Create Kubernetes Secrets
+
+```yaml
+# k8s/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myinvois-secrets
+  namespace: myinvois
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://myinvois:password@postgres-service:5432/myinvois"
+  REDIS_URL: "redis://redis-service:6379"
+  MYINVOIS_CLIENT_ID: "your-client-id"
+  MYINVOIS_CLIENT_SECRET_1: "your-primary-secret"
+  MYINVOIS_CLIENT_SECRET_2: "your-backup-secret"
+  SIGNING_PKCS12_PASSPHRASE: "your-cert-password"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myinvois-certs
+  namespace: myinvois
+type: Opaque
+data:
+  certificate.p12: <base64-encoded-p12-file>
+```
+
+#### Step 3: Deploy Gateway Service
+
+```yaml
+# k8s/gateway-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myinvois-gateway
+  namespace: myinvois
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myinvois-gateway
+  template:
+    metadata:
+      labels:
+        app: myinvois-gateway
+    spec:
+      containers:
+        - name: gateway
+          image: your-registry/myinvois-gateway:1.1.0
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: myinvois-secrets
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: SIGNING_ENABLED
+              value: "true"
+            - name: SIGNING_DEFAULT_VERSION
+              value: "1.1"
+            - name: SIGNING_PKCS12_PATH
+              value: "/certs/certificate.p12"
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: certs
+          secret:
+            secretName: myinvois-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myinvois-gateway
+  namespace: myinvois
+spec:
+  selector:
+    app: myinvois-gateway
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: myinvois-gateway-hpa
+  namespace: myinvois
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myinvois-gateway
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+```
+
+#### Step 4: Deploy Worker Service
+
+```yaml
+# k8s/worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myinvois-worker
+  namespace: myinvois
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myinvois-worker
+  template:
+    metadata:
+      labels:
+        app: myinvois-worker
+    spec:
+      containers:
+        - name: worker
+          image: your-registry/myinvois-worker:1.1.0
+          envFrom:
+            - secretRef:
+                name: myinvois-secrets
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+```
+
+#### Step 5: Deploy Ingress
+
+```yaml
+# k8s/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myinvois-ingress
+  namespace: myinvois
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - api.your-domain.com
+      secretName: myinvois-tls
+  rules:
+    - host: api.your-domain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myinvois-gateway
+                port:
+                  number: 80
+```
+
+#### Step 6: Apply Kubernetes Resources
+
+```bash
+# Create namespace
+kubectl create namespace myinvois
+
+# Apply all resources
+kubectl apply -f k8s/secrets.yaml
+kubectl apply -f k8s/gateway-deployment.yaml
+kubectl apply -f k8s/worker-deployment.yaml
+kubectl apply -f k8s/ingress.yaml
+
+# Verify deployment
+kubectl get pods -n myinvois
+kubectl get services -n myinvois
+kubectl logs -n myinvois -l app=myinvois-gateway -f
+```
+
+---
 
 ### Health Checks
 
@@ -917,6 +1427,797 @@ Configure your orchestrator to use:
 
 - **Liveness**: `GET /healthz` - Returns 200 if process is alive
 - **Readiness**: `GET /readyz` - Returns 200 if DB and Redis are connected
+
+---
+
+## Integration Guide
+
+This section explains how to integrate the MyInvois middleware with your existing applications.
+
+### Integration Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Your Application                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────────────┐   │
+│  │ React/Vue/    │  │ NestJS/       │  │ PHP/Python/           │   │
+│  │ Angular       │  │ Express       │  │ Java/.NET             │   │
+│  │ Frontend      │  │ Backend       │  │ Backend               │   │
+│  └───────┬───────┘  └───────┬───────┘  └───────────┬───────────┘   │
+│          │                  │                      │                │
+│          └──────────────────┼──────────────────────┘                │
+│                             │                                        │
+│                    HTTP/REST API Calls                              │
+│                             │                                        │
+└─────────────────────────────┼───────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   MyInvois Middleware Gateway                        │
+│                   http://localhost:3000 (or your domain)            │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### React Frontend Integration
+
+#### Step 1: Install HTTP Client
+
+```bash
+npm install axios
+# or
+yarn add axios
+```
+
+#### Step 2: Create API Service
+
+```typescript
+// src/services/myinvois.service.ts
+import axios, { AxiosInstance, AxiosError } from 'axios';
+
+interface Session {
+  id: string;
+  env: 'SANDBOX' | 'PROD';
+  mode: 'TAXPAYER' | 'INTERMEDIARY';
+  expiresAt: string;
+}
+
+interface SubmissionResult {
+  trackingId: string;
+  submissionUid: string;
+  status: string;
+  acceptedDocuments: Array<{ codeNumber: string; uuid: string }>;
+  rejectedDocuments: Array<{ codeNumber: string; error: any }>;
+}
+
+interface ErrorEnvelope {
+  error: {
+    code: string;
+    messageEN: string;
+    httpStatus: number;
+    retryable: boolean;
+    retryAfterSeconds?: number;
+  };
+}
+
+class MyInvoisService {
+  private api: AxiosInstance;
+  private sessionId: string | null = null;
+
+  constructor(baseURL: string = 'http://localhost:3000') {
+    this.api = axios.create({
+      baseURL,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Response interceptor for error handling
+    this.api.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError<ErrorEnvelope>) => {
+        if (error.response?.data?.error) {
+          const err = error.response.data.error;
+          console.error(`[MyInvois Error] ${err.code}: ${err.messageEN}`);
+
+          // Handle retryable errors
+          if (err.retryable && err.retryAfterSeconds) {
+            console.log(`Retry after ${err.retryAfterSeconds} seconds`);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  // Create a session (call once on app init or login)
+  async createSession(credentials: {
+    clientId: string;
+    clientSecret: string;
+    env: 'SANDBOX' | 'PROD';
+    mode: 'TAXPAYER' | 'INTERMEDIARY';
+    onBehalfOf?: string;
+  }): Promise<Session> {
+    const response = await this.api.post<Session>('/v1/sessions', credentials);
+    this.sessionId = response.data.id;
+    return response.data;
+  }
+
+  // Submit an invoice
+  async submitInvoice(invoice: {
+    format: 'JSON' | 'XML';
+    document: string; // Base64 encoded
+    documentHash: string; // SHA256 hash
+    codeNumber: string;
+  }): Promise<SubmissionResult> {
+    if (!this.sessionId) {
+      throw new Error('Session not created. Call createSession first.');
+    }
+
+    const response = await this.api.post<SubmissionResult>(
+      '/v1/submissions',
+      {
+        sessionId: this.sessionId,
+        documents: [invoice],
+      }
+    );
+    return response.data;
+  }
+
+  // Check submission status
+  async getSubmissionStatus(trackingId: string): Promise<SubmissionResult> {
+    const response = await this.api.get<SubmissionResult>(
+      `/v1/submissions/${trackingId}`,
+      { params: { sessionId: this.sessionId } }
+    );
+    return response.data;
+  }
+
+  // Validate a TIN
+  async validateTin(tin: string, idType: string, idValue: string): Promise<{
+    valid: boolean;
+    name?: string;
+  }> {
+    const response = await this.api.get('/v1/tin/validate', {
+      params: { tin, idType, idValue, sessionId: this.sessionId },
+    });
+    return response.data;
+  }
+
+  // Cancel a document
+  async cancelDocument(uuid: string, reason: string): Promise<void> {
+    await this.api.post(`/v1/documents/${uuid}/cancel`, {
+      sessionId: this.sessionId,
+      reason,
+    });
+  }
+
+  // Get session ID
+  getSessionId(): string | null {
+    return this.sessionId;
+  }
+}
+
+export const myInvoisService = new MyInvoisService(
+  process.env.REACT_APP_MYINVOIS_URL || 'http://localhost:3000'
+);
+```
+
+#### Step 3: Create React Hook
+
+```typescript
+// src/hooks/useMyInvois.ts
+import { useState, useCallback } from 'react';
+import { myInvoisService } from '../services/myinvois.service';
+
+export function useMyInvois() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submitInvoice = useCallback(async (invoiceData: any) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Convert invoice to base64 and calculate hash
+      const jsonString = JSON.stringify(invoiceData);
+      const document = btoa(jsonString);
+      const hashBuffer = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(jsonString)
+      );
+      const documentHash = Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+
+      const result = await myInvoisService.submitInvoice({
+        format: 'JSON',
+        document,
+        documentHash,
+        codeNumber: invoiceData.ID || `INV-${Date.now()}`,
+      });
+
+      return result;
+    } catch (err: any) {
+      const message = err.response?.data?.error?.messageEN || err.message;
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const validateTin = useCallback(async (tin: string, idType: string, idValue: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      return await myInvoisService.validateTin(tin, idType, idValue);
+    } catch (err: any) {
+      const message = err.response?.data?.error?.messageEN || err.message;
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    submitInvoice,
+    validateTin,
+    getSessionId: myInvoisService.getSessionId.bind(myInvoisService),
+  };
+}
+```
+
+#### Step 4: Use in Component
+
+```tsx
+// src/components/InvoiceForm.tsx
+import React, { useState } from 'react';
+import { useMyInvois } from '../hooks/useMyInvois';
+
+export function InvoiceForm() {
+  const { submitInvoice, loading, error } = useMyInvois();
+  const [result, setResult] = useState<any>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const invoiceData = {
+      ID: `INV-${Date.now()}`,
+      IssueDate: new Date().toISOString().split('T')[0],
+      InvoiceTypeCode: '01', // Standard invoice
+      // ... your UBL invoice structure
+    };
+
+    try {
+      const response = await submitInvoice(invoiceData);
+      setResult(response);
+      alert(`Invoice submitted! Tracking ID: ${response.trackingId}`);
+    } catch (err) {
+      console.error('Submission failed:', err);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      <button type="submit" disabled={loading}>
+        {loading ? 'Submitting...' : 'Submit Invoice'}
+      </button>
+      {error && <p className="error">{error}</p>}
+      {result && (
+        <div className="result">
+          <p>Tracking ID: {result.trackingId}</p>
+          <p>Status: {result.status}</p>
+        </div>
+      )}
+    </form>
+  );
+}
+```
+
+---
+
+### NestJS Backend Integration
+
+#### Step 1: Install Dependencies
+
+```bash
+npm install axios @nestjs/config class-validator class-transformer
+```
+
+#### Step 2: Create MyInvois Module
+
+```typescript
+// src/myinvois/myinvois.module.ts
+import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+import { MyInvoisService } from './myinvois.service';
+import { MyInvoisController } from './myinvois.controller';
+
+@Module({
+  imports: [
+    HttpModule.register({
+      timeout: 30000,
+      maxRedirects: 5,
+    }),
+    ConfigModule,
+  ],
+  controllers: [MyInvoisController],
+  providers: [MyInvoisService],
+  exports: [MyInvoisService],
+})
+export class MyInvoisModule {}
+```
+
+#### Step 3: Create MyInvois Service
+
+```typescript
+// src/myinvois/myinvois.service.ts
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom, catchError } from 'rxjs';
+import { AxiosError } from 'axios';
+import * as crypto from 'crypto';
+
+interface Session {
+  id: string;
+  env: string;
+  mode: string;
+  expiresAt: string;
+}
+
+interface SubmissionResult {
+  trackingId: string;
+  submissionUid: string;
+  status: string;
+  acceptedDocuments: Array<{ codeNumber: string; uuid: string }>;
+  rejectedDocuments: Array<{ codeNumber: string; error: any }>;
+}
+
+@Injectable()
+export class MyInvoisService implements OnModuleInit {
+  private readonly logger = new Logger(MyInvoisService.name);
+  private readonly baseUrl: string;
+  private sessionId: string | null = null;
+  private sessionExpiresAt: Date | null = null;
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.baseUrl = this.configService.get<string>(
+      'MYINVOIS_MIDDLEWARE_URL',
+      'http://localhost:3000',
+    );
+  }
+
+  async onModuleInit() {
+    // Initialize session on module startup
+    await this.ensureSession();
+  }
+
+  private async ensureSession(): Promise<string> {
+    // Check if session exists and is valid (with 5-minute buffer)
+    if (
+      this.sessionId &&
+      this.sessionExpiresAt &&
+      this.sessionExpiresAt > new Date(Date.now() + 5 * 60 * 1000)
+    ) {
+      return this.sessionId;
+    }
+
+    this.logger.log('Creating new MyInvois session...');
+
+    const session = await this.createSession({
+      clientId: this.configService.getOrThrow('MYINVOIS_CLIENT_ID'),
+      clientSecret: this.configService.getOrThrow('MYINVOIS_CLIENT_SECRET'),
+      env: this.configService.get('MYINVOIS_ENV', 'SANDBOX') as 'SANDBOX' | 'PROD',
+      mode: 'TAXPAYER',
+    });
+
+    this.sessionId = session.id;
+    this.sessionExpiresAt = new Date(session.expiresAt);
+    this.logger.log(`Session created: ${this.sessionId}`);
+
+    return this.sessionId;
+  }
+
+  async createSession(credentials: {
+    clientId: string;
+    clientSecret: string;
+    env: 'SANDBOX' | 'PROD';
+    mode: 'TAXPAYER' | 'INTERMEDIARY';
+    onBehalfOf?: string;
+  }): Promise<Session> {
+    const response = await firstValueFrom(
+      this.httpService.post<Session>(`${this.baseUrl}/v1/sessions`, credentials).pipe(
+        catchError((error: AxiosError) => {
+          this.logger.error('Failed to create session', error.response?.data);
+          throw error;
+        }),
+      ),
+    );
+    return response.data;
+  }
+
+  async submitInvoice(invoiceData: {
+    invoiceNumber: string;
+    ublDocument: object;
+  }): Promise<SubmissionResult> {
+    const sessionId = await this.ensureSession();
+
+    // Serialize and encode document
+    const jsonString = JSON.stringify(invoiceData.ublDocument);
+    const document = Buffer.from(jsonString).toString('base64');
+    const documentHash = crypto.createHash('sha256').update(jsonString).digest('hex');
+
+    const response = await firstValueFrom(
+      this.httpService
+        .post<SubmissionResult>(`${this.baseUrl}/v1/submissions`, {
+          sessionId,
+          documents: [
+            {
+              format: 'JSON',
+              document,
+              documentHash,
+              codeNumber: invoiceData.invoiceNumber,
+            },
+          ],
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error('Failed to submit invoice', error.response?.data);
+            throw error;
+          }),
+        ),
+    );
+
+    return response.data;
+  }
+
+  async getSubmissionStatus(trackingId: string): Promise<SubmissionResult> {
+    const sessionId = await this.ensureSession();
+
+    const response = await firstValueFrom(
+      this.httpService
+        .get<SubmissionResult>(`${this.baseUrl}/v1/submissions/${trackingId}`, {
+          params: { sessionId },
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error('Failed to get submission status', error.response?.data);
+            throw error;
+          }),
+        ),
+    );
+
+    return response.data;
+  }
+
+  async validateTin(
+    tin: string,
+    idType: 'NRIC' | 'BRN' | 'PASSPORT' | 'ARMY',
+    idValue: string,
+  ): Promise<{ valid: boolean; name?: string }> {
+    const sessionId = await this.ensureSession();
+
+    const response = await firstValueFrom(
+      this.httpService
+        .get(`${this.baseUrl}/v1/tin/validate`, {
+          params: { tin, idType, idValue, sessionId },
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error('Failed to validate TIN', error.response?.data);
+            throw error;
+          }),
+        ),
+    );
+
+    return response.data;
+  }
+
+  async cancelDocument(uuid: string, reason: string): Promise<void> {
+    const sessionId = await this.ensureSession();
+
+    await firstValueFrom(
+      this.httpService
+        .post(`${this.baseUrl}/v1/documents/${uuid}/cancel`, {
+          sessionId,
+          reason,
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error('Failed to cancel document', error.response?.data);
+            throw error;
+          }),
+        ),
+    );
+  }
+}
+```
+
+#### Step 4: Create Controller
+
+```typescript
+// src/myinvois/myinvois.controller.ts
+import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import { MyInvoisService } from './myinvois.service';
+
+class SubmitInvoiceDto {
+  invoiceNumber: string;
+  ublDocument: object;
+}
+
+class ValidateTinDto {
+  tin: string;
+  idType: 'NRIC' | 'BRN' | 'PASSPORT' | 'ARMY';
+  idValue: string;
+}
+
+@Controller('invoices')
+export class MyInvoisController {
+  constructor(private readonly myInvoisService: MyInvoisService) {}
+
+  @Post('submit')
+  async submitInvoice(@Body() dto: SubmitInvoiceDto) {
+    return this.myInvoisService.submitInvoice({
+      invoiceNumber: dto.invoiceNumber,
+      ublDocument: dto.ublDocument,
+    });
+  }
+
+  @Get('status/:trackingId')
+  async getStatus(@Param('trackingId') trackingId: string) {
+    return this.myInvoisService.getSubmissionStatus(trackingId);
+  }
+
+  @Get('validate-tin')
+  async validateTin(@Query() query: ValidateTinDto) {
+    return this.myInvoisService.validateTin(query.tin, query.idType, query.idValue);
+  }
+
+  @Post(':uuid/cancel')
+  async cancelInvoice(
+    @Param('uuid') uuid: string,
+    @Body('reason') reason: string,
+  ) {
+    await this.myInvoisService.cancelDocument(uuid, reason);
+    return { success: true };
+  }
+}
+```
+
+#### Step 5: Add Environment Configuration
+
+```typescript
+// src/app.module.ts
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MyInvoisModule } from './myinvois/myinvois.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.local', '.env'],
+    }),
+    MyInvoisModule,
+  ],
+})
+export class AppModule {}
+```
+
+```env
+# .env
+MYINVOIS_MIDDLEWARE_URL=http://localhost:3000
+MYINVOIS_CLIENT_ID=your-client-id
+MYINVOIS_CLIENT_SECRET=your-client-secret
+MYINVOIS_ENV=SANDBOX
+```
+
+---
+
+### Generic HTTP Integration (Any Platform)
+
+For any platform or language, integrate using standard HTTP requests:
+
+#### API Flow
+
+```
+1. Create Session (POST /v1/sessions)
+   ↓
+2. Store session ID
+   ↓
+3. Submit Invoice (POST /v1/submissions with sessionId)
+   ↓
+4. Poll Status (GET /v1/submissions/{trackingId})
+   ↓
+5. Handle Result (success or retry)
+```
+
+#### cURL Examples
+
+```bash
+# 1. Create a session
+SESSION_RESPONSE=$(curl -s -X POST http://localhost:3000/v1/sessions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clientId": "your-client-id",
+    "clientSecret": "your-client-secret",
+    "env": "SANDBOX",
+    "mode": "TAXPAYER"
+  }')
+
+SESSION_ID=$(echo $SESSION_RESPONSE | jq -r '.id')
+echo "Session ID: $SESSION_ID"
+
+# 2. Submit an invoice
+INVOICE_JSON='{"ID":"INV-001","IssueDate":"2024-01-15"}'
+DOCUMENT_BASE64=$(echo -n $INVOICE_JSON | base64)
+DOCUMENT_HASH=$(echo -n $INVOICE_JSON | sha256sum | cut -d' ' -f1)
+
+SUBMISSION_RESPONSE=$(curl -s -X POST http://localhost:3000/v1/submissions \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"sessionId\": \"$SESSION_ID\",
+    \"documents\": [{
+      \"format\": \"JSON\",
+      \"document\": \"$DOCUMENT_BASE64\",
+      \"documentHash\": \"$DOCUMENT_HASH\",
+      \"codeNumber\": \"INV-001\"
+    }]
+  }")
+
+TRACKING_ID=$(echo $SUBMISSION_RESPONSE | jq -r '.trackingId')
+echo "Tracking ID: $TRACKING_ID"
+
+# 3. Check status
+curl -s "http://localhost:3000/v1/submissions/$TRACKING_ID?sessionId=$SESSION_ID" | jq
+
+# 4. Validate a TIN
+curl -s "http://localhost:3000/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=$SESSION_ID" | jq
+```
+
+#### PHP Example
+
+```php
+<?php
+class MyInvoisClient {
+    private $baseUrl;
+    private $sessionId;
+
+    public function __construct($baseUrl = 'http://localhost:3000') {
+        $this->baseUrl = $baseUrl;
+    }
+
+    public function createSession($clientId, $clientSecret, $env = 'SANDBOX') {
+        $response = $this->request('POST', '/v1/sessions', [
+            'clientId' => $clientId,
+            'clientSecret' => $clientSecret,
+            'env' => $env,
+            'mode' => 'TAXPAYER'
+        ]);
+        $this->sessionId = $response['id'];
+        return $response;
+    }
+
+    public function submitInvoice($invoiceData, $codeNumber) {
+        $json = json_encode($invoiceData);
+        $document = base64_encode($json);
+        $hash = hash('sha256', $json);
+
+        return $this->request('POST', '/v1/submissions', [
+            'sessionId' => $this->sessionId,
+            'documents' => [[
+                'format' => 'JSON',
+                'document' => $document,
+                'documentHash' => $hash,
+                'codeNumber' => $codeNumber
+            ]]
+        ]);
+    }
+
+    public function getStatus($trackingId) {
+        return $this->request('GET', "/v1/submissions/{$trackingId}?sessionId={$this->sessionId}");
+    }
+
+    private function request($method, $path, $data = null) {
+        $ch = curl_init($this->baseUrl . $path);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+        if ($method === 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) {
+            throw new Exception("HTTP Error: $httpCode - $response");
+        }
+
+        return json_decode($response, true);
+    }
+}
+
+// Usage
+$client = new MyInvoisClient('http://localhost:3000');
+$client->createSession('your-client-id', 'your-secret', 'SANDBOX');
+$result = $client->submitInvoice(['ID' => 'INV-001'], 'INV-001');
+echo "Tracking ID: " . $result['trackingId'];
+?>
+```
+
+#### Python Example
+
+```python
+import requests
+import base64
+import hashlib
+import json
+
+class MyInvoisClient:
+    def __init__(self, base_url='http://localhost:3000'):
+        self.base_url = base_url
+        self.session_id = None
+
+    def create_session(self, client_id, client_secret, env='SANDBOX'):
+        response = requests.post(f'{self.base_url}/v1/sessions', json={
+            'clientId': client_id,
+            'clientSecret': client_secret,
+            'env': env,
+            'mode': 'TAXPAYER'
+        })
+        response.raise_for_status()
+        data = response.json()
+        self.session_id = data['id']
+        return data
+
+    def submit_invoice(self, invoice_data, code_number):
+        json_str = json.dumps(invoice_data)
+        document = base64.b64encode(json_str.encode()).decode()
+        document_hash = hashlib.sha256(json_str.encode()).hexdigest()
+
+        response = requests.post(f'{self.base_url}/v1/submissions', json={
+            'sessionId': self.session_id,
+            'documents': [{
+                'format': 'JSON',
+                'document': document,
+                'documentHash': document_hash,
+                'codeNumber': code_number
+            }]
+        })
+        response.raise_for_status()
+        return response.json()
+
+    def get_status(self, tracking_id):
+        response = requests.get(
+            f'{self.base_url}/v1/submissions/{tracking_id}',
+            params={'sessionId': self.session_id}
+        )
+        response.raise_for_status()
+        return response.json()
+
+# Usage
+client = MyInvoisClient('http://localhost:3000')
+client.create_session('your-client-id', 'your-secret', 'SANDBOX')
+result = client.submit_invoice({'ID': 'INV-001'}, 'INV-001')
+print(f"Tracking ID: {result['trackingId']}")
+```
 
 ---
 

@@ -35,7 +35,8 @@ describe("E2E: Documents", () => {
       url: "/v1/sessions",
       payload: createTaxpayerSession(),
     });
-    sessionId = response.json().sessionId;
+    const body = response.json();
+    sessionId = body.id;
   });
 
   afterEach(() => {
@@ -50,8 +51,7 @@ describe("E2E: Documents", () => {
     const submitResponse = await app.inject({
       method: "POST",
       url: "/v1/submissions",
-      headers: { "x-session-id": sessionId },
-      payload: { documents: [createDocumentPayload(`INV-${Date.now()}`)] },
+      payload: { sessionId, documents: [createDocumentPayload(`INV-${Date.now()}`)] },
     });
 
     const { trackingId, submissionUid, acceptedDocuments } = submitResponse.json();
@@ -70,8 +70,7 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/cancel`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Invoice issued in error" },
+        payload: { sessionId, reason: "Invoice issued in error" },
       });
 
       expect(response.statusCode).toBe(200);
@@ -87,8 +86,7 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/cancel`,
-        headers: { "x-session-id": sessionId },
-        payload: {},
+        payload: { sessionId },
       });
 
       expect(response.statusCode).toBe(400);
@@ -98,14 +96,13 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/documents/00000000-0000-0000-0000-000000000000/cancel",
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Test reason" },
+        payload: { sessionId, reason: "Test reason" },
       });
 
       expect(response.statusCode).toBe(404);
     });
 
-    it("requires x-session-id header", async () => {
+    it("requires sessionId in payload", async () => {
       const { uuid } = await createValidDocument();
 
       const response = await app.inject({
@@ -124,8 +121,7 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/cancel`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Test reason" },
+        payload: { sessionId, reason: "Test reason" },
       });
 
       expect(response.statusCode).toBe(429);
@@ -140,8 +136,7 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/reject`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Goods not received" },
+        payload: { sessionId, reason: "Goods not received" },
       });
 
       expect(response.statusCode).toBe(200);
@@ -157,8 +152,7 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/reject`,
-        headers: { "x-session-id": sessionId },
-        payload: {},
+        payload: { sessionId },
       });
 
       expect(response.statusCode).toBe(400);
@@ -168,8 +162,7 @@ describe("E2E: Documents", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/documents/00000000-0000-0000-0000-000000000000/reject",
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Test reason" },
+        payload: { sessionId, reason: "Test reason" },
       });
 
       expect(response.statusCode).toBe(404);
@@ -182,8 +175,7 @@ describe("E2E: Documents", () => {
 
       const response = await app.inject({
         method: "GET",
-        url: `/v1/documents/${uuid}/details`,
-        headers: { "x-session-id": sessionId },
+        url: `/v1/documents/${uuid}/details?sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -198,14 +190,13 @@ describe("E2E: Documents", () => {
     it("returns 404 for non-existent document", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/documents/00000000-0000-0000-0000-000000000000/details",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/documents/00000000-0000-0000-0000-000000000000/details?sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(404);
     });
 
-    it("requires x-session-id header", async () => {
+    it("requires sessionId query param", async () => {
       const { uuid } = await createValidDocument();
 
       const response = await app.inject({
@@ -222,8 +213,7 @@ describe("E2E: Documents", () => {
 
       const response = await app.inject({
         method: "GET",
-        url: `/v1/documents/${uuid}/details`,
-        headers: { "x-session-id": sessionId },
+        url: `/v1/documents/${uuid}/details?sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(429);
@@ -239,16 +229,14 @@ describe("E2E: Documents", () => {
       await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/cancel`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "First cancel" },
+        payload: { sessionId, reason: "First cancel" },
       });
 
       // Second cancel attempt
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/cancel`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Second cancel" },
+        payload: { sessionId, reason: "Second cancel" },
       });
 
       expect(response.statusCode).toBe(400);
@@ -261,16 +249,14 @@ describe("E2E: Documents", () => {
       await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/reject`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "First reject" },
+        payload: { sessionId, reason: "First reject" },
       });
 
       // Second reject attempt
       const response = await app.inject({
         method: "POST",
         url: `/v1/documents/${uuid}/reject`,
-        headers: { "x-session-id": sessionId },
-        payload: { reason: "Second reject" },
+        payload: { sessionId, reason: "Second reject" },
       });
 
       expect(response.statusCode).toBe(400);

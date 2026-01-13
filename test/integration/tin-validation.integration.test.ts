@@ -456,8 +456,8 @@ async function getSubmissionStatus(
         errors = doc.error.details.map(d => ({ code: d.code, message: d.message }));
       } else if (doc.error.error?.details) {
         errors = doc.error.error.details.map(d => ({ code: d.code, message: d.message }));
-      } else if (doc.error.code || doc.error.message) {
-        errors = [{ code: doc.error.code || "UNKNOWN", message: doc.error.message || "Unknown error" }];
+      } else if (doc.error.code || doc.error.messageEN) {
+        errors = [{ code: doc.error.code || "UNKNOWN", message: doc.error.messageEN || "Unknown error" }];
       }
     }
 
@@ -529,7 +529,7 @@ async function waitForDocumentStatus(
                         console.log(`       - ${d.code}: ${d.message}`);
                       });
                     } else {
-                      console.log(`       - ${step.error.code || "ERR"}: ${step.error.message}`);
+                      console.log(`       - ${step.error.code || "ERR"}: ${step.error.messageEN}`);
                     }
                   }
                 }

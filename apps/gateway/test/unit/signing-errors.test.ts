@@ -34,7 +34,7 @@ describe("signing-errors", () => {
       const result = transformSigningError(error, { phase: "loading" }, "corr-123");
 
       expect(result.code).toBe(ErrorCodes.CERTIFICATE_LOAD_FAILED);
-      expect(result.message).toContain("Failed to load signing certificate");
+      expect(result.messageEN).toContain("Failed to load signing certificate");
       expect(result.httpStatus).toBe(500);
       expect(result.retryable).toBe(false);
       expect(result.correlationId).toBe("corr-123");
@@ -50,7 +50,7 @@ describe("signing-errors", () => {
       const result = transformSigningError(error, {}, "corr-456");
 
       expect(result.code).toBe(ErrorCodes.CERTIFICATE_EXPIRED);
-      expect(result.message).toContain("Certificate expired");
+      expect(result.messageEN).toContain("Certificate expired");
       expect(result.httpStatus).toBe(503);
       expect(result.retryable).toBe(false);
       expect(result.signing?.phase).toBe("loading");
@@ -75,7 +75,7 @@ describe("signing-errors", () => {
       const result = transformSigningError(error, { phase: "loading" });
 
       expect(result.code).toBe(ErrorCodes.PRIVATE_KEY_LOAD_FAILED);
-      expect(result.message).toContain("Failed to load private key");
+      expect(result.messageEN).toContain("Failed to load private key");
       expect(result.httpStatus).toBe(500);
       expect(result.signing?.phase).toBe("loading");
     });
@@ -97,7 +97,7 @@ describe("signing-errors", () => {
       const result = transformSigningError(error, { phase: "signing" });
 
       expect(result.code).toBe(ErrorCodes.SIGNING_FAILED);
-      expect(result.message).toContain("Failed to generate signature");
+      expect(result.messageEN).toContain("Failed to generate signature");
       expect(result.httpStatus).toBe(500);
       expect(result.signing?.phase).toBe("signing");
     });
@@ -124,7 +124,7 @@ describe("signing-errors", () => {
       const result = transformSigningError(error);
 
       expect(result.code).toBe(ErrorCodes.SIGNING_FAILED);
-      expect(result.message).toBe("Random error");
+      expect(result.messageEN).toBe("Random error");
       expect(result.httpStatus).toBe(500);
     });
 
@@ -196,7 +196,7 @@ describe("signing-errors", () => {
       const result = createSigningNotConfiguredError("1.1", "corr-123");
 
       expect(result.code).toBe(ErrorCodes.SIGNING_NOT_CONFIGURED);
-      expect(result.message).toContain("Signing is required for document version 1.1");
+      expect(result.messageEN).toContain("Signing is required for document version 1.1");
       expect(result.httpStatus).toBe(503);
       expect(result.retryable).toBe(false);
       expect(result.correlationId).toBe("corr-123");
@@ -210,7 +210,7 @@ describe("signing-errors", () => {
       const result = createSigningDisabledError("corr-456");
 
       expect(result.code).toBe(ErrorCodes.SIGNING_DISABLED);
-      expect(result.message).toContain("Document signing is disabled");
+      expect(result.messageEN).toContain("Document signing is disabled");
       expect(result.httpStatus).toBe(503);
       expect(result.retryable).toBe(false);
       expect(result.correlationId).toBe("corr-456");
@@ -223,8 +223,8 @@ describe("signing-errors", () => {
       const result = createInvalidDocumentVersionError("2.0", "corr-789");
 
       expect(result.code).toBe(ErrorCodes.INVALID_DOCUMENT_VERSION);
-      expect(result.message).toContain("Invalid document version: 2.0");
-      expect(result.message).toContain("Valid versions are '1.0' and '1.1'");
+      expect(result.messageEN).toContain("Invalid document version: 2.0");
+      expect(result.messageEN).toContain("Valid versions are '1.0' and '1.1'");
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
       expect(result.correlationId).toBe("corr-789");
@@ -245,7 +245,7 @@ describe("signing-errors", () => {
 
       // ErrorEnvelope base fields
       expect(result).toHaveProperty("code");
-      expect(result).toHaveProperty("message");
+      expect(result).toHaveProperty("messageEN");
       expect(result).toHaveProperty("httpStatus");
       expect(result).toHaveProperty("retryable");
       expect(result).toHaveProperty("correlationId");
