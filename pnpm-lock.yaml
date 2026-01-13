@@ -159,10 +159,16 @@ importers:
       '@myinvois/contracts':
         specifier: workspace:*
         version: link:../contracts
+      node-forge:
+        specifier: ^1.3.3
+        version: 1.3.3
       zod:
         specifier: ^3.22.0
         version: 3.25.76
     devDependencies:
+      '@types/node-forge':
+        specifier: ^1.3.14
+        version: 1.3.14
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -940,6 +946,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/node-forge@1.3.14':
+    resolution: {integrity: sha512-mhVF2BnD4BO+jtOp7z1CdzaK4mbuK0LLQYAvdOLqHTavxFNq4zA1EmYkpnFjP8HOUzedfQkRnp0E2ulSAYSzAw==}
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
@@ -1850,6 +1859,10 @@ packages:
 
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
+
+  node-forge@1.3.3:
+    resolution: {integrity: sha512-rLvcdSyRCyouf6jcOIPe/BgwG/d7hKjzMKOas33/pHEr6gbq18IK9zV7DiPvzsz0oBJPme6qr6H6kGZuI9/DZg==}
+    engines: {node: '>= 6.13.0'}
 
   node-gyp-build-optional-packages@5.2.2:
     resolution: {integrity: sha512-s+w+rBWnpTMwSFbaE0UXsRlg7hU4FjekKU4eyAih5T8nJuNZT1nNsskXpxmeqSK9UzkBl6UgRlnKc8hz8IEqOw==}
@@ -3180,6 +3193,10 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/node-forge@1.3.14':
+    dependencies:
+      '@types/node': 22.19.3
+
   '@types/node@12.20.55': {}
 
   '@types/node@18.19.130':
@@ -4202,6 +4219,8 @@ snapshots:
   natural-compare@1.4.0: {}
 
   node-abort-controller@3.1.1: {}
+
+  node-forge@1.3.3: {}
 
   node-gyp-build-optional-packages@5.2.2:
     dependencies:

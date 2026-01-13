@@ -3,6 +3,7 @@ import {
   SigningConfigSchema,
   CertificateSourceSchema,
   PrivateKeySourceSchema,
+  PKCS12SourceSchema,
   loadSigningConfig,
   validateSigningConfig,
   SIGNING_ENV_VARS
@@ -80,6 +81,51 @@ describe('PrivateKeySourceSchema', () => {
   });
 });
 
+describe('PKCS12SourceSchema', () => {
+  it('accepts valid file path source', () => {
+    const result = PKCS12SourceSchema.parse({ path: '/path/to/cert.p12' });
+    expect(result.path).toBe('/path/to/cert.p12');
+  });
+
+  it('accepts valid file path source with passphrase', () => {
+    const result = PKCS12SourceSchema.parse({
+      path: '/path/to/cert.p12',
+      passphrase: 'secret'
+    });
+    expect(result.path).toBe('/path/to/cert.p12');
+    expect(result.passphrase).toBe('secret');
+  });
+
+  it('accepts valid base64 source', () => {
+    const result = PKCS12SourceSchema.parse({ base64: 'MIIKEQIBAzCCCdc...' });
+    expect(result.base64).toBe('MIIKEQIBAzCCCdc...');
+  });
+
+  it('accepts valid base64 source with passphrase', () => {
+    const result = PKCS12SourceSchema.parse({
+      base64: 'MIIKEQIBAzCCCdc...',
+      passphrase: 'secret'
+    });
+    expect(result.base64).toBe('MIIKEQIBAzCCCdc...');
+    expect(result.passphrase).toBe('secret');
+  });
+
+  it('rejects when no source is specified', () => {
+    expect(() => PKCS12SourceSchema.parse({})).toThrow(
+      'Exactly one PKCS#12 source must be specified'
+    );
+  });
+
+  it('rejects when multiple sources are specified', () => {
+    expect(() =>
+      PKCS12SourceSchema.parse({
+        path: '/path/to/cert.p12',
+        base64: 'MIIKEQIBAzCCCdc...'
+      })
+    ).toThrow('Exactly one PKCS#12 source must be specified');
+  });
+});
+
 describe('SigningConfigSchema', () => {
   it('accepts disabled config without certificate/key', () => {
     const result = SigningConfigSchema.parse({ enabled: false });
@@ -104,7 +150,7 @@ describe('SigningConfigSchema', () => {
         enabled: true,
         privateKey: { path: '/path/to/key.pem' }
       })
-    ).toThrow('When signing is enabled, both certificate and privateKey must be configured');
+    ).toThrow('When signing is enabled, either pkcs12 OR both certificate and privateKey must be configured');
   });
 
   it('rejects enabled config without private key', () => {
@@ -113,7 +159,7 @@ describe('SigningConfigSchema', () => {
         enabled: true,
         certificate: { path: '/path/to/cert.pem' }
       })
-    ).toThrow('When signing is enabled, both certificate and privateKey must be configured');
+    ).toThrow('When signing is enabled, either pkcs12 OR both certificate and privateKey must be configured');
   });
 
   it('accepts config with rotation', () => {
@@ -151,6 +197,45 @@ describe('SigningConfigSchema', () => {
         defaultVersion: '2.0'
       })
     ).toThrow();
+  });
+
+  it('accepts enabled config with pkcs12', () => {
+    const result = SigningConfigSchema.parse({
+      enabled: true,
+      pkcs12: { path: '/path/to/cert.p12', passphrase: 'secret' }
+    });
+    expect(result.enabled).toBe(true);
+    expect(result.pkcs12?.path).toBe('/path/to/cert.p12');
+    expect(result.pkcs12?.passphrase).toBe('secret');
+  });
+
+  it('accepts enabled config with pkcs12 base64', () => {
+    const result = SigningConfigSchema.parse({
+      enabled: true,
+      pkcs12: { base64: 'MIIKEQIBAzCCCdc...', passphrase: 'secret' }
+    });
+    expect(result.enabled).toBe(true);
+    expect(result.pkcs12?.base64).toBe('MIIKEQIBAzCCCdc...');
+  });
+
+  it('rejects config with both pkcs12 and certificate', () => {
+    expect(() =>
+      SigningConfigSchema.parse({
+        enabled: true,
+        pkcs12: { path: '/path/to/cert.p12' },
+        certificate: { path: '/path/to/cert.pem' }
+      })
+    ).toThrow('Cannot specify both pkcs12 and separate certificate/privateKey');
+  });
+
+  it('rejects config with both pkcs12 and privateKey', () => {
+    expect(() =>
+      SigningConfigSchema.parse({
+        enabled: true,
+        pkcs12: { path: '/path/to/cert.p12' },
+        privateKey: { path: '/path/to/key.pem' }
+      })
+    ).toThrow('Cannot specify both pkcs12 and separate certificate/privateKey');
   });
 });
 
@@ -219,6 +304,42 @@ describe('loadSigningConfig', () => {
     const config = loadSigningConfig();
     expect(config.rotation?.certificate?.path).toBe('/path/to/cert2.pem');
     expect(config.rotation?.privateKey?.path).toBe('/path/to/key2.pem');
+  });
+
+  it('loads config from env with pkcs12 path', () => {
+    process.env[SIGNING_ENV_VARS.ENABLED] = 'true';
+    process.env[SIGNING_ENV_VARS.PKCS12_PATH] = '/path/to/cert.p12';
+    process.env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE] = 'secret';
+
+    const config = loadSigningConfig();
+    expect(config.enabled).toBe(true);
+    expect(config.pkcs12?.path).toBe('/path/to/cert.p12');
+    expect(config.pkcs12?.passphrase).toBe('secret');
+    expect(config.certificate).toBeUndefined();
+    expect(config.privateKey).toBeUndefined();
+  });
+
+  it('loads config from env with pkcs12 base64', () => {
+    process.env[SIGNING_ENV_VARS.ENABLED] = 'true';
+    process.env[SIGNING_ENV_VARS.PKCS12_BASE64] = 'MIIKEQIBAzCCCdc...';
+    process.env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE] = 'secret';
+
+    const config = loadSigningConfig();
+    expect(config.enabled).toBe(true);
+    expect(config.pkcs12?.base64).toBe('MIIKEQIBAzCCCdc...');
+    expect(config.pkcs12?.passphrase).toBe('secret');
+  });
+
+  it('prioritizes pkcs12 over separate cert/key', () => {
+    process.env[SIGNING_ENV_VARS.ENABLED] = 'true';
+    process.env[SIGNING_ENV_VARS.PKCS12_PATH] = '/path/to/cert.p12';
+    process.env[SIGNING_ENV_VARS.CERT_PATH] = '/path/to/cert.pem';
+    process.env[SIGNING_ENV_VARS.KEY_PATH] = '/path/to/key.pem';
+
+    const config = loadSigningConfig();
+    expect(config.pkcs12?.path).toBe('/path/to/cert.p12');
+    expect(config.certificate).toBeUndefined();
+    expect(config.privateKey).toBeUndefined();
   });
 });
 
