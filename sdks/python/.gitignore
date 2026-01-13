@@ -1,0 +1,20 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
