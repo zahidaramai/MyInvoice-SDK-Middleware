@@ -140,6 +140,11 @@ export async function getSubmission(
     Accept: "application/json",
   };
 
+  // Add onbehalfof header for intermediary mode
+  if (session.mode === "INTERMEDIARY" && session.onBehalfOf) {
+    headers.onbehalfof = session.onBehalfOf;
+  }
+
   try {
     const response = await fetch(url, {
       method: "GET",
