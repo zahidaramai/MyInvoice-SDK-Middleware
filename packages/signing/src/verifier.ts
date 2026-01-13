@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import type { VerificationResult, CertificateInfo } from './types.js';
-import { generateDocumentHash } from './hash.js';
+import { generateDocumentHash, canonicalizeDocument } from './hash.js';
 import { parseCertificate } from './certificate-loader.js';
 import { SIGNATURE_URIS } from './signer.js';
 
@@ -89,7 +89,16 @@ export function extractSignature(document: Record<string, unknown>): {
   }
 
   const firstExtension = ublExtension[0];
-  const extensionContent = firstExtension.ExtensionContent as Record<string, unknown> | undefined;
+
+  // Handle ExtensionContent - can be array (new format) or object (old format)
+  let extensionContent: Record<string, unknown> | undefined;
+  const extContentRaw = firstExtension.ExtensionContent;
+  if (Array.isArray(extContentRaw) && extContentRaw.length > 0) {
+    extensionContent = extContentRaw[0] as Record<string, unknown>;
+  } else if (extContentRaw && typeof extContentRaw === 'object') {
+    extensionContent = extContentRaw as Record<string, unknown>;
+  }
+
   if (!extensionContent) {
     return {
       signatureBlock: null,
@@ -100,7 +109,15 @@ export function extractSignature(document: Record<string, unknown>): {
     };
   }
 
-  const docSignatures = extensionContent.UBLDocumentSignatures as Record<string, unknown> | undefined;
+  // Handle UBLDocumentSignatures - can be array or object
+  let docSignatures: Record<string, unknown> | undefined;
+  const docSigsRaw = extensionContent.UBLDocumentSignatures;
+  if (Array.isArray(docSigsRaw) && docSigsRaw.length > 0) {
+    docSignatures = docSigsRaw[0] as Record<string, unknown>;
+  } else if (docSigsRaw && typeof docSigsRaw === 'object') {
+    docSignatures = docSigsRaw as Record<string, unknown>;
+  }
+
   if (!docSignatures) {
     return {
       signatureBlock: null,
@@ -111,7 +128,15 @@ export function extractSignature(document: Record<string, unknown>): {
     };
   }
 
-  const sigInfo = docSignatures.SignatureInformation as Record<string, unknown> | undefined;
+  // Handle SignatureInformation - can be array or object
+  let sigInfo: Record<string, unknown> | undefined;
+  const sigInfoRaw = docSignatures.SignatureInformation;
+  if (Array.isArray(sigInfoRaw) && sigInfoRaw.length > 0) {
+    sigInfo = sigInfoRaw[0] as Record<string, unknown>;
+  } else if (sigInfoRaw && typeof sigInfoRaw === 'object') {
+    sigInfo = sigInfoRaw as Record<string, unknown>;
+  }
+
   if (!sigInfo) {
     return {
       signatureBlock: null,
@@ -122,7 +147,15 @@ export function extractSignature(document: Record<string, unknown>): {
     };
   }
 
-  const signature = sigInfo.Signature as Record<string, unknown> | undefined;
+  // Handle Signature - can be array or object
+  let signature: Record<string, unknown> | undefined;
+  const sigRaw = sigInfo.Signature;
+  if (Array.isArray(sigRaw) && sigRaw.length > 0) {
+    signature = sigRaw[0] as Record<string, unknown>;
+  } else if (sigRaw && typeof sigRaw === 'object') {
+    signature = sigRaw as Record<string, unknown>;
+  }
+
   if (!signature) {
     return {
       signatureBlock: null,
@@ -133,24 +166,88 @@ export function extractSignature(document: Record<string, unknown>): {
     };
   }
 
-  // Extract components
-  const signedInfo = signature.SignedInfo as Record<string, unknown> | undefined;
-  const signatureValue = signature.SignatureValue as string | undefined;
-  const keyInfo = signature.KeyInfo as Record<string, unknown> | undefined;
+  // Extract SignedInfo - can be array or object
+  let signedInfo: Record<string, unknown> | undefined;
+  const signedInfoRaw = signature.SignedInfo;
+  if (Array.isArray(signedInfoRaw) && signedInfoRaw.length > 0) {
+    signedInfo = signedInfoRaw[0] as Record<string, unknown>;
+  } else if (signedInfoRaw && typeof signedInfoRaw === 'object') {
+    signedInfo = signedInfoRaw as Record<string, unknown>;
+  }
 
+  // Extract SignatureValue - handle both new array format [{Id, Value}] and old string format
+  let signatureValue: string | null = null;
+  const sigValRaw = signature.SignatureValue;
+  if (Array.isArray(sigValRaw) && sigValRaw.length > 0) {
+    const sigValObj = sigValRaw[0] as Record<string, unknown>;
+    // New format: { Id: '...', Value: 'base64...' }
+    if (sigValObj.Value) {
+      signatureValue = sigValObj.Value as string;
+    } else if (sigValObj._) {
+      signatureValue = sigValObj._ as string;
+    }
+  } else if (typeof sigValRaw === 'string') {
+    signatureValue = sigValRaw;
+  }
+
+  // Extract KeyInfo - can be array or object
+  let keyInfo: Record<string, unknown> | undefined;
+  const keyInfoRaw = signature.KeyInfo;
+  if (Array.isArray(keyInfoRaw) && keyInfoRaw.length > 0) {
+    keyInfo = keyInfoRaw[0] as Record<string, unknown>;
+  } else if (keyInfoRaw && typeof keyInfoRaw === 'object') {
+    keyInfo = keyInfoRaw as Record<string, unknown>;
+  }
+
+  // Extract digest value from SignedInfo
   let digestValue: string | null = null;
   if (signedInfo) {
-    const reference = signedInfo.Reference as Record<string, unknown> | undefined;
-    if (reference) {
-      digestValue = reference.DigestValue as string || null;
+    const referenceRaw = signedInfo.Reference;
+    // Handle array of references (new format)
+    if (Array.isArray(referenceRaw) && referenceRaw.length > 0) {
+      // First reference is the document digest
+      const reference = referenceRaw[0] as Record<string, unknown>;
+      const digestValRaw = reference.DigestValue;
+      if (Array.isArray(digestValRaw) && digestValRaw.length > 0) {
+        const digestObj = digestValRaw[0] as Record<string, unknown>;
+        digestValue = digestObj._ as string || null;
+      } else if (typeof digestValRaw === 'string') {
+        digestValue = digestValRaw;
+      }
+    } else if (referenceRaw && typeof referenceRaw === 'object') {
+      // Old format: single Reference object
+      const reference = referenceRaw as Record<string, unknown>;
+      const digestValRaw = reference.DigestValue;
+      if (Array.isArray(digestValRaw) && digestValRaw.length > 0) {
+        const digestObj = digestValRaw[0] as Record<string, unknown>;
+        digestValue = digestObj._ as string || null;
+      } else if (typeof digestValRaw === 'string') {
+        digestValue = digestValRaw;
+      }
     }
   }
 
+  // Extract certificate PEM from KeyInfo
   let certificatePem: string | null = null;
   if (keyInfo) {
-    const x509Data = keyInfo.X509Data as Record<string, unknown> | undefined;
+    const x509DataRaw = keyInfo.X509Data;
+    let x509Data: Record<string, unknown> | undefined;
+    if (Array.isArray(x509DataRaw) && x509DataRaw.length > 0) {
+      x509Data = x509DataRaw[0] as Record<string, unknown>;
+    } else if (x509DataRaw && typeof x509DataRaw === 'object') {
+      x509Data = x509DataRaw as Record<string, unknown>;
+    }
+
     if (x509Data) {
-      const certContent = x509Data.X509Certificate as string | undefined;
+      const certRaw = x509Data.X509Certificate;
+      let certContent: string | undefined;
+      if (Array.isArray(certRaw) && certRaw.length > 0) {
+        const certObj = certRaw[0] as Record<string, unknown>;
+        certContent = certObj._ as string;
+      } else if (typeof certRaw === 'string') {
+        certContent = certRaw;
+      }
+
       if (certContent) {
         // Add PEM headers
         certificatePem = `-----BEGIN CERTIFICATE-----\n${certContent}\n-----END CERTIFICATE-----`;
@@ -161,7 +258,7 @@ export function extractSignature(document: Record<string, unknown>): {
   return {
     signatureBlock: signature,
     digestValue,
-    signatureValue: signatureValue || null,
+    signatureValue,
     certificatePem,
     signedInfo: signedInfo || null
   };
@@ -177,9 +274,10 @@ export function recalculateHash(document: Record<string, unknown>): string {
 }
 
 /**
- * Remove UBLExtensions from a document element
+ * Remove signature elements from a document element
+ * Both UBLExtensions and Signature must be removed for hash recalculation
  */
-function removeUBLExtensionsFromElement(element: unknown): unknown {
+function removeSignatureElementsFromElement(element: unknown): unknown {
   if (!element || typeof element !== 'object') {
     return element;
   }
@@ -190,6 +288,7 @@ function removeUBLExtensionsFromElement(element: unknown): unknown {
       if (index === 0 && typeof item === 'object' && item !== null) {
         const obj = { ...(item as Record<string, unknown>) };
         delete obj.UBLExtensions;
+        delete obj.Signature;
         return obj;
       }
       return item;
@@ -199,32 +298,36 @@ function removeUBLExtensionsFromElement(element: unknown): unknown {
   // Handle object-wrapped documents (simple format: Invoice: {UBLExtensions: {...}, ...})
   const obj = { ...(element as Record<string, unknown>) };
   delete obj.UBLExtensions;
+  delete obj.Signature;
   return obj;
 }
 
 /**
- * Remove UBLExtensions from document
+ * Remove signature elements from document
  */
 function removeUBLExtensions(document: Record<string, unknown>): Record<string, unknown> {
   const result = { ...document };
 
   if (result.Invoice) {
-    result.Invoice = removeUBLExtensionsFromElement(result.Invoice);
+    result.Invoice = removeSignatureElementsFromElement(result.Invoice);
     return result;
   }
 
   if (result.CreditNote) {
-    result.CreditNote = removeUBLExtensionsFromElement(result.CreditNote);
+    result.CreditNote = removeSignatureElementsFromElement(result.CreditNote);
     return result;
   }
 
   if (result.DebitNote) {
-    result.DebitNote = removeUBLExtensionsFromElement(result.DebitNote);
+    result.DebitNote = removeSignatureElementsFromElement(result.DebitNote);
     return result;
   }
 
   if (result.UBLExtensions) {
     delete result.UBLExtensions;
+  }
+  if (result.Signature) {
+    delete result.Signature;
   }
 
   return result;
@@ -232,15 +335,18 @@ function removeUBLExtensions(document: Record<string, unknown>): Record<string, 
 
 /**
  * Verify cryptographic signature
+ * Note: MyInvois signs the canonicalized document (not SignedInfo)
  */
 function verifySignature(
-  signedInfo: Record<string, unknown>,
+  document: Record<string, unknown>,
   signatureValue: string,
   publicKey: crypto.KeyObject
 ): boolean {
   try {
+    // MyInvois signs the canonicalized document bytes (without UBLExtensions)
+    const docBytes = canonicalizeDocument(document);
     const verify = crypto.createVerify('RSA-SHA256');
-    verify.update(JSON.stringify(signedInfo), 'utf8');
+    verify.update(docBytes, 'utf8');
     return verify.verify(publicKey, signatureValue, 'base64');
   } catch {
     return false;
@@ -374,9 +480,9 @@ export function verify(document: Record<string, unknown>): VerificationResult {
     errors.push('Certificate is not yet valid');
   }
 
-  // Verify cryptographic signature
+  // Verify cryptographic signature (MyInvois signs the canonicalized document)
   const signatureValid = verifySignature(
-    extracted.signedInfo!,
+    document,
     extracted.signatureValue!,
     publicKey
   );
