@@ -16,6 +16,7 @@ export {
   PrivateKeySourceSchema,
   DocumentVersionSchema,
   RotationConfigSchema,
+  PKCS12SourceSchema,
   loadSigningConfig,
   validateSigningConfig,
   SIGNING_ENV_VARS
@@ -25,8 +26,19 @@ export type {
   SigningConfig,
   CertificateSource,
   PrivateKeySource,
-  RotationConfig
+  RotationConfig,
+  PKCS12Source
 } from './config.js';
+
+// PKCS#12 Loader
+export {
+  loadPKCS12,
+  loadPKCS12FromFile,
+  loadPKCS12FromBase64,
+  isPKCS12File
+} from './pkcs12-loader.js';
+
+export type { PKCS12Result } from './pkcs12-loader.js';
 
 // Types
 export type {
