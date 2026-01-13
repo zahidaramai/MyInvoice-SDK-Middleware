@@ -1,5 +1,12 @@
 # @myinvois/myinvois-client
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [81913d7]
+  - @myinvois/core@0.1.2
+
 ## 0.2.0
 
 ### Minor Changes
