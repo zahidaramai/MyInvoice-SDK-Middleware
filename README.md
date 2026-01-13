@@ -1,4 +1,4 @@
-# MyInvois Middleware Gateway
+# MyInvois Middleware Gateway for v1.0 and v1.1 API
 
 [![CI](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml/badge.svg)](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
