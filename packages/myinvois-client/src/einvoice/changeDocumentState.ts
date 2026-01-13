@@ -127,6 +127,11 @@ export async function changeDocumentState(
     Accept: "application/json",
   };
 
+  // Add onbehalfof header for intermediary mode
+  if (session.mode === "INTERMEDIARY" && session.onBehalfOf) {
+    headers.onbehalfof = session.onBehalfOf;
+  }
+
   const body = { status, reason };
 
   try {

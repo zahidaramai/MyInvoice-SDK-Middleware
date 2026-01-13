@@ -10,6 +10,7 @@ import { documentsRoutes } from "./routes/v1/documents.js";
 import { taxpayerRoutes } from "./routes/v1/taxpayer.js";
 import { v1StubRoutes } from "./routes/v1.stub.js";
 import { loadConfig } from "./config.js";
+import { initializeSigning } from "./config/signing.js";
 
 export interface BuildAppOptions {
   logger?: boolean | FastifyServerOptions["logger"];
@@ -55,6 +56,18 @@ export async function buildApp(
     enabled: options.metricsEnabled ?? config.metricsEnabled,
     route: options.metricsRoute ?? config.metricsRoute,
   });
+
+  // Initialize signing service
+  const signingState = initializeSigning(fastify.log as unknown as {
+    info: (msg: string) => void;
+    warn: (msg: string) => void;
+    error: (obj: unknown, msg: string) => void;
+  });
+  if (signingState.enabled) {
+    fastify.log.info(`Signing enabled - default version: ${signingState.defaultVersion}`);
+  } else {
+    fastify.log.info(`Signing disabled${signingState.error ? `: ${signingState.error}` : ''}`);
+  }
 
   // Register routes
   await fastify.register(healthRoutes);

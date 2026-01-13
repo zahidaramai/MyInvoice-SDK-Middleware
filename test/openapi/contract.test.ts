@@ -132,7 +132,7 @@ describe("OpenAPI Contract Tests", () => {
         url: "/v1/sessions",
         payload: createTaxpayerSession(),
       });
-      const { sessionId } = createResponse.json();
+      const { id: sessionId } = createResponse.json();
 
       const response = await app.inject({
         method: "GET",
@@ -170,7 +170,7 @@ describe("OpenAPI Contract Tests", () => {
         url: "/v1/sessions",
         payload: createTaxpayerSession(),
       });
-      const { sessionId } = createResponse.json();
+      const { id: sessionId } = createResponse.json();
 
       const response = await app.inject({
         method: "DELETE",
@@ -191,15 +191,14 @@ describe("OpenAPI Contract Tests", () => {
         url: "/v1/sessions",
         payload: createTaxpayerSession(),
       });
-      sessionId = response.json().sessionId;
+      sessionId = response.json().id;
     });
 
     it("POST /v1/submissions 202 conforms to spec", async () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload("INV-CONTRACT-001")] },
+        payload: { sessionId, documents: [createDocumentPayload("INV-CONTRACT-001")] },
       });
 
       expect(response.statusCode).toBe(202);
@@ -215,8 +214,7 @@ describe("OpenAPI Contract Tests", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { invalid: "payload" },
+        payload: { sessionId, invalid: "payload" },
       });
 
       expect(response.statusCode).toBe(400);
@@ -233,15 +231,13 @@ describe("OpenAPI Contract Tests", () => {
       const submitResponse = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload("INV-CONTRACT-002")] },
+        payload: { sessionId, documents: [createDocumentPayload("INV-CONTRACT-002")] },
       });
       const { trackingId } = submitResponse.json();
 
       const response = await app.inject({
         method: "GET",
         url: `/v1/submissions/${trackingId}`,
-        headers: { "x-session-id": sessionId },
       });
 
       expect(response.statusCode).toBe(200);
@@ -257,7 +253,6 @@ describe("OpenAPI Contract Tests", () => {
       const response = await app.inject({
         method: "GET",
         url: "/v1/submissions/trk_nonexistent",
-        headers: { "x-session-id": sessionId },
       });
 
       expect(response.statusCode).toBe(404);
@@ -279,7 +274,7 @@ describe("OpenAPI Contract Tests", () => {
         url: "/v1/sessions",
         payload: createTaxpayerSession(),
       });
-      sessionId = response.json().sessionId;
+      sessionId = response.json().id;
 
       // Add a valid TIN to mock state
       mockState.addValidTin({
@@ -294,8 +289,7 @@ describe("OpenAPI Contract Tests", () => {
     it("GET /v1/tin/validate 200 (valid) conforms to spec", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=C12345678901&idType=BRN&idValue=202001234567&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -310,8 +304,7 @@ describe("OpenAPI Contract Tests", () => {
     it("GET /v1/tin/validate 200 (invalid TIN) conforms to spec", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=INVALID123&idType=BRN&idValue=999999999999",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=INVALID123&idType=BRN&idValue=999999999999&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -328,8 +321,7 @@ describe("OpenAPI Contract Tests", () => {
     it("GET /v1/tin/validate 400 conforms to spec", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/tin/validate?tin=ABC",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/tin/validate?tin=ABC&sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(400);
