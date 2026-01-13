@@ -152,7 +152,13 @@ export function createUBLExtensions(signatureBlock: SignatureBlock): Record<stri
 
 /**
  * Inject signature into document
- * Places the UBLExtensions at the beginning of the document wrapper
+ * Places the UBLExtensions at the beginning of the document wrapper.
+ *
+ * For MyInvois JSON format, documents are wrapped in arrays:
+ * { "_D": "...", "_A": "...", "_B": "...", "Invoice": [{...}] }
+ *
+ * The UBLExtensions should be placed INSIDE the array element as the first property:
+ * { "_D": "...", "_A": "...", "_B": "...", "Invoice": [{ "UBLExtensions": [{...}], ...rest }] }
  */
 export function injectSignature(
   document: Record<string, unknown>,
@@ -160,39 +166,69 @@ export function injectSignature(
 ): Record<string, unknown> {
   const extensions = createUBLExtensions(signatureBlock);
 
-  // Determine document type
-  if (document.Invoice && typeof document.Invoice === 'object') {
-    return {
-      Invoice: {
-        UBLExtensions: extensions,
-        ...(document.Invoice as Record<string, unknown>)
-      }
-    };
-  }
+  // Helper to inject extensions into a document element
+  const injectIntoElement = (
+    element: unknown,
+    docType: string
+  ): unknown => {
+    // Handle array-wrapped documents (MyInvois format: Invoice: [{...}])
+    if (Array.isArray(element) && element.length > 0) {
+      const firstElement = element[0] as Record<string, unknown>;
+      // Place UBLExtensions as first property in the element
+      const signedElement = {
+        UBLExtensions: [extensions],  // MyInvois expects UBLExtensions as array
+        ...firstElement
+      };
+      return [signedElement, ...element.slice(1)];
+    }
 
-  if (document.CreditNote && typeof document.CreditNote === 'object') {
-    return {
-      CreditNote: {
-        UBLExtensions: extensions,
-        ...(document.CreditNote as Record<string, unknown>)
-      }
-    };
-  }
+    // Handle object-wrapped documents (simple format: Invoice: {...})
+    if (typeof element === 'object' && element !== null) {
+      return {
+        UBLExtensions: [extensions],  // MyInvois expects UBLExtensions as array
+        ...(element as Record<string, unknown>)
+      };
+    }
 
-  if (document.DebitNote && typeof document.DebitNote === 'object') {
-    return {
-      DebitNote: {
-        UBLExtensions: extensions,
-        ...(document.DebitNote as Record<string, unknown>)
-      }
-    };
-  }
-
-  // Handle unwrapped document
-  return {
-    UBLExtensions: extensions,
-    ...document
+    return element;
   };
+
+  // Preserve all top-level properties (including _D, _A, _B namespace prefixes)
+  const result: Record<string, unknown> = {};
+
+  // Copy namespace prefixes first
+  if (document._D) result._D = document._D;
+  if (document._A) result._A = document._A;
+  if (document._B) result._B = document._B;
+
+  // Process document type and copy other properties
+  const documentTypes = ['Invoice', 'CreditNote', 'DebitNote'];
+  let documentTypeFound = false;
+
+  for (const [key, value] of Object.entries(document)) {
+    if (key === '_D' || key === '_A' || key === '_B') {
+      // Already handled above
+      continue;
+    }
+
+    if (documentTypes.includes(key) && !documentTypeFound) {
+      // Inject extensions into the document type
+      result[key] = injectIntoElement(value, key);
+      documentTypeFound = true;
+    } else {
+      result[key] = value;
+    }
+  }
+
+  // If no known document type found, add extensions at top level
+  if (!documentTypeFound) {
+    return {
+      ...result,
+      UBLExtensions: [extensions]
+    };
+  }
+
+  return result;
 }
 
 /**
