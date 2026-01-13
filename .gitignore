@@ -108,6 +108,12 @@ cursor-tutor/
 # Project docs folder (PRD, Phase docs, playbooks, etc.)
 docs/
 
+# Tasks folder (PRDs, implementation tracking)
+tasks/
+
+# Ralph autonomous agent working directory
+ralph/
+
 # Keep standard public files (README, CONTRIBUTING, etc. in root)
 
 # =============================================================================
