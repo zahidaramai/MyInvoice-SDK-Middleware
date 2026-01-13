@@ -11,9 +11,17 @@ import {
   validateSubmissionConstraints,
   computePayloadHash,
   generateTrackingId,
+  encodeBase64,
+  hashDocument,
   type GatewayDocumentInput,
   type PreparedDocument,
 } from "../../lib/submission.js";
+import {
+  signDocuments,
+  getEffectiveDocumentVersion,
+  shouldSign,
+  type SignableDocument,
+} from "../../middleware/signing.js";
 import {
   submitDocuments,
   type SubmitDocumentsRequest,
@@ -163,6 +171,9 @@ export const submissionsRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
+      // Determine effective document version for this session
+      const documentVersion = getEffectiveDocumentVersion(session.documentVersion);
+
       // Prepare documents (encode if needed, compute hashes)
       let preparedDocs: PreparedDocument[];
       try {
@@ -179,6 +190,84 @@ export const submissionsRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (err) {
         if (err instanceof AppError) throw err;
         throw new AppError(400, "Failed to prepare documents", "DOCUMENT_PREPARATION_FAILED");
+      }
+
+      // Sign documents if v1.1 is requested
+      if (shouldSign(documentVersion)) {
+        request.log.info(
+          { correlationId, documentCount: preparedDocs.length, documentVersion },
+          "Signing documents for v1.1 submission"
+        );
+
+        // Validate that all documents are JSON (required for signing)
+        const xmlDocs = preparedDocs.filter((doc) => doc.format === "XML");
+        if (xmlDocs.length > 0) {
+          throw new AppError(
+            400,
+            "XML documents cannot be signed. Use JSON format for v1.1 submissions.",
+            "INVALID_DOCUMENT_FORMAT",
+            { propertyPath: "documents" }
+          );
+        }
+
+        // Convert PreparedDocument to SignableDocument
+        const signableDocuments: SignableDocument[] = body.documents.map((inputDoc, index) => {
+          // Parse JSON content for signing
+          let content: Record<string, unknown>;
+          try {
+            if (inputDoc.rawDocument) {
+              content = JSON.parse(inputDoc.rawDocument);
+            } else if (inputDoc.documentBase64) {
+              const decoded = Buffer.from(inputDoc.documentBase64, "base64").toString("utf-8");
+              content = JSON.parse(decoded);
+            } else {
+              throw new Error("No document content");
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : "Invalid JSON";
+            throw new AppError(400, `Failed to parse JSON document: ${message}`, "INVALID_DOCUMENT", {
+              propertyPath: `documents[${index}]`,
+            });
+          }
+
+          return {
+            content,
+            codeNumber: inputDoc.codeNumber,
+            format: inputDoc.format as "JSON" | "XML",
+          };
+        });
+
+        // Sign the documents
+        const signedDocuments = signDocuments(signableDocuments, {
+          documentVersion,
+          correlationId,
+          logger: {
+            info: (obj, msg) => request.log.info(obj, msg),
+            warn: (obj, msg) => request.log.warn(obj, msg),
+            error: (obj, msg) => request.log.error(obj, msg),
+          },
+        });
+
+        // Re-prepare documents with signed content
+        preparedDocs = signedDocuments.map((signed) => {
+          const signedJson = JSON.stringify(signed.content);
+          const document = encodeBase64(signedJson);
+          const documentHash = hashDocument(signedJson);
+          const estimatedSizeBytes = Buffer.byteLength(signedJson, "utf-8");
+
+          return {
+            format: signed.format,
+            codeNumber: signed.codeNumber,
+            document,
+            documentHash,
+            estimatedSizeBytes,
+          };
+        });
+
+        request.log.info(
+          { correlationId, signedCount: preparedDocs.length },
+          "Documents signed successfully"
+        );
       }
 
       // Validate submission constraints (size, count)

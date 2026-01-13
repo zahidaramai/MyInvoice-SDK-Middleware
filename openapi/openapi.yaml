@@ -591,6 +591,16 @@ components:
           TAXPAYER: "#/components/schemas/SessionCreateTaxpayer"
           INTERMEDIARY: "#/components/schemas/SessionCreateIntermediary"
 
+    DocumentVersion:
+      type: string
+      enum:
+        - "1.0"
+        - "1.1"
+      default: "1.0"
+      description: |
+        MyInvois document version. Version 1.0 submits unsigned documents.
+        Version 1.1 requires digital signing with X.509 certificate.
+
     SessionCreateTaxpayer:
       type: object
       required:
@@ -614,6 +624,8 @@ components:
           minLength: 1
           description: MyInvois client secret
           format: password
+        documentVersion:
+          $ref: "#/components/schemas/DocumentVersion"
 
     SessionCreateIntermediary:
       type: object
@@ -644,6 +656,8 @@ components:
           minLength: 1
           description: TIN or TIN:ROB of taxpayer to act on behalf of
           pattern: "^[A-Z0-9]+(:.*)?$"
+        documentVersion:
+          $ref: "#/components/schemas/DocumentVersion"
 
     Session:
       type: object
@@ -652,6 +666,7 @@ components:
         - env
         - mode
         - createdAt
+        - documentVersion
       properties:
         id:
           type: string
@@ -664,6 +679,8 @@ components:
         onBehalfOf:
           type: string
           description: TIN being represented (for INTERMEDIARY mode)
+        documentVersion:
+          $ref: "#/components/schemas/DocumentVersion"
         createdAt:
           type: string
           format: date-time
@@ -940,6 +957,31 @@ components:
               enum:
                 - ok
                 - error
+        signing:
+          $ref: "#/components/schemas/SigningHealthStatus"
+
+    SigningHealthStatus:
+      type: object
+      description: Signing subsystem health status
+      properties:
+        enabled:
+          type: boolean
+          description: Whether signing is enabled in configuration
+        certificateValid:
+          type: boolean
+          description: Whether the certificate is currently valid
+        certificateExpiry:
+          type: string
+          format: date-time
+          description: Certificate expiration date (ISO 8601)
+        certificateSubject:
+          type: string
+          description: Certificate subject name
+        defaultVersion:
+          $ref: "#/components/schemas/DocumentVersion"
+        expiringWithin30Days:
+          type: boolean
+          description: Warning flag if certificate expires within 30 days
 
     VersionResponse:
       type: object
@@ -964,6 +1006,50 @@ components:
       properties:
         error:
           $ref: "#/components/schemas/GatewayError"
+
+    SigningErrorCode:
+      type: string
+      description: |
+        Signing-related error codes. These are returned when document signing fails.
+      enum:
+        - SIGNING_DISABLED
+        - CERTIFICATE_LOAD_FAILED
+        - PRIVATE_KEY_LOAD_FAILED
+        - CERTIFICATE_EXPIRED
+        - CERTIFICATE_NOT_YET_VALID
+        - KEY_CERTIFICATE_MISMATCH
+        - SIGNING_FAILED
+        - SIGNATURE_VERIFICATION_FAILED
+        - INVALID_DOCUMENT_VERSION
+        - SIGNING_NOT_CONFIGURED
+        - SIGNING_REQUIRED
+        - DIGEST_MISMATCH
+        - SIGNATURE_INVALID
+        - CERTIFICATE_REJECTED
+
+    SigningErrorPhase:
+      type: string
+      description: Phase where signing error occurred
+      enum:
+        - loading
+        - signing
+        - verification
+
+    SigningErrorContext:
+      type: object
+      description: Additional context for signing errors
+      properties:
+        phase:
+          $ref: "#/components/schemas/SigningErrorPhase"
+        certificateSubject:
+          type: string
+          description: Certificate subject (if available)
+        documentVersion:
+          type: string
+          description: Document version being processed
+        documentCodeNumber:
+          type: string
+          description: Document code number (if applicable)
 
     GatewayError:
       type: object
@@ -1012,3 +1098,5 @@ components:
                 - MYINVOIS
             path:
               type: string
+        signing:
+          $ref: "#/components/schemas/SigningErrorContext"
