@@ -69,19 +69,13 @@ export interface CertificateInfo {
  * Result of a document signing operation
  */
 export interface SigningResult {
-  /** Whether signing was successful */
-  success: boolean;
-  /** The signed document (if successful) */
-  signedDocument?: string;
+  /** The signed document with signature block injected */
+  signedDocument: Record<string, unknown>;
   /** The signature block that was injected */
-  signatureBlock?: SignatureBlock;
-  /** Error message (if failed) */
-  error?: string;
-  /** Certificate info used for signing */
-  certificateInfo: CertificateInfo;
+  signatureBlock: SignatureBlock;
   /** Timestamp when signing occurred */
   signedAt: Date;
-  /** Document hash (SHA-256) */
+  /** Document hash (SHA-256, base64 encoded) */
   documentHash: string;
 }
 
@@ -108,6 +102,8 @@ export interface SignatureBlock {
   };
   /** ISO 8601 timestamp when signature was created */
   signingTime: string;
+  /** Raw UBL signature structure for document injection */
+  _raw: Record<string, unknown>;
 }
 
 /**
