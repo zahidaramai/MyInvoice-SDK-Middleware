@@ -154,6 +154,11 @@ export async function submitDocuments(
     Accept: "application/json",
   };
 
+  // Add onbehalfof header for intermediary mode
+  if (session.mode === "INTERMEDIARY" && session.onBehalfOf) {
+    headers.onbehalfof = session.onBehalfOf;
+  }
+
   // Create timeout controller
   const { controller, timeoutId } = createTimeoutController(DEFAULT_TIMEOUT_MS);
 
