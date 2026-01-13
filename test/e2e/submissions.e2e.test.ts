@@ -35,7 +35,8 @@ describe("E2E: Submissions", () => {
       url: "/v1/sessions",
       payload: createTaxpayerSession(),
     });
-    sessionId = response.json().sessionId;
+    const body = response.json();
+    sessionId = body.id;
   });
 
   afterEach(() => {
@@ -47,8 +48,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload("INV-001")] },
+        payload: { sessionId, documents: [createDocumentPayload("INV-001")] },
       });
 
       expect(response.statusCode).toBe(202);
@@ -68,8 +68,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents },
+        payload: { sessionId, documents },
       });
 
       expect(response.statusCode).toBe(202);
@@ -78,7 +77,7 @@ describe("E2E: Submissions", () => {
       expect(body.acceptedDocuments).toHaveLength(5);
     });
 
-    it("requires x-session-id header", async () => {
+    it("requires sessionId in payload", async () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
@@ -92,8 +91,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": "sess_invalid123" },
-        payload: { documents: [createDocumentPayload()] },
+        payload: { sessionId: "sess_invalid123", documents: [createDocumentPayload()] },
       });
 
       expect(response.statusCode).toBe(404);
@@ -103,8 +101,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: {},
+        payload: { sessionId },
       });
 
       expect(response.statusCode).toBe(400);
@@ -114,8 +111,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [] },
+        payload: { sessionId, documents: [] },
       });
 
       expect(response.statusCode).toBe(400);
@@ -127,8 +123,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents },
+        payload: { sessionId, documents },
       });
 
       expect(response.statusCode).toBe(400);
@@ -139,8 +134,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload()] },
+        payload: { sessionId, documents: [createDocumentPayload()] },
       });
 
       expect(response.headers["x-correlation-id"]).toBeDefined();
@@ -149,14 +143,13 @@ describe("E2E: Submissions", () => {
 
   describe("Deduplication (10-minute window)", () => {
     it("returns cached result for duplicate submission", async () => {
-      const payload = { documents: [createDocumentPayload("INV-DUPE-001")] };
+      const documents = [createDocumentPayload("INV-DUPE-001")];
 
       // First submission
       const response1 = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload,
+        payload: { sessionId, documents },
       });
 
       expect(response1.statusCode).toBe(202);
@@ -166,8 +159,7 @@ describe("E2E: Submissions", () => {
       const response2 = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload,
+        payload: { sessionId, documents },
       });
 
       expect(response2.statusCode).toBe(202);
@@ -184,8 +176,7 @@ describe("E2E: Submissions", () => {
       const response1 = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload("INV-A-001")] },
+        payload: { sessionId, documents: [createDocumentPayload("INV-A-001")] },
       });
 
       expect(response1.statusCode).toBe(202);
@@ -195,8 +186,7 @@ describe("E2E: Submissions", () => {
       const response2 = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload("INV-B-001")] },
+        payload: { sessionId, documents: [createDocumentPayload("INV-B-001")] },
       });
 
       expect(response2.statusCode).toBe(202);
@@ -213,16 +203,14 @@ describe("E2E: Submissions", () => {
       const submitResponse = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload("INV-STATUS-001")] },
+        payload: { sessionId, documents: [createDocumentPayload("INV-STATUS-001")] },
       });
       const { trackingId } = submitResponse.json();
 
       // Get status
       const response = await app.inject({
         method: "GET",
-        url: `/v1/submissions/${trackingId}`,
-        headers: { "x-session-id": sessionId },
+        url: `/v1/submissions/${trackingId}?sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -236,14 +224,13 @@ describe("E2E: Submissions", () => {
     it("returns 404 for non-existent tracking ID", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/submissions/trk_nonexistent123",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/submissions/trk_nonexistent123?sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(404);
     });
 
-    it("requires x-session-id header", async () => {
+    it("requires sessionId query param", async () => {
       const response = await app.inject({
         method: "GET",
         url: "/v1/submissions/trk_test123",
@@ -255,8 +242,7 @@ describe("E2E: Submissions", () => {
     it("returns 400 for invalid tracking ID format", async () => {
       const response = await app.inject({
         method: "GET",
-        url: "/v1/submissions/invalid-format",
-        headers: { "x-session-id": sessionId },
+        url: `/v1/submissions/invalid-format?sessionId=${sessionId}`,
       });
 
       expect(response.statusCode).toBe(400);
@@ -271,8 +257,7 @@ describe("E2E: Submissions", () => {
       const response = await app.inject({
         method: "POST",
         url: "/v1/submissions",
-        headers: { "x-session-id": sessionId },
-        payload: { documents: [createDocumentPayload()] },
+        payload: { sessionId, documents: [createDocumentPayload()] },
       });
 
       expect(response.statusCode).toBe(429);

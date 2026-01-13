@@ -72,7 +72,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         expect(response.statusCode).toBe(400);
         const body = response.json();
         expect(body.error).toBeDefined();
-        expect(body.error.message).toContain("documentVersion");
+        expect(body.error.messageEN).toContain("documentVersion");
       });
 
       it("rejects invalid document version '0.9' with 400 status", async () => {
@@ -124,7 +124,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         } else {
           const body = response.json();
           expect(body.error).toBeDefined();
-          expect(body.error.message.toLowerCase()).toMatch(/signing|configured/);
+          expect(body.error.messageEN.toLowerCase()).toMatch(/signing|configured/);
         }
       });
     });
@@ -147,7 +147,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         // Error code from upstream (may be normalized or raw)
         expect(body.error.code).toMatch(/Signature|SIGNING/i);
         expect(body.error.retryable).toBe(false);
-        expect(body.error.message.toLowerCase()).toContain("signature");
+        expect(body.error.messageEN.toLowerCase()).toContain("signature");
       });
     });
 
@@ -167,7 +167,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         // Error code from upstream (may be normalized or raw)
         expect(body.error.code).toMatch(/Digest|DIGEST/i);
         expect(body.error.retryable).toBe(false);
-        expect(body.error.message.toLowerCase()).toContain("digest");
+        expect(body.error.messageEN.toLowerCase()).toContain("digest");
       });
     });
 
@@ -187,7 +187,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         // Error code from upstream (may be normalized or raw)
         expect(body.error.code).toMatch(/Signature|SIGNATURE/i);
         expect(body.error.retryable).toBe(false);
-        expect(body.error.message.toLowerCase()).toContain("signature");
+        expect(body.error.messageEN.toLowerCase()).toContain("signature");
       });
     });
 
@@ -207,7 +207,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         // Error code from upstream (may be normalized or raw)
         expect(body.error.code).toMatch(/Certificate|CERTIFICATE/i);
         expect(body.error.retryable).toBe(false);
-        expect(body.error.message.toLowerCase()).toContain("certificate");
+        expect(body.error.messageEN.toLowerCase()).toContain("certificate");
       });
     });
 
@@ -225,7 +225,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         const body = response.json();
         expect(body.error).toBeDefined();
         // Message should contain certificate/expired reference
-        expect(body.error.message.toLowerCase()).toMatch(/certificate|expired/i);
+        expect(body.error.messageEN.toLowerCase()).toMatch(/certificate|expired/i);
         expect(body.error.retryable).toBe(false);
       });
     });
@@ -243,7 +243,7 @@ describe("Negative Tests: Signing (v1.1)", () => {
         expect(response.statusCode).toBe(400);
         const body = response.json();
         expect(body.error).toBeDefined();
-        expect(body.error.message).toContain("TIN");
+        expect(body.error.messageEN).toContain("TIN");
         expect(body.error.retryable).toBe(false);
       });
     });
@@ -296,11 +296,11 @@ describe("Negative Tests: Signing (v1.1)", () => {
       // Verify ErrorEnvelope structure
       expect(body).toHaveProperty("error");
       expect(body.error).toHaveProperty("code");
-      expect(body.error).toHaveProperty("message");
+      expect(body.error).toHaveProperty("messageEN");
       expect(body.error).toHaveProperty("httpStatus");
       expect(body.error).toHaveProperty("retryable");
       expect(typeof body.error.code).toBe("string");
-      expect(typeof body.error.message).toBe("string");
+      expect(typeof body.error.messageEN).toBe("string");
       expect(typeof body.error.httpStatus).toBe("number");
       expect(typeof body.error.retryable).toBe("boolean");
     });
