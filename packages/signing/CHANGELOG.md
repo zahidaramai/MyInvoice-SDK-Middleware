@@ -1,4 +1,4 @@
-# @myinvois/gateway
+# @myinvois/signing
 
 ## 0.2.0
 
@@ -32,18 +32,3 @@
   - Added signing guide (`docs/signing.md`)
   - Added migration guide (`docs/migration-v1.0-to-v1.1.md`)
   - Updated README with signing configuration
-
-### Patch Changes
-
-- Updated dependencies [81913d7]
-  - @myinvois/signing@0.2.0
-  - @myinvois/core@0.1.2
-  - @myinvois/myinvois-client@0.2.1
-
-## 0.1.1
-
-### Patch Changes
-
-- Updated dependencies [0b530f4]
-  - @myinvois/myinvois-client@0.2.0
-  - @myinvois/core@0.1.1
