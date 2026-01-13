@@ -51,6 +51,24 @@ export const ErrorCodes = {
   IDEMPOTENCY_CONFLICT: "IDEMPOTENCY_CONFLICT",
   MISSING_REQUIRED_FIELD: "MISSING_REQUIRED_FIELD",
 
+  // Signing errors (2001-2010) - local middleware errors
+  SIGNING_DISABLED: "SIGNING_DISABLED",
+  CERTIFICATE_LOAD_FAILED: "CERTIFICATE_LOAD_FAILED",
+  PRIVATE_KEY_LOAD_FAILED: "PRIVATE_KEY_LOAD_FAILED",
+  CERTIFICATE_EXPIRED: "CERTIFICATE_EXPIRED",
+  CERTIFICATE_NOT_YET_VALID: "CERTIFICATE_NOT_YET_VALID",
+  KEY_CERTIFICATE_MISMATCH: "KEY_CERTIFICATE_MISMATCH",
+  SIGNING_FAILED: "SIGNING_FAILED",
+  SIGNATURE_VERIFICATION_FAILED: "SIGNATURE_VERIFICATION_FAILED",
+  INVALID_DOCUMENT_VERSION: "INVALID_DOCUMENT_VERSION",
+  SIGNING_NOT_CONFIGURED: "SIGNING_NOT_CONFIGURED",
+
+  // Signing errors from MyInvois upstream - signature validation failures
+  SIGNING_REQUIRED: "SIGNING_REQUIRED",
+  DIGEST_MISMATCH: "DIGEST_MISMATCH",
+  SIGNATURE_INVALID: "SIGNATURE_INVALID",
+  CERTIFICATE_REJECTED: "CERTIFICATE_REJECTED",
+
   // Generic errors
   NOT_FOUND: "NOT_FOUND",
   FORBIDDEN: "FORBIDDEN",
@@ -88,7 +106,7 @@ export interface ErrorEnvelope {
   /** Internal error code (e.g., "DUPLICATE_SUBMISSION", "INVALID_TAXPAYER") */
   code: ErrorCode | string;
   /** Human-readable English message */
-  message: string;
+  messageEN: string;
   /** HTTP status code to send to client */
   httpStatus: number;
   /** Whether clients should automatically retry this request */
@@ -114,7 +132,7 @@ export interface ErrorEnvelope {
  */
 export interface ErrorEnvelopeDetail {
   code: string;
-  message: string;
+  messageEN: string;
   field?: string;
   propertyPath?: string;
 }
@@ -143,13 +161,13 @@ export const MyInvoisValidationSteps = {
  */
 export function createErrorEnvelope(
   code: ErrorCode | string,
-  message: string,
+  messageEN: string,
   httpStatus: number,
-  options: Partial<Omit<ErrorEnvelope, "code" | "message" | "httpStatus">> = {}
+  options: Partial<Omit<ErrorEnvelope, "code" | "messageEN" | "httpStatus">> = {}
 ): ErrorEnvelope {
   return {
     code,
-    message,
+    messageEN,
     httpStatus,
     retryable: options.retryable ?? false,
     ...options,
@@ -213,6 +231,24 @@ export function getHttpStatusForCode(code: string): number {
     [ErrorCodes.VALIDATION_ERROR]: 400,
     [ErrorCodes.IDEMPOTENCY_CONFLICT]: 409,
     [ErrorCodes.MISSING_REQUIRED_FIELD]: 400,
+
+    // Signing errors (local) - 400/500/503
+    [ErrorCodes.SIGNING_DISABLED]: 503,
+    [ErrorCodes.CERTIFICATE_LOAD_FAILED]: 500,
+    [ErrorCodes.PRIVATE_KEY_LOAD_FAILED]: 500,
+    [ErrorCodes.CERTIFICATE_EXPIRED]: 503,
+    [ErrorCodes.CERTIFICATE_NOT_YET_VALID]: 503,
+    [ErrorCodes.KEY_CERTIFICATE_MISMATCH]: 500,
+    [ErrorCodes.SIGNING_FAILED]: 500,
+    [ErrorCodes.SIGNATURE_VERIFICATION_FAILED]: 400,
+    [ErrorCodes.INVALID_DOCUMENT_VERSION]: 400,
+    [ErrorCodes.SIGNING_NOT_CONFIGURED]: 503,
+
+    // Signing errors (from MyInvois upstream) - 400
+    [ErrorCodes.SIGNING_REQUIRED]: 400,
+    [ErrorCodes.DIGEST_MISMATCH]: 400,
+    [ErrorCodes.SIGNATURE_INVALID]: 400,
+    [ErrorCodes.CERTIFICATE_REJECTED]: 400,
 
     // Generic
     [ErrorCodes.NOT_FOUND]: 404,

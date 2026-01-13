@@ -21,8 +21,11 @@ build/
 !.env.sandbox.example
 *.pem
 *.key
+*.p12
+*.pfx
 credentials.json
 secrets/
+private/
 
 # =============================================================================
 # IDE & Editor
@@ -145,3 +148,9 @@ sdks/generated/
 # =============================================================================
 load/results/
 *.k6.json
+
+# =============================================================================
+# Script outputs (generated during testing)
+# =============================================================================
+scripts/signed-invoice.json
+scripts/*.output.json
