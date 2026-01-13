@@ -355,7 +355,7 @@ describe("Document Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const body = response.json();
-      expect(body.error.message).toContain("72 hours");
+      expect(body.error.messageEN).toContain("72 hours");
     });
   });
 

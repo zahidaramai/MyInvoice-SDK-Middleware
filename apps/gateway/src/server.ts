@@ -1,5 +1,13 @@
+import { config as dotenvConfig } from "dotenv";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import { buildApp } from "./app.js";
 import { loadConfig } from "./config.js";
+
+// Load .env file from project root
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const envPath = resolve(__dirname, "../../../.env");
+dotenvConfig({ path: envPath });
 
 async function main() {
   const config = loadConfig();

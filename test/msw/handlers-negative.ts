@@ -440,6 +440,129 @@ export const submissionDuplicateHandler = http.get(
 );
 
 // ============================================================================
+// Signature Validation Handlers (v1.1)
+// ============================================================================
+
+/**
+ * Simulate missing signature error for v1.1 document
+ * Signature Validation Step
+ */
+export const signingRequiredHandler = http.post(
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
+  async () => {
+    return HttpResponse.json(
+      {
+        message: "Document version 1.1 requires digital signature",
+        code: "SignatureRequired",
+        stepName: "Signature Validation Step",
+        errorCode: "ERR301",
+        propertyPath: "UBLExtensions.Signature",
+      },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+);
+
+/**
+ * Simulate digest mismatch error (document tampered after signing)
+ * Signature Validation Step
+ */
+export const digestMismatchHandler = http.post(
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
+  async () => {
+    return HttpResponse.json(
+      {
+        message: "Document digest does not match signed digest value",
+        code: "DigestMismatch",
+        stepName: "Signature Validation Step",
+        errorCode: "ERR302",
+        propertyPath: "UBLExtensions.Signature.SignedInfo.DigestValue",
+      },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+);
+
+/**
+ * Simulate invalid signature error (cryptographic verification failed)
+ * Signature Validation Step
+ */
+export const signatureInvalidHandler = http.post(
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
+  async () => {
+    return HttpResponse.json(
+      {
+        message: "Digital signature verification failed",
+        code: "SignatureInvalid",
+        stepName: "Signature Validation Step",
+        errorCode: "ERR303",
+        propertyPath: "UBLExtensions.Signature.SignatureValue",
+      },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+);
+
+/**
+ * Simulate certificate rejected error (cert not trusted, expired, or invalid)
+ * Signature Validation Step
+ */
+export const certificateRejectedHandler = http.post(
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
+  async () => {
+    return HttpResponse.json(
+      {
+        message: "Signing certificate is not valid or not trusted by LHDN",
+        code: "CertificateRejected",
+        stepName: "Signature Validation Step",
+        errorCode: "ERR304",
+        propertyPath: "UBLExtensions.Signature.KeyInfo.X509Certificate",
+      },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+);
+
+/**
+ * Simulate certificate expired error from upstream
+ * Signature Validation Step
+ */
+export const certificateExpiredUpstreamHandler = http.post(
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
+  async () => {
+    return HttpResponse.json(
+      {
+        message: "Signing certificate has expired",
+        code: "CertificateExpired",
+        stepName: "Signature Validation Step",
+        errorCode: "ERR305",
+        propertyPath: "UBLExtensions.Signature.KeyInfo.X509Certificate",
+      },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+);
+
+/**
+ * Simulate TIN mismatch between auth and document
+ * When intermediary submits for wrong TIN
+ */
+export const tinMismatchHandler = http.post(
+  `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
+  async () => {
+    return HttpResponse.json(
+      {
+        message: "The authenticated TIN and documents TIN is not matching",
+        code: "TinMismatch",
+        stepName: "Authorization Validator",
+        errorCode: "ERR401",
+      },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+);
+
+// ============================================================================
 // TIN Validation Handlers
 // ============================================================================
 
@@ -575,6 +698,14 @@ export const negativeHandlers = {
   // TIN
   tinNotFound: tinNotFoundHandler,
   tinRateLimit: tinRateLimitHandler,
+
+  // Signature validation (v1.1)
+  signingRequired: signingRequiredHandler,
+  digestMismatch: digestMismatchHandler,
+  signatureInvalid: signatureInvalidHandler,
+  certificateRejected: certificateRejectedHandler,
+  certificateExpiredUpstream: certificateExpiredUpstreamHandler,
+  tinMismatch: tinMismatchHandler,
 };
 
 export type NegativeHandlerName = keyof typeof negativeHandlers;

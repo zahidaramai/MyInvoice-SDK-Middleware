@@ -73,7 +73,7 @@ describe("Negative Tests: Submissions", () => {
         expect(body.error).toBeDefined();
         expect(body.error.code).toBe(ErrorCodes.DUPLICATE_SUBMISSION);
         expect(body.error.retryable).toBe(false);
-        expect(body.error.message).toBeDefined();
+        expect(body.error.messageEN).toBeDefined();
       });
 
       it("does not retry duplicate submission errors", async () => {
@@ -129,7 +129,7 @@ describe("Negative Tests: Submissions", () => {
         const body = response.json();
         expect(body.error.code).toBe(ErrorCodes.INVALID_TAXPAYER);
         // Message should be normalized/clear in English
-        expect(body.error.message).toBeDefined();
+        expect(body.error.messageEN).toBeDefined();
       });
     });
 
@@ -326,7 +326,7 @@ describe("Negative Tests: Submissions", () => {
 
         expect(response.statusCode).toBe(400);
         const body = response.json();
-        expect(body.error.message).toContain("100");
+        expect(body.error.messageEN).toContain("100");
       });
     });
 
@@ -414,11 +414,11 @@ describe("Negative Tests: Submissions", () => {
       // Verify ErrorEnvelope structure
       expect(body).toHaveProperty("error");
       expect(body.error).toHaveProperty("code");
-      expect(body.error).toHaveProperty("message");
+      expect(body.error).toHaveProperty("messageEN");
       expect(body.error).toHaveProperty("httpStatus");
       expect(body.error).toHaveProperty("retryable");
       expect(typeof body.error.code).toBe("string");
-      expect(typeof body.error.message).toBe("string");
+      expect(typeof body.error.messageEN).toBe("string");
       expect(typeof body.error.httpStatus).toBe("number");
       expect(typeof body.error.retryable).toBe("boolean");
     });

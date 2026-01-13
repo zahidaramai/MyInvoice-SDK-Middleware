@@ -109,6 +109,40 @@ const VALIDATION_STEP_PATTERNS: ErrorPattern[] = [
 ];
 
 /**
+ * Error patterns for signature validation failures from MyInvois
+ */
+const SIGNATURE_ERROR_PATTERNS: ErrorPattern[] = [
+  {
+    pattern: /signature.*missing|missing.*signature|no.*signature|signature.*required/i,
+    code: ErrorCodes.SIGNING_REQUIRED,
+    httpStatus: 400,
+    retryable: false,
+    messageTemplate: "Document signature is required. Please sign the document before submission.",
+  },
+  {
+    pattern: /digest.*mismatch|digest.*invalid|invalid.*digest|digestvalue.*invalid/i,
+    code: ErrorCodes.DIGEST_MISMATCH,
+    httpStatus: 400,
+    retryable: false,
+    messageTemplate: "Document digest does not match. The document may have been modified after signing.",
+  },
+  {
+    pattern: /signature.*invalid|invalid.*signature|signature.*verification.*fail|signaturevalue.*invalid/i,
+    code: ErrorCodes.SIGNATURE_INVALID,
+    httpStatus: 400,
+    retryable: false,
+    messageTemplate: "Document signature is invalid. Please verify the signing certificate and re-sign.",
+  },
+  {
+    pattern: /certificate.*invalid|invalid.*certificate|certificate.*reject|certificate.*untrusted|certificate.*expired/i,
+    code: ErrorCodes.CERTIFICATE_REJECTED,
+    httpStatus: 400,
+    retryable: false,
+    messageTemplate: "Signing certificate was rejected. Please verify your certificate is valid and trusted.",
+  },
+];
+
+/**
  * Error patterns for authentication failures
  */
 const AUTH_ERROR_PATTERNS: ErrorPattern[] = [
@@ -440,6 +474,17 @@ function matchErrorPattern(
 
   // Check validation step patterns
   for (const pattern of VALIDATION_STEP_PATTERNS) {
+    if (typeof pattern.pattern === "string") {
+      if (searchText.toLowerCase().includes(pattern.pattern.toLowerCase())) {
+        return pattern;
+      }
+    } else if (pattern.pattern.test(searchText)) {
+      return pattern;
+    }
+  }
+
+  // Check signature error patterns (for v1.1 signature validation failures)
+  for (const pattern of SIGNATURE_ERROR_PATTERNS) {
     if (typeof pattern.pattern === "string") {
       if (searchText.toLowerCase().includes(pattern.pattern.toLowerCase())) {
         return pattern;
