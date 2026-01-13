@@ -5,6 +5,40 @@ import { parseCertificate } from './certificate-loader.js';
 import { SIGNATURE_URIS } from './signer.js';
 
 /**
+ * Get UBLExtensions from a document element that could be either an object or array
+ */
+function getUBLExtensions(element: unknown): Record<string, unknown> | null {
+  if (!element || typeof element !== 'object') {
+    return null;
+  }
+
+  // Handle array-wrapped documents (MyInvois format: Invoice: [{UBLExtensions: [...], ...}])
+  if (Array.isArray(element) && element.length > 0) {
+    const firstElement = element[0] as Record<string, unknown>;
+    const ublExt = firstElement.UBLExtensions;
+    // UBLExtensions can be an array or object
+    if (Array.isArray(ublExt) && ublExt.length > 0) {
+      return ublExt[0] as Record<string, unknown>;
+    }
+    if (ublExt && typeof ublExt === 'object') {
+      return ublExt as Record<string, unknown>;
+    }
+    return null;
+  }
+
+  // Handle object-wrapped documents (simple format: Invoice: {UBLExtensions: {...}, ...})
+  const obj = element as Record<string, unknown>;
+  const ublExt = obj.UBLExtensions;
+  if (Array.isArray(ublExt) && ublExt.length > 0) {
+    return ublExt[0] as Record<string, unknown>;
+  }
+  if (ublExt && typeof ublExt === 'object') {
+    return ublExt as Record<string, unknown>;
+  }
+  return null;
+}
+
+/**
  * Extract signature block from a signed document
  */
 export function extractSignature(document: Record<string, unknown>): {
@@ -17,23 +51,19 @@ export function extractSignature(document: Record<string, unknown>): {
   // Find UBLExtensions
   let extensions: Record<string, unknown> | null = null;
 
-  if (document.Invoice && typeof document.Invoice === 'object') {
-    const invoice = document.Invoice as Record<string, unknown>;
-    if (invoice.UBLExtensions) {
-      extensions = invoice.UBLExtensions as Record<string, unknown>;
-    }
-  } else if (document.CreditNote && typeof document.CreditNote === 'object') {
-    const creditNote = document.CreditNote as Record<string, unknown>;
-    if (creditNote.UBLExtensions) {
-      extensions = creditNote.UBLExtensions as Record<string, unknown>;
-    }
-  } else if (document.DebitNote && typeof document.DebitNote === 'object') {
-    const debitNote = document.DebitNote as Record<string, unknown>;
-    if (debitNote.UBLExtensions) {
-      extensions = debitNote.UBLExtensions as Record<string, unknown>;
-    }
+  if (document.Invoice) {
+    extensions = getUBLExtensions(document.Invoice);
+  } else if (document.CreditNote) {
+    extensions = getUBLExtensions(document.CreditNote);
+  } else if (document.DebitNote) {
+    extensions = getUBLExtensions(document.DebitNote);
   } else if (document.UBLExtensions) {
-    extensions = document.UBLExtensions as Record<string, unknown>;
+    // Handle array of UBLExtensions
+    if (Array.isArray(document.UBLExtensions) && document.UBLExtensions.length > 0) {
+      extensions = document.UBLExtensions[0] as Record<string, unknown>;
+    } else {
+      extensions = document.UBLExtensions as Record<string, unknown>;
+    }
   }
 
   if (!extensions) {
@@ -147,29 +177,49 @@ export function recalculateHash(document: Record<string, unknown>): string {
 }
 
 /**
+ * Remove UBLExtensions from a document element
+ */
+function removeUBLExtensionsFromElement(element: unknown): unknown {
+  if (!element || typeof element !== 'object') {
+    return element;
+  }
+
+  // Handle array-wrapped documents (MyInvois format: Invoice: [{UBLExtensions: [...], ...}])
+  if (Array.isArray(element)) {
+    return element.map((item, index) => {
+      if (index === 0 && typeof item === 'object' && item !== null) {
+        const obj = { ...(item as Record<string, unknown>) };
+        delete obj.UBLExtensions;
+        return obj;
+      }
+      return item;
+    });
+  }
+
+  // Handle object-wrapped documents (simple format: Invoice: {UBLExtensions: {...}, ...})
+  const obj = { ...(element as Record<string, unknown>) };
+  delete obj.UBLExtensions;
+  return obj;
+}
+
+/**
  * Remove UBLExtensions from document
  */
 function removeUBLExtensions(document: Record<string, unknown>): Record<string, unknown> {
   const result = { ...document };
 
-  if (result.Invoice && typeof result.Invoice === 'object') {
-    const invoice = { ...(result.Invoice as Record<string, unknown>) };
-    delete invoice.UBLExtensions;
-    result.Invoice = invoice;
+  if (result.Invoice) {
+    result.Invoice = removeUBLExtensionsFromElement(result.Invoice);
     return result;
   }
 
-  if (result.CreditNote && typeof result.CreditNote === 'object') {
-    const creditNote = { ...(result.CreditNote as Record<string, unknown>) };
-    delete creditNote.UBLExtensions;
-    result.CreditNote = creditNote;
+  if (result.CreditNote) {
+    result.CreditNote = removeUBLExtensionsFromElement(result.CreditNote);
     return result;
   }
 
-  if (result.DebitNote && typeof result.DebitNote === 'object') {
-    const debitNote = { ...(result.DebitNote as Record<string, unknown>) };
-    delete debitNote.UBLExtensions;
-    result.DebitNote = debitNote;
+  if (result.DebitNote) {
+    result.DebitNote = removeUBLExtensionsFromElement(result.DebitNote);
     return result;
   }
 

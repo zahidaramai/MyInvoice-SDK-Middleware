@@ -1,0 +1,107 @@
+{
+  "_D": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+  "_A": "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+  "_B": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+  "Invoice": [{
+    "ID": [{"_": "TEST-V11-001"}],
+    "IssueDate": [{"_": "2026-01-13"}],
+    "IssueTime": [{"_": "17:30:00Z"}],
+    "InvoiceTypeCode": [{"_": "01", "listVersionID": "1.1"}],
+    "DocumentCurrencyCode": [{"_": "MYR"}],
+    "AccountingSupplierParty": [{
+      "Party": [{
+        "PartyIdentification": [{
+          "ID": [{"_": "C23880177020", "schemeID": "TIN"}]
+        }, {
+          "ID": [{"_": "201501009208", "schemeID": "BRN"}]
+        }],
+        "PartyLegalEntity": [{
+          "RegistrationName": [{"_": "JB MULTIMEDIA SERVICES SDN. BHD."}]
+        }],
+        "PostalAddress": [{
+          "AddressLine": [{"Line": [{"_": "No 1, Jalan Test"}]}],
+          "CityName": [{"_": "Johor Bahru"}],
+          "PostalZone": [{"_": "81100"}],
+          "CountrySubentityCode": [{"_": "01"}],
+          "Country": [{
+            "IdentificationCode": [{"_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6"}]
+          }]
+        }],
+        "Contact": [{
+          "Telephone": [{"_": "+60123456789"}],
+          "ElectronicMail": [{"_": "test@jbmultimedia.com"}]
+        }]
+      }]
+    }],
+    "AccountingCustomerParty": [{
+      "Party": [{
+        "PartyIdentification": [{
+          "ID": [{"_": "IG22570640070", "schemeID": "TIN"}]
+        }, {
+          "ID": [{"_": "901120125931", "schemeID": "NRIC"}]
+        }],
+        "PartyLegalEntity": [{
+          "RegistrationName": [{"_": "ZAHID BIN ARAMAI"}]
+        }],
+        "PostalAddress": [{
+          "AddressLine": [{"Line": [{"_": "Test Address"}]}],
+          "CityName": [{"_": "Kuala Lumpur"}],
+          "PostalZone": [{"_": "50000"}],
+          "CountrySubentityCode": [{"_": "14"}],
+          "Country": [{
+            "IdentificationCode": [{"_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6"}]
+          }]
+        }],
+        "Contact": [{
+          "Telephone": [{"_": "+60123456789"}]
+        }]
+      }]
+    }],
+    "LegalMonetaryTotal": [{
+      "LineExtensionAmount": [{"_": 100.00, "currencyID": "MYR"}],
+      "TaxExclusiveAmount": [{"_": 100.00, "currencyID": "MYR"}],
+      "TaxInclusiveAmount": [{"_": 100.00, "currencyID": "MYR"}],
+      "PayableAmount": [{"_": 100.00, "currencyID": "MYR"}]
+    }],
+    "TaxTotal": [{
+      "TaxAmount": [{"_": 0.00, "currencyID": "MYR"}],
+      "TaxSubtotal": [{
+        "TaxableAmount": [{"_": 100.00, "currencyID": "MYR"}],
+        "TaxAmount": [{"_": 0.00, "currencyID": "MYR"}],
+        "TaxCategory": [{
+          "ID": [{"_": "E"}],
+          "TaxScheme": [{
+            "ID": [{"_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6"}]
+          }]
+        }]
+      }]
+    }],
+    "InvoiceLine": [{
+      "ID": [{"_": "1"}],
+      "InvoicedQuantity": [{"_": 1, "unitCode": "C62"}],
+      "LineExtensionAmount": [{"_": 100.00, "currencyID": "MYR"}],
+      "TaxTotal": [{
+        "TaxAmount": [{"_": 0.00, "currencyID": "MYR"}],
+        "TaxSubtotal": [{
+          "TaxableAmount": [{"_": 100.00, "currencyID": "MYR"}],
+          "TaxAmount": [{"_": 0.00, "currencyID": "MYR"}],
+          "TaxCategory": [{
+            "ID": [{"_": "E"}],
+            "TaxScheme": [{
+              "ID": [{"_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6"}]
+            }]
+          }]
+        }]
+      }],
+      "Item": [{
+        "Description": [{"_": "Test Item for v1.1 Signing"}],
+        "CommodityClassification": [{
+          "ItemClassificationCode": [{"_": "001", "listID": "CLASS"}]
+        }]
+      }],
+      "Price": [{
+        "PriceAmount": [{"_": 100.00, "currencyID": "MYR"}]
+      }]
+    }]
+  }]
+}
