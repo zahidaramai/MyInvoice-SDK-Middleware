@@ -97,7 +97,7 @@ describe("Gateway App", () => {
       const body = response.json();
       expect(body.error).toBeDefined();
       expect(body.error.httpStatus).toBe(404);
-      expect(body.error.message).toContain("not found");
+      expect(body.error.messageEN).toContain("not found");
       expect(body.error.code).toBe("NOT_FOUND");
     });
   });
