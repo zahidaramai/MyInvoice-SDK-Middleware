@@ -7,6 +7,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { AppError, createErrorEnvelope } from "../../lib/errors.js";
 import { sessionStore } from "../../lib/sessionStore.js";
 import { getTokenManager, getRateLimiter } from "../../lib/myinvois.js";
+import { isValidSessionId } from "../../lib/validation.js";
 import { loadConfig } from "../../config.js";
 import {
   validateTaxpayerTin,
@@ -21,13 +22,6 @@ import {
 } from "@myinvois/storage";
 
 const VALID_ID_TYPES: IdType[] = ["NRIC", "PASSPORT", "BRN", "ARMY"];
-
-/**
- * Validate session ID format
- */
-function isValidSessionId(id: string): boolean {
-  return /^sess_[a-zA-Z0-9]+$/.test(id);
-}
 
 /**
  * Validate ID type

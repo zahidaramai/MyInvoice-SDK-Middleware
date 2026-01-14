@@ -145,18 +145,6 @@ export interface ErrorEnvelopeResponse {
 }
 
 /**
- * Known MyInvois validation step names and their mappings
- */
-export const MyInvoisValidationSteps = {
-  DUPLICATE_SUBMISSION: "Duplicated Submission Validator",
-  TAXPAYER_PROFILE: "Taxpayer Profile Validator",
-  AMOUNT_TOTALS: "Amount/Totals Validator",
-  DOCUMENT_RELATION: "Document Relation Validator",
-  DOCUMENT_STRUCTURE: "Document Structure Validator",
-  FORMAT_VALIDATION: "Format Validation",
-} as const;
-
-/**
  * Create an error envelope with defaults
  */
 export function createErrorEnvelope(

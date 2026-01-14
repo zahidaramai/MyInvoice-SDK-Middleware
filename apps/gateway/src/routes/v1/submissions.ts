@@ -6,6 +6,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { AppError, createErrorEnvelope, ErrorCodes, isRetryableError } from "../../lib/errors.js";
 import { sessionStore } from "../../lib/sessionStore.js";
 import { getTokenManager, getRateLimiter } from "../../lib/myinvois.js";
+import { isValidSessionId } from "../../lib/validation.js";
 import {
   prepareDocument,
   validateSubmissionConstraints,
@@ -67,13 +68,6 @@ interface SubmissionResultResponse {
       errorCode?: string;
     };
   }>;
-}
-
-/**
- * Validate session ID format
- */
-function isValidSessionId(id: string): boolean {
-  return /^sess_[a-zA-Z0-9]+$/.test(id);
 }
 
 /**
