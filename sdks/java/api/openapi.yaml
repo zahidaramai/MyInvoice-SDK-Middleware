@@ -1241,6 +1241,7 @@ components:
             - null
             signing:
               phase: loading
+              code: SIGNING_DISABLED
               documentCodeNumber: documentCodeNumber
               documentVersion: documentVersion
               certificateSubject: certificateSubject
@@ -1263,6 +1264,7 @@ components:
             - null
             signing:
               phase: loading
+              code: SIGNING_DISABLED
               documentCodeNumber: documentCodeNumber
               documentVersion: documentVersion
               certificateSubject: certificateSubject
@@ -1330,6 +1332,7 @@ components:
           - null
           signing:
             phase: loading
+            code: SIGNING_DISABLED
             documentCodeNumber: documentCodeNumber
             documentVersion: documentVersion
             certificateSubject: certificateSubject
@@ -1365,6 +1368,7 @@ components:
             - null
             signing:
               phase: loading
+              code: SIGNING_DISABLED
               documentCodeNumber: documentCodeNumber
               documentVersion: documentVersion
               certificateSubject: certificateSubject
@@ -1389,6 +1393,7 @@ components:
             - null
             signing:
               phase: loading
+              code: SIGNING_DISABLED
               documentCodeNumber: documentCodeNumber
               documentVersion: documentVersion
               certificateSubject: certificateSubject
@@ -1449,6 +1454,7 @@ components:
           - null
           signing:
             phase: loading
+            code: SIGNING_DISABLED
             documentCodeNumber: documentCodeNumber
             documentVersion: documentVersion
             certificateSubject: certificateSubject
@@ -1696,6 +1702,7 @@ components:
           - null
           signing:
             phase: loading
+            code: SIGNING_DISABLED
             documentCodeNumber: documentCodeNumber
             documentVersion: documentVersion
             certificateSubject: certificateSubject
@@ -1736,10 +1743,13 @@ components:
       description: Additional context for signing errors
       example:
         phase: loading
+        code: SIGNING_DISABLED
         documentCodeNumber: documentCodeNumber
         documentVersion: documentVersion
         certificateSubject: certificateSubject
       properties:
+        code:
+          $ref: '#/components/schemas/SigningErrorCode'
         phase:
           $ref: '#/components/schemas/SigningErrorPhase'
         certificateSubject:
@@ -1770,6 +1780,7 @@ components:
         - null
         signing:
           phase: loading
+          code: SIGNING_DISABLED
           documentCodeNumber: documentCodeNumber
           documentVersion: documentVersion
           certificateSubject: certificateSubject

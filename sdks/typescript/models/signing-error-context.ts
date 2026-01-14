@@ -15,6 +15,9 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { SigningErrorCode } from './signing-error-code';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { SigningErrorPhase } from './signing-error-phase';
 
 /**
@@ -23,6 +26,12 @@ import type { SigningErrorPhase } from './signing-error-phase';
  * @interface SigningErrorContext
  */
 export interface SigningErrorContext {
+    /**
+     * 
+     * @type {SigningErrorCode}
+     * @memberof SigningErrorContext
+     */
+    'code'?: SigningErrorCode;
     /**
      * 
      * @type {SigningErrorPhase}
