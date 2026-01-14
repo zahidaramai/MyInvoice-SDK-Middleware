@@ -33,6 +33,12 @@ namespace MyInvois.Sdk.Model
     {
 
         /// <summary>
+        /// Gets or Sets Code
+        /// </summary>
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public SigningErrorCode? Code { get; set; }
+
+        /// <summary>
         /// Gets or Sets Phase
         /// </summary>
         [DataMember(Name = "phase", EmitDefaultValue = false)]
@@ -40,12 +46,14 @@ namespace MyInvois.Sdk.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="SigningErrorContext" /> class.
         /// </summary>
+        /// <param name="code">code.</param>
         /// <param name="phase">phase.</param>
         /// <param name="certificateSubject">Certificate subject (if available).</param>
         /// <param name="documentVersion">Document version being processed.</param>
         /// <param name="documentCodeNumber">Document code number (if applicable).</param>
-        public SigningErrorContext(SigningErrorPhase? phase = default(SigningErrorPhase?), string certificateSubject = default(string), string documentVersion = default(string), string documentCodeNumber = default(string))
+        public SigningErrorContext(SigningErrorCode? code = default(SigningErrorCode?), SigningErrorPhase? phase = default(SigningErrorPhase?), string certificateSubject = default(string), string documentVersion = default(string), string documentCodeNumber = default(string))
         {
+            this.Code = code;
             this.Phase = phase;
             this.CertificateSubject = certificateSubject;
             this.DocumentVersion = documentVersion;
@@ -81,6 +89,7 @@ namespace MyInvois.Sdk.Model
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("class SigningErrorContext {\n");
+            sb.Append("  Code: ").Append(Code).Append("\n");
             sb.Append("  Phase: ").Append(Phase).Append("\n");
             sb.Append("  CertificateSubject: ").Append(CertificateSubject).Append("\n");
             sb.Append("  DocumentVersion: ").Append(DocumentVersion).Append("\n");
