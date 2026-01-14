@@ -19,6 +19,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
+from myinvois_sdk.models.signing_error_code import SigningErrorCode
 from myinvois_sdk.models.signing_error_phase import SigningErrorPhase
 from typing import Optional, Set
 from typing_extensions import Self
@@ -27,11 +28,12 @@ class SigningErrorContext(BaseModel):
     """
     Additional context for signing errors
     """ # noqa: E501
+    code: Optional[SigningErrorCode] = None
     phase: Optional[SigningErrorPhase] = None
     certificate_subject: Optional[StrictStr] = Field(default=None, description="Certificate subject (if available)", alias="certificateSubject")
     document_version: Optional[StrictStr] = Field(default=None, description="Document version being processed", alias="documentVersion")
     document_code_number: Optional[StrictStr] = Field(default=None, description="Document code number (if applicable)", alias="documentCodeNumber")
-    __properties: ClassVar[List[str]] = ["phase", "certificateSubject", "documentVersion", "documentCodeNumber"]
+    __properties: ClassVar[List[str]] = ["code", "phase", "certificateSubject", "documentVersion", "documentCodeNumber"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -84,6 +86,7 @@ class SigningErrorContext(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "code": obj.get("code"),
             "phase": obj.get("phase"),
             "certificateSubject": obj.get("certificateSubject"),
             "documentVersion": obj.get("documentVersion"),
