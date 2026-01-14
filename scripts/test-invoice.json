@@ -4,47 +4,23 @@
   "_B": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
   "Invoice": [{
     "ID": [{"_": "TEST-V11-001"}],
-    "IssueDate": [{"_": "2026-01-13"}],
-    "IssueTime": [{"_": "17:30:00Z"}],
+    "IssueDate": [{"_": "2025-01-01"}],
+    "IssueTime": [{"_": "12:00:00Z"}],
     "InvoiceTypeCode": [{"_": "01", "listVersionID": "1.1"}],
     "DocumentCurrencyCode": [{"_": "MYR"}],
     "AccountingSupplierParty": [{
       "Party": [{
+        "IndustryClassificationCode": [{"_": "62010", "name": "Computer programming activities"}],
         "PartyIdentification": [{
-          "ID": [{"_": "C23880177020", "schemeID": "TIN"}]
+          "ID": [{"_": "C00000000000", "schemeID": "TIN"}]
         }, {
-          "ID": [{"_": "201501009208", "schemeID": "BRN"}]
+          "ID": [{"_": "000000000000", "schemeID": "BRN"}]
         }],
         "PartyLegalEntity": [{
-          "RegistrationName": [{"_": "JB MULTIMEDIA SERVICES SDN. BHD."}]
+          "RegistrationName": [{"_": "EXAMPLE SUPPLIER SDN. BHD."}]
         }],
         "PostalAddress": [{
-          "AddressLine": [{"Line": [{"_": "No 1, Jalan Test"}]}],
-          "CityName": [{"_": "Johor Bahru"}],
-          "PostalZone": [{"_": "81100"}],
-          "CountrySubentityCode": [{"_": "01"}],
-          "Country": [{
-            "IdentificationCode": [{"_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6"}]
-          }]
-        }],
-        "Contact": [{
-          "Telephone": [{"_": "+60123456789"}],
-          "ElectronicMail": [{"_": "test@jbmultimedia.com"}]
-        }]
-      }]
-    }],
-    "AccountingCustomerParty": [{
-      "Party": [{
-        "PartyIdentification": [{
-          "ID": [{"_": "IG22570640070", "schemeID": "TIN"}]
-        }, {
-          "ID": [{"_": "901120125931", "schemeID": "NRIC"}]
-        }],
-        "PartyLegalEntity": [{
-          "RegistrationName": [{"_": "ZAHID BIN ARAMAI"}]
-        }],
-        "PostalAddress": [{
-          "AddressLine": [{"Line": [{"_": "Test Address"}]}],
+          "AddressLine": [{"Line": [{"_": "123 Example Street"}]}],
           "CityName": [{"_": "Kuala Lumpur"}],
           "PostalZone": [{"_": "50000"}],
           "CountrySubentityCode": [{"_": "14"}],
@@ -53,7 +29,32 @@
           }]
         }],
         "Contact": [{
-          "Telephone": [{"_": "+60123456789"}]
+          "Telephone": [{"_": "+60300000000"}],
+          "ElectronicMail": [{"_": "supplier@example.com"}]
+        }]
+      }]
+    }],
+    "AccountingCustomerParty": [{
+      "Party": [{
+        "PartyIdentification": [{
+          "ID": [{"_": "EI00000000010", "schemeID": "TIN"}]
+        }, {
+          "ID": [{"_": "000000000000", "schemeID": "NRIC"}]
+        }],
+        "PartyLegalEntity": [{
+          "RegistrationName": [{"_": "EXAMPLE CUSTOMER"}]
+        }],
+        "PostalAddress": [{
+          "AddressLine": [{"Line": [{"_": "456 Customer Road"}]}],
+          "CityName": [{"_": "Petaling Jaya"}],
+          "PostalZone": [{"_": "47800"}],
+          "CountrySubentityCode": [{"_": "10"}],
+          "Country": [{
+            "IdentificationCode": [{"_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6"}]
+          }]
+        }],
+        "Contact": [{
+          "Telephone": [{"_": "+60300000001"}]
         }]
       }]
     }],
@@ -70,6 +71,7 @@
         "TaxAmount": [{"_": 0.00, "currencyID": "MYR"}],
         "TaxCategory": [{
           "ID": [{"_": "E"}],
+          "TaxExemptionReason": [{"_": "Exempt New Means of Transport"}],
           "TaxScheme": [{
             "ID": [{"_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6"}]
           }]
@@ -87,6 +89,7 @@
           "TaxAmount": [{"_": 0.00, "currencyID": "MYR"}],
           "TaxCategory": [{
             "ID": [{"_": "E"}],
+            "TaxExemptionReason": [{"_": "Exempt New Means of Transport"}],
             "TaxScheme": [{
               "ID": [{"_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6"}]
             }]
@@ -94,13 +97,16 @@
         }]
       }],
       "Item": [{
-        "Description": [{"_": "Test Item for v1.1 Signing"}],
+        "Description": [{"_": "Test Service Item"}],
         "CommodityClassification": [{
           "ItemClassificationCode": [{"_": "001", "listID": "CLASS"}]
         }]
       }],
       "Price": [{
         "PriceAmount": [{"_": 100.00, "currencyID": "MYR"}]
+      }],
+      "ItemPriceExtension": [{
+        "Amount": [{"_": 100.00, "currencyID": "MYR"}]
       }]
     }]
   }]
