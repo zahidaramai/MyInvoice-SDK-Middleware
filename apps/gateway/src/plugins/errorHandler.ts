@@ -12,7 +12,6 @@ import {
   createErrorEnvelope,
   createNotFoundError,
   ErrorCodes,
-  isRetryableError,
 } from "../lib/errors.js";
 import { createErrorEnvelopeResponse, type ErrorEnvelope } from "@myinvois/core";
 import {
@@ -74,7 +73,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     let statusCode = 500;
     let message = "Internal server error";
     let errorCode: string = ErrorCodes.INTERNAL_ERROR;
-    let propertyPath: string | undefined;
     let retryable = false;
 
     if (error instanceof Error) {
@@ -114,11 +112,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             errorCode = ErrorCodes.UPSTREAM_RATE_LIMITED;
             retryable = true;
             break;
-          default:
-            if (statusCode >= 500) {
-              errorCode = ErrorCodes.INTERNAL_ERROR;
-              retryable = isRetryableError(errorCode);
-            }
         }
       }
 
@@ -139,7 +132,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     envelope = createErrorEnvelope(statusCode, message, {
       correlationId,
       errorCode,
-      propertyPath,
       retryable,
     });
 
