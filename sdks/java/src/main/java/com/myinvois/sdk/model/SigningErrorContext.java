@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.myinvois.sdk.model.SigningErrorCode;
 import com.myinvois.sdk.model.SigningErrorPhase;
 import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -34,6 +35,7 @@ import com.myinvois.sdk.ApiClient;
  * Additional context for signing errors
  */
 @JsonPropertyOrder({
+  SigningErrorContext.JSON_PROPERTY_CODE,
   SigningErrorContext.JSON_PROPERTY_PHASE,
   SigningErrorContext.JSON_PROPERTY_CERTIFICATE_SUBJECT,
   SigningErrorContext.JSON_PROPERTY_DOCUMENT_VERSION,
@@ -41,6 +43,10 @@ import com.myinvois.sdk.ApiClient;
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.10.0")
 public class SigningErrorContext {
+  public static final String JSON_PROPERTY_CODE = "code";
+  @jakarta.annotation.Nullable
+  private SigningErrorCode code;
+
   public static final String JSON_PROPERTY_PHASE = "phase";
   @jakarta.annotation.Nullable
   private SigningErrorPhase phase;
@@ -59,6 +65,30 @@ public class SigningErrorContext {
 
   public SigningErrorContext() { 
   }
+
+  public SigningErrorContext code(@jakarta.annotation.Nullable SigningErrorCode code) {
+    this.code = code;
+    return this;
+  }
+
+  /**
+   * Get code
+   * @return code
+   */
+  @jakarta.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_CODE)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public SigningErrorCode getCode() {
+    return code;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_CODE)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setCode(@jakarta.annotation.Nullable SigningErrorCode code) {
+    this.code = code;
+  }
+
 
   public SigningErrorContext phase(@jakarta.annotation.Nullable SigningErrorPhase phase) {
     this.phase = phase;
@@ -168,7 +198,8 @@ public class SigningErrorContext {
       return false;
     }
     SigningErrorContext signingErrorContext = (SigningErrorContext) o;
-    return Objects.equals(this.phase, signingErrorContext.phase) &&
+    return Objects.equals(this.code, signingErrorContext.code) &&
+        Objects.equals(this.phase, signingErrorContext.phase) &&
         Objects.equals(this.certificateSubject, signingErrorContext.certificateSubject) &&
         Objects.equals(this.documentVersion, signingErrorContext.documentVersion) &&
         Objects.equals(this.documentCodeNumber, signingErrorContext.documentCodeNumber);
@@ -176,13 +207,14 @@ public class SigningErrorContext {
 
   @Override
   public int hashCode() {
-    return Objects.hash(phase, certificateSubject, documentVersion, documentCodeNumber);
+    return Objects.hash(code, phase, certificateSubject, documentVersion, documentCodeNumber);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class SigningErrorContext {\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
     sb.append("    phase: ").append(toIndentedString(phase)).append("\n");
     sb.append("    certificateSubject: ").append(toIndentedString(certificateSubject)).append("\n");
     sb.append("    documentVersion: ").append(toIndentedString(documentVersion)).append("\n");
@@ -233,6 +265,11 @@ public class SigningErrorContext {
     }
 
     StringJoiner joiner = new StringJoiner("&");
+
+    // add `code` to the URL query string
+    if (getCode() != null) {
+      joiner.add(String.format("%scode%s=%s", prefix, suffix, URLEncoder.encode(ApiClient.valueToString(getCode()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
 
     // add `phase` to the URL query string
     if (getPhase() != null) {
