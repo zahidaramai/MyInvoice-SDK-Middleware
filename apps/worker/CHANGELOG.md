@@ -1,5 +1,13 @@
 # @myinvois/worker
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @myinvois/myinvois-client@0.2.3
+  - @myinvois/core@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
