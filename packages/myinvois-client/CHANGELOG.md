@@ -1,5 +1,31 @@
 # @myinvois/myinvois-client
 
+## 0.2.3
+
+### Patch Changes
+
+- Simplify codebase for open source release
+
+  **@myinvois/gateway**
+  - Remove deprecated GatewayError and LegacyErrorEnvelope interfaces
+  - Extract shared validation utilities to lib/validation.ts
+  - Consolidate duplicate cancel/reject handlers in documents route
+  - Remove unused error creator functions
+
+  **@myinvois/myinvois-client**
+  - Extract error patterns to separate error-patterns.ts module
+  - Simplify error-normalizer.ts by removing inline patterns
+
+  **@myinvois/core**
+  - Remove unused MyInvoisValidationSteps constant
+
+  **Security**
+  - Remove scripts with hardcoded credentials
+  - Sanitize test data files
+
+- Updated dependencies
+  - @myinvois/core@0.1.4
+
 ## 0.2.2
 
 ### Patch Changes
