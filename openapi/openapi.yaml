@@ -1039,6 +1039,8 @@ components:
       type: object
       description: Additional context for signing errors
       properties:
+        code:
+          $ref: "#/components/schemas/SigningErrorCode"
         phase:
           $ref: "#/components/schemas/SigningErrorPhase"
         certificateSubject:
