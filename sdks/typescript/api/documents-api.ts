@@ -29,6 +29,12 @@ import type { DocumentStateChangeRequest } from '../models';
 import type { DocumentStateChangeResponse } from '../models';
 // @ts-ignore
 import type { ErrorEnvelope } from '../models';
+// @ts-ignore
+import type { RawDocumentResponse } from '../models';
+// @ts-ignore
+import type { RecentDocumentsResponse } from '../models';
+// @ts-ignore
+import type { SearchDocumentsResponse } from '../models';
 /**
  * DocumentsApi - axios parameter creator
  * @export
@@ -117,6 +123,156 @@ export const DocumentsApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
+         * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+         * @summary Get raw document content
+         * @param {string} uuid MyInvois document UUID
+         * @param {string} longId MyInvois document Long ID (used for raw document retrieval)
+         * @param {string} sessionId Gateway session ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRawDocument: async (uuid: string, longId: string, sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'uuid' is not null or undefined
+            assertParamExists('getRawDocument', 'uuid', uuid)
+            // verify required parameter 'longId' is not null or undefined
+            assertParamExists('getRawDocument', 'longId', longId)
+            // verify required parameter 'sessionId' is not null or undefined
+            assertParamExists('getRawDocument', 'sessionId', sessionId)
+            const localVarPath = `/v1/documents/{uuid}/raw/{longId}`
+                .replace(`{${"uuid"}}`, encodeURIComponent(String(uuid)))
+                .replace(`{${"longId"}}`, encodeURIComponent(String(longId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (sessionId !== undefined) {
+                localVarQueryParameter['sessionId'] = sessionId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+         * @summary List recent documents
+         * @param {string} sessionId Gateway session ID
+         * @param {number} [pageNo] Page number (1-based, default 1)
+         * @param {number} [pageSize] Page size (default 10, max 100)
+         * @param {string} [submissionDateFrom] Filter by submission date from (ISO 8601)
+         * @param {string} [submissionDateTo] Filter by submission date to (ISO 8601)
+         * @param {string} [issueDateFrom] Filter by issue date from (ISO 8601)
+         * @param {string} [issueDateTo] Filter by issue date to (ISO 8601)
+         * @param {GetRecentDocumentsDirectionEnum} [direction] Filter by direction
+         * @param {string} [status] Filter by document status
+         * @param {string} [documentType] Filter by document type code
+         * @param {string} [receiverId] Filter by receiver ID
+         * @param {string} [receiverTin] Filter by receiver TIN
+         * @param {string} [issuerTin] Filter by issuer TIN
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRecentDocuments: async (sessionId: string, pageNo?: number, pageSize?: number, submissionDateFrom?: string, submissionDateTo?: string, issueDateFrom?: string, issueDateTo?: string, direction?: GetRecentDocumentsDirectionEnum, status?: string, documentType?: string, receiverId?: string, receiverTin?: string, issuerTin?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'sessionId' is not null or undefined
+            assertParamExists('getRecentDocuments', 'sessionId', sessionId)
+            const localVarPath = `/v1/documents/recent`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (sessionId !== undefined) {
+                localVarQueryParameter['sessionId'] = sessionId;
+            }
+
+            if (pageNo !== undefined) {
+                localVarQueryParameter['pageNo'] = pageNo;
+            }
+
+            if (pageSize !== undefined) {
+                localVarQueryParameter['pageSize'] = pageSize;
+            }
+
+            if (submissionDateFrom !== undefined) {
+                localVarQueryParameter['submissionDateFrom'] = (submissionDateFrom as any instanceof Date) ?
+                    (submissionDateFrom as any).toISOString() :
+                    submissionDateFrom;
+            }
+
+            if (submissionDateTo !== undefined) {
+                localVarQueryParameter['submissionDateTo'] = (submissionDateTo as any instanceof Date) ?
+                    (submissionDateTo as any).toISOString() :
+                    submissionDateTo;
+            }
+
+            if (issueDateFrom !== undefined) {
+                localVarQueryParameter['issueDateFrom'] = (issueDateFrom as any instanceof Date) ?
+                    (issueDateFrom as any).toISOString() :
+                    issueDateFrom;
+            }
+
+            if (issueDateTo !== undefined) {
+                localVarQueryParameter['issueDateTo'] = (issueDateTo as any instanceof Date) ?
+                    (issueDateTo as any).toISOString() :
+                    issueDateTo;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
+            }
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (documentType !== undefined) {
+                localVarQueryParameter['documentType'] = documentType;
+            }
+
+            if (receiverId !== undefined) {
+                localVarQueryParameter['receiverId'] = receiverId;
+            }
+
+            if (receiverTin !== undefined) {
+                localVarQueryParameter['receiverTin'] = receiverTin;
+            }
+
+            if (issuerTin !== undefined) {
+                localVarQueryParameter['issuerTin'] = issuerTin;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Rejects a received document (changes state to rejected)
          * @summary Reject a document
          * @param {string} uuid MyInvois document UUID
@@ -150,6 +306,126 @@ export const DocumentsApiAxiosParamCreator = function (configuration?: Configura
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(documentStateChangeRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+         * @summary Search documents
+         * @param {string} sessionId Gateway session ID
+         * @param {string} [uuid] Filter by document UUID
+         * @param {string} [submissionUid] Filter by submission UID
+         * @param {number} [pageNo] Page number (1-based, default 1)
+         * @param {number} [pageSize] Page size (default 10, max 100)
+         * @param {string} [submissionDateFrom] Filter by submission date from (ISO 8601)
+         * @param {string} [submissionDateTo] Filter by submission date to (ISO 8601)
+         * @param {string} [continuationToken] Continuation token for pagination
+         * @param {string} [issueDateFrom] Filter by issue date from (ISO 8601)
+         * @param {string} [issueDateTo] Filter by issue date to (ISO 8601)
+         * @param {SearchDocumentsDirectionEnum} [direction] Filter by direction
+         * @param {string} [status] Filter by document status
+         * @param {string} [documentType] Filter by document type code
+         * @param {string} [receiverId] Filter by receiver ID
+         * @param {string} [receiverTin] Filter by receiver TIN
+         * @param {string} [issuerTin] Filter by issuer TIN
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchDocuments: async (sessionId: string, uuid?: string, submissionUid?: string, pageNo?: number, pageSize?: number, submissionDateFrom?: string, submissionDateTo?: string, continuationToken?: string, issueDateFrom?: string, issueDateTo?: string, direction?: SearchDocumentsDirectionEnum, status?: string, documentType?: string, receiverId?: string, receiverTin?: string, issuerTin?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'sessionId' is not null or undefined
+            assertParamExists('searchDocuments', 'sessionId', sessionId)
+            const localVarPath = `/v1/documents/search`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (sessionId !== undefined) {
+                localVarQueryParameter['sessionId'] = sessionId;
+            }
+
+            if (uuid !== undefined) {
+                localVarQueryParameter['uuid'] = uuid;
+            }
+
+            if (submissionUid !== undefined) {
+                localVarQueryParameter['submissionUid'] = submissionUid;
+            }
+
+            if (pageNo !== undefined) {
+                localVarQueryParameter['pageNo'] = pageNo;
+            }
+
+            if (pageSize !== undefined) {
+                localVarQueryParameter['pageSize'] = pageSize;
+            }
+
+            if (submissionDateFrom !== undefined) {
+                localVarQueryParameter['submissionDateFrom'] = (submissionDateFrom as any instanceof Date) ?
+                    (submissionDateFrom as any).toISOString() :
+                    submissionDateFrom;
+            }
+
+            if (submissionDateTo !== undefined) {
+                localVarQueryParameter['submissionDateTo'] = (submissionDateTo as any instanceof Date) ?
+                    (submissionDateTo as any).toISOString() :
+                    submissionDateTo;
+            }
+
+            if (continuationToken !== undefined) {
+                localVarQueryParameter['continuationToken'] = continuationToken;
+            }
+
+            if (issueDateFrom !== undefined) {
+                localVarQueryParameter['issueDateFrom'] = (issueDateFrom as any instanceof Date) ?
+                    (issueDateFrom as any).toISOString() :
+                    issueDateFrom;
+            }
+
+            if (issueDateTo !== undefined) {
+                localVarQueryParameter['issueDateTo'] = (issueDateTo as any instanceof Date) ?
+                    (issueDateTo as any).toISOString() :
+                    issueDateTo;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
+            }
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (documentType !== undefined) {
+                localVarQueryParameter['documentType'] = documentType;
+            }
+
+            if (receiverId !== undefined) {
+                localVarQueryParameter['receiverId'] = receiverId;
+            }
+
+            if (receiverTin !== undefined) {
+                localVarQueryParameter['receiverTin'] = receiverTin;
+            }
+
+            if (issuerTin !== undefined) {
+                localVarQueryParameter['issuerTin'] = issuerTin;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -195,6 +471,46 @@ export const DocumentsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+         * @summary Get raw document content
+         * @param {string} uuid MyInvois document UUID
+         * @param {string} longId MyInvois document Long ID (used for raw document retrieval)
+         * @param {string} sessionId Gateway session ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getRawDocument(uuid: string, longId: string, sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RawDocumentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getRawDocument(uuid, longId, sessionId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.getRawDocument']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+         * @summary List recent documents
+         * @param {string} sessionId Gateway session ID
+         * @param {number} [pageNo] Page number (1-based, default 1)
+         * @param {number} [pageSize] Page size (default 10, max 100)
+         * @param {string} [submissionDateFrom] Filter by submission date from (ISO 8601)
+         * @param {string} [submissionDateTo] Filter by submission date to (ISO 8601)
+         * @param {string} [issueDateFrom] Filter by issue date from (ISO 8601)
+         * @param {string} [issueDateTo] Filter by issue date to (ISO 8601)
+         * @param {GetRecentDocumentsDirectionEnum} [direction] Filter by direction
+         * @param {string} [status] Filter by document status
+         * @param {string} [documentType] Filter by document type code
+         * @param {string} [receiverId] Filter by receiver ID
+         * @param {string} [receiverTin] Filter by receiver TIN
+         * @param {string} [issuerTin] Filter by issuer TIN
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getRecentDocuments(sessionId: string, pageNo?: number, pageSize?: number, submissionDateFrom?: string, submissionDateTo?: string, issueDateFrom?: string, issueDateTo?: string, direction?: GetRecentDocumentsDirectionEnum, status?: string, documentType?: string, receiverId?: string, receiverTin?: string, issuerTin?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecentDocumentsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getRecentDocuments(sessionId, pageNo, pageSize, submissionDateFrom, submissionDateTo, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.getRecentDocuments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Rejects a received document (changes state to rejected)
          * @summary Reject a document
          * @param {string} uuid MyInvois document UUID
@@ -206,6 +522,34 @@ export const DocumentsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.rejectDocument(uuid, documentStateChangeRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DocumentsApi.rejectDocument']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+         * @summary Search documents
+         * @param {string} sessionId Gateway session ID
+         * @param {string} [uuid] Filter by document UUID
+         * @param {string} [submissionUid] Filter by submission UID
+         * @param {number} [pageNo] Page number (1-based, default 1)
+         * @param {number} [pageSize] Page size (default 10, max 100)
+         * @param {string} [submissionDateFrom] Filter by submission date from (ISO 8601)
+         * @param {string} [submissionDateTo] Filter by submission date to (ISO 8601)
+         * @param {string} [continuationToken] Continuation token for pagination
+         * @param {string} [issueDateFrom] Filter by issue date from (ISO 8601)
+         * @param {string} [issueDateTo] Filter by issue date to (ISO 8601)
+         * @param {SearchDocumentsDirectionEnum} [direction] Filter by direction
+         * @param {string} [status] Filter by document status
+         * @param {string} [documentType] Filter by document type code
+         * @param {string} [receiverId] Filter by receiver ID
+         * @param {string} [receiverTin] Filter by receiver TIN
+         * @param {string} [issuerTin] Filter by issuer TIN
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async searchDocuments(sessionId: string, uuid?: string, submissionUid?: string, pageNo?: number, pageSize?: number, submissionDateFrom?: string, submissionDateTo?: string, continuationToken?: string, issueDateFrom?: string, issueDateTo?: string, direction?: SearchDocumentsDirectionEnum, status?: string, documentType?: string, receiverId?: string, receiverTin?: string, issuerTin?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchDocumentsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchDocuments(sessionId, uuid, submissionUid, pageNo, pageSize, submissionDateFrom, submissionDateTo, continuationToken, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.searchDocuments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -239,6 +583,26 @@ export const DocumentsApiFactory = function (configuration?: Configuration, base
             return localVarFp.getDocumentDetails(requestParameters.uuid, requestParameters.sessionId, options).then((request) => request(axios, basePath));
         },
         /**
+         * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+         * @summary Get raw document content
+         * @param {DocumentsApiGetRawDocumentRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRawDocument(requestParameters: DocumentsApiGetRawDocumentRequest, options?: RawAxiosRequestConfig): AxiosPromise<RawDocumentResponse> {
+            return localVarFp.getRawDocument(requestParameters.uuid, requestParameters.longId, requestParameters.sessionId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+         * @summary List recent documents
+         * @param {DocumentsApiGetRecentDocumentsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRecentDocuments(requestParameters: DocumentsApiGetRecentDocumentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<RecentDocumentsResponse> {
+            return localVarFp.getRecentDocuments(requestParameters.sessionId, requestParameters.pageNo, requestParameters.pageSize, requestParameters.submissionDateFrom, requestParameters.submissionDateTo, requestParameters.issueDateFrom, requestParameters.issueDateTo, requestParameters.direction, requestParameters.status, requestParameters.documentType, requestParameters.receiverId, requestParameters.receiverTin, requestParameters.issuerTin, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Rejects a received document (changes state to rejected)
          * @summary Reject a document
          * @param {DocumentsApiRejectDocumentRequest} requestParameters Request parameters.
@@ -247,6 +611,16 @@ export const DocumentsApiFactory = function (configuration?: Configuration, base
          */
         rejectDocument(requestParameters: DocumentsApiRejectDocumentRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentStateChangeResponse> {
             return localVarFp.rejectDocument(requestParameters.uuid, requestParameters.documentStateChangeRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+         * @summary Search documents
+         * @param {DocumentsApiSearchDocumentsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchDocuments(requestParameters: DocumentsApiSearchDocumentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<SearchDocumentsResponse> {
+            return localVarFp.searchDocuments(requestParameters.sessionId, requestParameters.uuid, requestParameters.submissionUid, requestParameters.pageNo, requestParameters.pageSize, requestParameters.submissionDateFrom, requestParameters.submissionDateTo, requestParameters.continuationToken, requestParameters.issueDateFrom, requestParameters.issueDateTo, requestParameters.direction, requestParameters.status, requestParameters.documentType, requestParameters.receiverId, requestParameters.receiverTin, requestParameters.issuerTin, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -278,6 +652,26 @@ export interface DocumentsApiInterface {
     getDocumentDetails(requestParameters: DocumentsApiGetDocumentDetailsRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentDetails>;
 
     /**
+     * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+     * @summary Get raw document content
+     * @param {DocumentsApiGetRawDocumentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DocumentsApiInterface
+     */
+    getRawDocument(requestParameters: DocumentsApiGetRawDocumentRequest, options?: RawAxiosRequestConfig): AxiosPromise<RawDocumentResponse>;
+
+    /**
+     * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+     * @summary List recent documents
+     * @param {DocumentsApiGetRecentDocumentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DocumentsApiInterface
+     */
+    getRecentDocuments(requestParameters: DocumentsApiGetRecentDocumentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<RecentDocumentsResponse>;
+
+    /**
      * Rejects a received document (changes state to rejected)
      * @summary Reject a document
      * @param {DocumentsApiRejectDocumentRequest} requestParameters Request parameters.
@@ -286,6 +680,16 @@ export interface DocumentsApiInterface {
      * @memberof DocumentsApiInterface
      */
     rejectDocument(requestParameters: DocumentsApiRejectDocumentRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentStateChangeResponse>;
+
+    /**
+     * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+     * @summary Search documents
+     * @param {DocumentsApiSearchDocumentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DocumentsApiInterface
+     */
+    searchDocuments(requestParameters: DocumentsApiSearchDocumentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<SearchDocumentsResponse>;
 
 }
 
@@ -332,6 +736,132 @@ export interface DocumentsApiGetDocumentDetailsRequest {
 }
 
 /**
+ * Request parameters for getRawDocument operation in DocumentsApi.
+ * @export
+ * @interface DocumentsApiGetRawDocumentRequest
+ */
+export interface DocumentsApiGetRawDocumentRequest {
+    /**
+     * MyInvois document UUID
+     * @type {string}
+     * @memberof DocumentsApiGetRawDocument
+     */
+    readonly uuid: string
+
+    /**
+     * MyInvois document Long ID (used for raw document retrieval)
+     * @type {string}
+     * @memberof DocumentsApiGetRawDocument
+     */
+    readonly longId: string
+
+    /**
+     * Gateway session ID
+     * @type {string}
+     * @memberof DocumentsApiGetRawDocument
+     */
+    readonly sessionId: string
+}
+
+/**
+ * Request parameters for getRecentDocuments operation in DocumentsApi.
+ * @export
+ * @interface DocumentsApiGetRecentDocumentsRequest
+ */
+export interface DocumentsApiGetRecentDocumentsRequest {
+    /**
+     * Gateway session ID
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly sessionId: string
+
+    /**
+     * Page number (1-based, default 1)
+     * @type {number}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly pageNo?: number
+
+    /**
+     * Page size (default 10, max 100)
+     * @type {number}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly pageSize?: number
+
+    /**
+     * Filter by submission date from (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly submissionDateFrom?: string
+
+    /**
+     * Filter by submission date to (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly submissionDateTo?: string
+
+    /**
+     * Filter by issue date from (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly issueDateFrom?: string
+
+    /**
+     * Filter by issue date to (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly issueDateTo?: string
+
+    /**
+     * Filter by direction
+     * @type {'Sent' | 'Received'}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly direction?: GetRecentDocumentsDirectionEnum
+
+    /**
+     * Filter by document status
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly status?: string
+
+    /**
+     * Filter by document type code
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly documentType?: string
+
+    /**
+     * Filter by receiver ID
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly receiverId?: string
+
+    /**
+     * Filter by receiver TIN
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly receiverTin?: string
+
+    /**
+     * Filter by issuer TIN
+     * @type {string}
+     * @memberof DocumentsApiGetRecentDocuments
+     */
+    readonly issuerTin?: string
+}
+
+/**
  * Request parameters for rejectDocument operation in DocumentsApi.
  * @export
  * @interface DocumentsApiRejectDocumentRequest
@@ -350,6 +880,125 @@ export interface DocumentsApiRejectDocumentRequest {
      * @memberof DocumentsApiRejectDocument
      */
     readonly documentStateChangeRequest: DocumentStateChangeRequest
+}
+
+/**
+ * Request parameters for searchDocuments operation in DocumentsApi.
+ * @export
+ * @interface DocumentsApiSearchDocumentsRequest
+ */
+export interface DocumentsApiSearchDocumentsRequest {
+    /**
+     * Gateway session ID
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly sessionId: string
+
+    /**
+     * Filter by document UUID
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly uuid?: string
+
+    /**
+     * Filter by submission UID
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly submissionUid?: string
+
+    /**
+     * Page number (1-based, default 1)
+     * @type {number}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly pageNo?: number
+
+    /**
+     * Page size (default 10, max 100)
+     * @type {number}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly pageSize?: number
+
+    /**
+     * Filter by submission date from (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly submissionDateFrom?: string
+
+    /**
+     * Filter by submission date to (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly submissionDateTo?: string
+
+    /**
+     * Continuation token for pagination
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly continuationToken?: string
+
+    /**
+     * Filter by issue date from (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly issueDateFrom?: string
+
+    /**
+     * Filter by issue date to (ISO 8601)
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly issueDateTo?: string
+
+    /**
+     * Filter by direction
+     * @type {'Sent' | 'Received'}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly direction?: SearchDocumentsDirectionEnum
+
+    /**
+     * Filter by document status
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly status?: string
+
+    /**
+     * Filter by document type code
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly documentType?: string
+
+    /**
+     * Filter by receiver ID
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly receiverId?: string
+
+    /**
+     * Filter by receiver TIN
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly receiverTin?: string
+
+    /**
+     * Filter by issuer TIN
+     * @type {string}
+     * @memberof DocumentsApiSearchDocuments
+     */
+    readonly issuerTin?: string
 }
 
 /**
@@ -384,6 +1033,30 @@ export class DocumentsApi extends BaseAPI implements DocumentsApiInterface {
     }
 
     /**
+     * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+     * @summary Get raw document content
+     * @param {DocumentsApiGetRawDocumentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DocumentsApi
+     */
+    public getRawDocument(requestParameters: DocumentsApiGetRawDocumentRequest, options?: RawAxiosRequestConfig) {
+        return DocumentsApiFp(this.configuration).getRawDocument(requestParameters.uuid, requestParameters.longId, requestParameters.sessionId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+     * @summary List recent documents
+     * @param {DocumentsApiGetRecentDocumentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DocumentsApi
+     */
+    public getRecentDocuments(requestParameters: DocumentsApiGetRecentDocumentsRequest, options?: RawAxiosRequestConfig) {
+        return DocumentsApiFp(this.configuration).getRecentDocuments(requestParameters.sessionId, requestParameters.pageNo, requestParameters.pageSize, requestParameters.submissionDateFrom, requestParameters.submissionDateTo, requestParameters.issueDateFrom, requestParameters.issueDateTo, requestParameters.direction, requestParameters.status, requestParameters.documentType, requestParameters.receiverId, requestParameters.receiverTin, requestParameters.issuerTin, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Rejects a received document (changes state to rejected)
      * @summary Reject a document
      * @param {DocumentsApiRejectDocumentRequest} requestParameters Request parameters.
@@ -394,5 +1067,33 @@ export class DocumentsApi extends BaseAPI implements DocumentsApiInterface {
     public rejectDocument(requestParameters: DocumentsApiRejectDocumentRequest, options?: RawAxiosRequestConfig) {
         return DocumentsApiFp(this.configuration).rejectDocument(requestParameters.uuid, requestParameters.documentStateChangeRequest, options).then((request) => request(this.axios, this.basePath));
     }
+
+    /**
+     * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+     * @summary Search documents
+     * @param {DocumentsApiSearchDocumentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DocumentsApi
+     */
+    public searchDocuments(requestParameters: DocumentsApiSearchDocumentsRequest, options?: RawAxiosRequestConfig) {
+        return DocumentsApiFp(this.configuration).searchDocuments(requestParameters.sessionId, requestParameters.uuid, requestParameters.submissionUid, requestParameters.pageNo, requestParameters.pageSize, requestParameters.submissionDateFrom, requestParameters.submissionDateTo, requestParameters.continuationToken, requestParameters.issueDateFrom, requestParameters.issueDateTo, requestParameters.direction, requestParameters.status, requestParameters.documentType, requestParameters.receiverId, requestParameters.receiverTin, requestParameters.issuerTin, options).then((request) => request(this.axios, this.basePath));
+    }
 }
 
+/**
+ * @export
+ */
+export const GetRecentDocumentsDirectionEnum = {
+    Sent: 'Sent',
+    Received: 'Received'
+} as const;
+export type GetRecentDocumentsDirectionEnum = typeof GetRecentDocumentsDirectionEnum[keyof typeof GetRecentDocumentsDirectionEnum];
+/**
+ * @export
+ */
+export const SearchDocumentsDirectionEnum = {
+    Sent: 'Sent',
+    Received: 'Received'
+} as const;
+export type SearchDocumentsDirectionEnum = typeof SearchDocumentsDirectionEnum[keyof typeof SearchDocumentsDirectionEnum];
