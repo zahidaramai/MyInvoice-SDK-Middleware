@@ -58,7 +58,8 @@ describe("OpenAPI Coverage", () => {
         const testUrl = route.path
           .replace(":sessionId", "sess_test123")
           .replace(":trackingId", "trk_test123")
-          .replace(":uuid", "00000000-0000-0000-0000-000000000000");
+          .replace(":uuid", "00000000-0000-0000-0000-000000000000")
+          .replace(":longId", "testlongid123");
 
         const response = await app.inject({
           method: route.method as "GET" | "POST" | "PUT" | "DELETE",
@@ -82,7 +83,7 @@ describe("OpenAPI Coverage", () => {
 
     it("spec defines expected number of endpoints", () => {
       const routes = loadOpenAPIRoutes();
-      expect(routes.length).toBe(13);
+      expect(routes.length).toBe(16);
     });
   });
 });

@@ -28,6 +28,8 @@
   - [Negative Tests (Error Handling)](#negative-tests-error-handling)
 - [SDKs](#sdks)
 - [Deployment](#deployment)
+- [Scripts Reference](#scripts-reference)
+- [Issue Document Script](#issue-document-script)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -2235,6 +2237,117 @@ print(f"Tracking ID: {result['trackingId']}")
 | `pnpm check` | Run lint + typecheck + test + build |
 | `pnpm gen:sdk` | Generate SDKs from OpenAPI spec |
 | `pnpm changeset` | Create a changeset for versioning |
+
+---
+
+## Issue Document Script
+
+The `scripts/issue-document.ts` script provides a comprehensive tool for testing all 9 MyInvois document types with both v1.0 (unsigned) and v1.1 (signed) formats.
+
+### Supported Document Types
+
+| Type | Code | Command | Reference Required |
+|------|------|---------|-------------------|
+| Invoice | 01 | `--type invoice` | No |
+| Consolidated Invoice | 01 | `--type consolidated` | No |
+| Credit Note | 02 | `--type credit-note` | Yes |
+| Debit Note | 03 | `--type debit-note` | Yes |
+| Refund Note | 04 | `--type refund-note` | Yes |
+| Self-billed Invoice | 11 | `--type self-billed-invoice` | No |
+| Self-billed Credit Note | 12 | `--type self-billed-credit` | Yes |
+| Self-billed Debit Note | 13 | `--type self-billed-debit` | Yes |
+| Self-billed Refund Note | 14 | `--type self-billed-refund` | Yes |
+
+### Basic Usage
+
+```bash
+# Install dependencies
+pnpm install
+
+# Basic invoice (v1.1 signed by default)
+pnpm tsx scripts/issue-document.ts --type invoice --amount 100
+
+# Invoice without signing (v1.0)
+pnpm tsx scripts/issue-document.ts --type invoice --version 1.0 --amount 100
+
+# Consolidated invoice (for general public)
+pnpm tsx scripts/issue-document.ts --type consolidated --amount 1000
+
+# Credit note (requires reference to original invoice)
+pnpm tsx scripts/issue-document.ts --type credit-note --amount 50 \
+  --ref-id INV-123 --ref-uuid <original-uuid>
+
+# Self-billed invoice
+pnpm tsx scripts/issue-document.ts --type self-billed-invoice --amount 200
+```
+
+### Command Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--type`, `-t` | Document type (see table above) | `invoice` |
+| `--amount`, `-a` | Amount in MYR | `1.00` |
+| `--version`, `-v` | API version: `1.0` or `1.1` | `1.1` |
+| `--buyer-tin` | Buyer TIN | Supplier TIN |
+| `--buyer-id` | Buyer ID value | Supplier ID |
+| `--buyer-id-type` | `NRIC`, `PASSPORT`, `BRN`, `ARMY` | `BRN` |
+| `--buyer-name` | Buyer name | `TEST BUYER` |
+| `--ref-id` | Reference invoice ID | Required for adjustments |
+| `--ref-uuid` | Reference invoice UUID | Required for adjustments |
+
+### Document Type Notes
+
+**Consolidated Invoice**: For aggregating multiple transactions to general public. Automatically uses:
+- Buyer TIN: `EI00000000010` (general public)
+- Buyer ID: `NA` with type `BRN`
+- Classification Code: `004` (required by MyInvois)
+
+**Credit/Debit/Refund Notes**: Require `--ref-id` and `--ref-uuid` pointing to the original invoice being adjusted.
+
+**Self-billed Documents**: The buyer issues documents on behalf of the supplier. Same reference rules apply for adjustments (12-14).
+
+### Validated Test Results
+
+All 9 document types have been tested against the MyInvois Sandbox API and returned valid longIDs:
+
+| Document Type | Version | Status | Long ID |
+|---------------|---------|--------|---------|
+| Invoice | v1.1 | Valid | `Y2CVNC04CYN4A0GNQ9K2EDFK10QSNKkR1768903757` |
+| Invoice | v1.0 | Valid | `CHC5ED80WVS7H8S56A73EDFK10FFmz7S1768903777` |
+| Consolidated Invoice | v1.1 | Valid | `D621DNBNW4R27FSBB5G3EDFK101R74Oz1768903786` |
+| Credit Note | v1.1 | Valid | `ARXEV9JNZNQC62C2EMV3EDFK10FBMgpP1768903798` |
+| Debit Note | v1.1 | Valid | `2Q20CC8XT3BZ0R208C54EDFK10pNIMOT1768903808` |
+| Refund Note | v1.1 | Valid | `72QA8J9TK5HGZ0N233E4EDFK10LONYQQ1768903817` |
+| Self-billed Invoice | v1.1 | Valid | `Z68Z0EEYFADNVZ1AR2Q4EDFK10BVhGZm1768903826` |
+| Self-billed Credit Note | v1.1 | Valid | `GEMFH67Z1QC97QWZQP05EDFK10ERihN81768903836` |
+| Self-billed Debit Note | v1.1 | Valid | `RXHY2K60A6TK9JBF3X95EDFK107A53O61768903845` |
+| Self-billed Refund Note | v1.1 | Valid | `MT1YZSVNAKRA6CP8DQJ5EDFK10q7By3U1768903854` |
+
+### Environment Requirements
+
+```env
+# Required for v1.1 signing
+SIGNING_PKCS12_PATH=/path/to/certificate.p12
+SIGNING_PKCS12_PASSPHRASE=your-passphrase
+
+# MyInvois credentials
+MYINVOIS_CLIENT_ID=your-client-id
+MYINVOIS_CLIENT_SECRET_1=your-secret
+MYINVOIS_SUPPLIER_TIN=your-tin
+MYINVOIS_SUPPLIER_ID_TYPE=BRN
+MYINVOIS_SUPPLIER_ID_VALUE=your-brn
+MYINVOIS_ENV=SANDBOX
+```
+
+### Common Validation Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| ERR202 | Dummy NRIC with general TIN | Use BRN type or real buyer ID |
+| ERR236 | Wrong classification with general TIN | Use classification code `004` |
+| DS300/DS301 | Invalid signature | Check v1.1 signing format |
+
+See [docs/document-types.md](docs/document-types.md) for detailed documentation on all document types.
 
 ---
 
