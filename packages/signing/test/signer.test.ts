@@ -77,7 +77,8 @@ describe('Document Signer', () => {
       expect(block.signatureValue).toBe(signatureValue);
       expect(block.digestMethod).toBe(SIGNATURE_URIS.DIGEST_METHOD);
       expect(block.digestValue).toBe(digestValue);
-      expect(block.signingTime).toBe('2026-01-13T12:00:00.000Z');
+      // Per MyInvois SDK, SigningTime format is without milliseconds
+      expect(block.signingTime).toBe('2026-01-13T12:00:00Z');
     });
 
     it('includes certificate info', () => {
@@ -113,7 +114,8 @@ describe('Document Signer', () => {
       );
 
       expect(block._raw).toBeDefined();
-      expect(block._raw.Id).toBe(`DocSig-${timestamp}`);
+      // Per official LHDN sample, use static ID 'signature'
+      expect(block._raw.Id).toBe('signature');
       expect(block._raw.SignedInfo).toBeDefined();
       expect(block._raw.SignatureValue).toBeDefined();
       expect(block._raw.KeyInfo).toBeDefined();
@@ -341,7 +343,8 @@ describe('Document Signer', () => {
       const result = sign(doc, privateKey, certPem, certInfo, signingTime);
 
       expect(result.signedAt).toEqual(signingTime);
-      expect(result.signatureBlock.signingTime).toBe('2026-01-13T15:30:00.000Z');
+      // Per MyInvois SDK, SigningTime format is without milliseconds
+      expect(result.signatureBlock.signingTime).toBe('2026-01-13T15:30:00Z');
     });
 
     it('injects signature into document', () => {

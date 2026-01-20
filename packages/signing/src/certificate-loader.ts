@@ -5,11 +5,32 @@ import type { CertificateInfo, DistinguishedName } from './types.js';
 import { CertificateLoadError, CertificateExpiredError, CertificateNotYetValidError } from './errors.js';
 
 /**
+ * Normalize a Distinguished Name from X.500 order to RFC2253 order
+ *
+ * Node.js X509Certificate.issuer returns DN in X.500 order: C, O, OU, CN
+ * LHDN MyInvois expects RFC2253 format: CN, OU, O, C
+ *
+ * This function reverses the component order.
+ */
+function normalizeDistinguishedName(dn: string): string {
+  // Split by newline (Node.js format) and filter empty parts
+  const parts = dn.split('\n').filter(p => p.trim());
+  // Reverse to convert from X.500 (C first) to RFC2253 (CN first)
+  const reversedParts = parts.reverse();
+  // Join with ", " for RFC2253 format
+  return reversedParts.join(', ');
+}
+
+/**
  * Parse a distinguished name string into structured components
  * Handles both comma-separated (RFC 2253) and newline-separated (Node.js X509) formats
+ *
+ * The `raw` field contains the normalized RFC2253 format for use with LHDN MyInvois
  */
 function parseDistinguishedName(dn: string): DistinguishedName {
-  const result: DistinguishedName = { raw: dn };
+  // Normalize to RFC2253 format (CN first, C last)
+  const normalizedDn = normalizeDistinguishedName(dn);
+  const result: DistinguishedName = { raw: normalizedDn };
 
   // Parse common DN components - stop at comma OR newline
   const cnMatch = dn.match(/CN=([^\n,]+)/i);
@@ -155,10 +176,15 @@ export function parseCertificate(pemContent: string): CertificateInfo {
       .match(/.{2}/g)
       ?.join(':') ?? '';
 
+    // Convert serial number from hex to decimal format
+    // Node.js returns hex (e.g., "01:23:45:67"), MyInvois expects decimal
+    const hexSerial = cert.serialNumber.replace(/:/g, '');
+    const decimalSerial = BigInt('0x' + hexSerial).toString();
+
     return {
       subject: parseDistinguishedName(cert.subject),
       issuer: parseDistinguishedName(cert.issuer),
-      serialNumber: cert.serialNumber,
+      serialNumber: decimalSerial,
       validFrom,
       validTo,
       isValid,
