@@ -99,8 +99,11 @@ function removeSignatureExtension(doc: Record<string, unknown>): Record<string, 
  *
  * This function:
  * 1. Removes the UBLExtensions (signature block location)
- * 2. Sorts all object keys recursively
- * 3. Serializes to JSON without whitespace
+ * 2. Serializes to JSON without whitespace
+ *
+ * Per LHDN MyInvois SDK documentation, the document hash should use standard
+ * JSON.stringify() output WITHOUT key sorting. This differs from some XML
+ * canonicalization standards.
  *
  * @param document - The document to canonicalize
  * @returns Canonicalized JSON string
@@ -109,11 +112,8 @@ export function canonicalizeDocument(document: Record<string, unknown>): string 
   // Remove signature extension
   const docWithoutSig = removeSignatureExtension(document);
 
-  // Sort keys recursively
-  const sorted = sortKeysRecursively(docWithoutSig);
-
-  // Serialize without whitespace
-  return JSON.stringify(sorted);
+  // Serialize without whitespace - NO key sorting per MyInvois SDK spec
+  return JSON.stringify(docWithoutSig);
 }
 
 /**

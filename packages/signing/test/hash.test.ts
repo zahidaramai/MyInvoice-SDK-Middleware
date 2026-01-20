@@ -122,13 +122,19 @@ describe('Hash Generation', () => {
       expect(result1).toBe(result2);
     });
 
-    it('produces same output regardless of key order', () => {
+    it('preserves key order (per MyInvois SDK spec - no key sorting)', () => {
+      // MyInvois SDK expects JSON.stringify() output WITHOUT key sorting
+      // Different key orders produce different output - this is correct behavior
       const doc1 = { Invoice: { ID: 'INV-001', Amount: 100 } };
       const doc2 = { Invoice: { Amount: 100, ID: 'INV-001' } };
 
       const result1 = canonicalizeDocument(doc1);
       const result2 = canonicalizeDocument(doc2);
-      expect(result1).toBe(result2);
+
+      // Results should be different because key order is preserved
+      expect(result1).not.toBe(result2);
+      expect(result1).toBe('{"Invoice":{"ID":"INV-001","Amount":100}}');
+      expect(result2).toBe('{"Invoice":{"Amount":100,"ID":"INV-001"}}');
     });
 
     it('removes UBLExtensions before canonicalizing', () => {
@@ -225,13 +231,17 @@ describe('Hash Generation', () => {
       expect(hash1).toBe(hash2);
     });
 
-    it('produces same hash regardless of key order', () => {
+    it('produces different hash for different key order (per MyInvois SDK spec)', () => {
+      // MyInvois SDK expects JSON.stringify() output WITHOUT key sorting
+      // Different key orders produce different hashes - this is correct behavior
       const doc1 = { Invoice: { ID: 'INV-001', Amount: 100 } };
       const doc2 = { Invoice: { Amount: 100, ID: 'INV-001' } };
 
       const hash1 = generateDocumentHash(doc1);
       const hash2 = generateDocumentHash(doc2);
-      expect(hash1).toBe(hash2);
+
+      // Hashes should be different because key order is preserved
+      expect(hash1).not.toBe(hash2);
     });
 
     it('produces different hash for different documents', () => {
