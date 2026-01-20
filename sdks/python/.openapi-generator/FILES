@@ -6,6 +6,7 @@ README.md
 docs/AcceptedDocument.md
 docs/DocumentDetails.md
 docs/DocumentInput.md
+docs/DocumentListItem.md
 docs/DocumentStateChangeRequest.md
 docs/DocumentStateChangeResponse.md
 docs/DocumentStatus.md
@@ -18,9 +19,12 @@ docs/GatewayErrorUpstream.md
 docs/HealthApi.md
 docs/HealthResponse.md
 docs/Mode.md
+docs/RawDocumentResponse.md
 docs/ReadyResponse.md
 docs/ReadyResponseChecks.md
+docs/RecentDocumentsResponse.md
 docs/RejectedDocument.md
+docs/SearchDocumentsResponse.md
 docs/Session.md
 docs/SessionCreateIntermediary.md
 docs/SessionCreateRequest.md
@@ -54,6 +58,7 @@ myinvois_sdk/models/__init__.py
 myinvois_sdk/models/accepted_document.py
 myinvois_sdk/models/document_details.py
 myinvois_sdk/models/document_input.py
+myinvois_sdk/models/document_list_item.py
 myinvois_sdk/models/document_state_change_request.py
 myinvois_sdk/models/document_state_change_response.py
 myinvois_sdk/models/document_status.py
@@ -64,9 +69,12 @@ myinvois_sdk/models/gateway_error.py
 myinvois_sdk/models/gateway_error_upstream.py
 myinvois_sdk/models/health_response.py
 myinvois_sdk/models/mode.py
+myinvois_sdk/models/raw_document_response.py
 myinvois_sdk/models/ready_response.py
 myinvois_sdk/models/ready_response_checks.py
+myinvois_sdk/models/recent_documents_response.py
 myinvois_sdk/models/rejected_document.py
+myinvois_sdk/models/search_documents_response.py
 myinvois_sdk/models/session.py
 myinvois_sdk/models/session_create_intermediary.py
 myinvois_sdk/models/session_create_request.py
@@ -89,4 +97,8 @@ setup.cfg
 setup.py
 test-requirements.txt
 test/__init__.py
+test/test_document_list_item.py
+test/test_raw_document_response.py
+test/test_recent_documents_response.py
+test/test_search_documents_response.py
 tox.ini

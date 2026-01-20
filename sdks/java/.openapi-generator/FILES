@@ -8,6 +8,7 @@ build.sbt
 docs/AcceptedDocument.md
 docs/DocumentDetails.md
 docs/DocumentInput.md
+docs/DocumentListItem.md
 docs/DocumentStateChangeRequest.md
 docs/DocumentStateChangeResponse.md
 docs/DocumentStatus.md
@@ -20,9 +21,12 @@ docs/GatewayErrorUpstream.md
 docs/HealthApi.md
 docs/HealthResponse.md
 docs/Mode.md
+docs/RawDocumentResponse.md
 docs/ReadyResponse.md
 docs/ReadyResponseChecks.md
+docs/RecentDocumentsResponse.md
 docs/RejectedDocument.md
+docs/SearchDocumentsResponse.md
 docs/Session.md
 docs/SessionCreateIntermediary.md
 docs/SessionCreateRequest.md
@@ -67,6 +71,7 @@ src/main/java/com/myinvois/sdk/model/AbstractOpenApiSchema.java
 src/main/java/com/myinvois/sdk/model/AcceptedDocument.java
 src/main/java/com/myinvois/sdk/model/DocumentDetails.java
 src/main/java/com/myinvois/sdk/model/DocumentInput.java
+src/main/java/com/myinvois/sdk/model/DocumentListItem.java
 src/main/java/com/myinvois/sdk/model/DocumentStateChangeRequest.java
 src/main/java/com/myinvois/sdk/model/DocumentStateChangeResponse.java
 src/main/java/com/myinvois/sdk/model/DocumentStatus.java
@@ -77,9 +82,12 @@ src/main/java/com/myinvois/sdk/model/GatewayError.java
 src/main/java/com/myinvois/sdk/model/GatewayErrorUpstream.java
 src/main/java/com/myinvois/sdk/model/HealthResponse.java
 src/main/java/com/myinvois/sdk/model/Mode.java
+src/main/java/com/myinvois/sdk/model/RawDocumentResponse.java
 src/main/java/com/myinvois/sdk/model/ReadyResponse.java
 src/main/java/com/myinvois/sdk/model/ReadyResponseChecks.java
+src/main/java/com/myinvois/sdk/model/RecentDocumentsResponse.java
 src/main/java/com/myinvois/sdk/model/RejectedDocument.java
+src/main/java/com/myinvois/sdk/model/SearchDocumentsResponse.java
 src/main/java/com/myinvois/sdk/model/Session.java
 src/main/java/com/myinvois/sdk/model/SessionCreateIntermediary.java
 src/main/java/com/myinvois/sdk/model/SessionCreateRequest.java
@@ -94,3 +102,7 @@ src/main/java/com/myinvois/sdk/model/SubmissionStatus.java
 src/main/java/com/myinvois/sdk/model/TinValidationResponse.java
 src/main/java/com/myinvois/sdk/model/ValidationError.java
 src/main/java/com/myinvois/sdk/model/VersionResponse.java
+src/test/java/com/myinvois/sdk/model/DocumentListItemTest.java
+src/test/java/com/myinvois/sdk/model/RawDocumentResponseTest.java
+src/test/java/com/myinvois/sdk/model/RecentDocumentsResponseTest.java
+src/test/java/com/myinvois/sdk/model/SearchDocumentsResponseTest.java

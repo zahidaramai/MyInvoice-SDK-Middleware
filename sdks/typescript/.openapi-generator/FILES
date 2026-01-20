@@ -15,6 +15,7 @@ index.ts
 models/accepted-document.ts
 models/document-details.ts
 models/document-input.ts
+models/document-list-item.ts
 models/document-state-change-request.ts
 models/document-state-change-response.ts
 models/document-status.ts
@@ -26,9 +27,12 @@ models/gateway-error.ts
 models/health-response.ts
 models/index.ts
 models/mode.ts
+models/raw-document-response.ts
 models/ready-response-checks.ts
 models/ready-response.ts
+models/recent-documents-response.ts
 models/rejected-document.ts
+models/search-documents-response.ts
 models/session-create-intermediary.ts
 models/session-create-request.ts
 models/session-create-taxpayer.ts
