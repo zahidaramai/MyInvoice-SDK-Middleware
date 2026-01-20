@@ -1,5 +1,18 @@
 # @myinvois/signing
 
+## 0.2.2
+
+### Patch Changes
+
+- fix(signing): implement v1.1 signature format for MyInvois validation
+  - Convert X509IssuerName to RFC2253 format (CN first) for DS326 fix
+  - Hash full QualifyingProperties (Target + SignedProperties) for DS320 fix
+  - Convert certificate serial number from hex to decimal format
+  - Remove key sorting in canonicalization per MyInvois SDK spec
+  - Format SigningTime without milliseconds
+  - Reorder signature elements to match official LHDN sample structure
+  - Use static IDs for instant validation
+
 ## 0.2.1
 
 ### Patch Changes
