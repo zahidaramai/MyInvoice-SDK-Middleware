@@ -77,6 +77,80 @@ namespace MyInvois.Sdk.Api
         /// <returns>ApiResponse of DocumentDetails</returns>
         ApiResponse<DocumentDetails> GetDocumentDetailsWithHttpInfo(Guid uuid, string sessionId, int operationIndex = 0);
         /// <summary>
+        /// Get raw document content
+        /// </summary>
+        /// <remarks>
+        /// Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>RawDocumentResponse</returns>
+        RawDocumentResponse GetRawDocument(Guid uuid, string longId, string sessionId, int operationIndex = 0);
+
+        /// <summary>
+        /// Get raw document content
+        /// </summary>
+        /// <remarks>
+        /// Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>ApiResponse of RawDocumentResponse</returns>
+        ApiResponse<RawDocumentResponse> GetRawDocumentWithHttpInfo(Guid uuid, string longId, string sessionId, int operationIndex = 0);
+        /// <summary>
+        /// List recent documents
+        /// </summary>
+        /// <remarks>
+        /// Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>RecentDocumentsResponse</returns>
+        RecentDocumentsResponse GetRecentDocuments(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0);
+
+        /// <summary>
+        /// List recent documents
+        /// </summary>
+        /// <remarks>
+        /// Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>ApiResponse of RecentDocumentsResponse</returns>
+        ApiResponse<RecentDocumentsResponse> GetRecentDocumentsWithHttpInfo(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0);
+        /// <summary>
         /// Reject a document
         /// </summary>
         /// <remarks>
@@ -101,6 +175,59 @@ namespace MyInvois.Sdk.Api
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of DocumentStateChangeResponse</returns>
         ApiResponse<DocumentStateChangeResponse> RejectDocumentWithHttpInfo(Guid uuid, DocumentStateChangeRequest documentStateChangeRequest, int operationIndex = 0);
+        /// <summary>
+        /// Search documents
+        /// </summary>
+        /// <remarks>
+        /// Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>SearchDocumentsResponse</returns>
+        SearchDocumentsResponse SearchDocuments(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0);
+
+        /// <summary>
+        /// Search documents
+        /// </summary>
+        /// <remarks>
+        /// Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>ApiResponse of SearchDocumentsResponse</returns>
+        ApiResponse<SearchDocumentsResponse> SearchDocumentsWithHttpInfo(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0);
         #endregion Synchronous Operations
     }
 
@@ -165,6 +292,84 @@ namespace MyInvois.Sdk.Api
         /// <returns>Task of ApiResponse (DocumentDetails)</returns>
         System.Threading.Tasks.Task<ApiResponse<DocumentDetails>> GetDocumentDetailsWithHttpInfoAsync(Guid uuid, string sessionId, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
         /// <summary>
+        /// Get raw document content
+        /// </summary>
+        /// <remarks>
+        /// Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of RawDocumentResponse</returns>
+        System.Threading.Tasks.Task<RawDocumentResponse> GetRawDocumentAsync(Guid uuid, string longId, string sessionId, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
+
+        /// <summary>
+        /// Get raw document content
+        /// </summary>
+        /// <remarks>
+        /// Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (RawDocumentResponse)</returns>
+        System.Threading.Tasks.Task<ApiResponse<RawDocumentResponse>> GetRawDocumentWithHttpInfoAsync(Guid uuid, string longId, string sessionId, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
+        /// <summary>
+        /// List recent documents
+        /// </summary>
+        /// <remarks>
+        /// Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of RecentDocumentsResponse</returns>
+        System.Threading.Tasks.Task<RecentDocumentsResponse> GetRecentDocumentsAsync(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
+
+        /// <summary>
+        /// List recent documents
+        /// </summary>
+        /// <remarks>
+        /// Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (RecentDocumentsResponse)</returns>
+        System.Threading.Tasks.Task<ApiResponse<RecentDocumentsResponse>> GetRecentDocumentsWithHttpInfoAsync(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
+        /// <summary>
         /// Reject a document
         /// </summary>
         /// <remarks>
@@ -191,6 +396,61 @@ namespace MyInvois.Sdk.Api
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (DocumentStateChangeResponse)</returns>
         System.Threading.Tasks.Task<ApiResponse<DocumentStateChangeResponse>> RejectDocumentWithHttpInfoAsync(Guid uuid, DocumentStateChangeRequest documentStateChangeRequest, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
+        /// <summary>
+        /// Search documents
+        /// </summary>
+        /// <remarks>
+        /// Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of SearchDocumentsResponse</returns>
+        System.Threading.Tasks.Task<SearchDocumentsResponse> SearchDocumentsAsync(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
+
+        /// <summary>
+        /// Search documents
+        /// </summary>
+        /// <remarks>
+        /// Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </remarks>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (SearchDocumentsResponse)</returns>
+        System.Threading.Tasks.Task<ApiResponse<SearchDocumentsResponse>> SearchDocumentsWithHttpInfoAsync(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken));
         #endregion Asynchronous Operations
     }
 
@@ -614,6 +874,462 @@ namespace MyInvois.Sdk.Api
         }
 
         /// <summary>
+        /// Get raw document content Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>RawDocumentResponse</returns>
+        public RawDocumentResponse GetRawDocument(Guid uuid, string longId, string sessionId, int operationIndex = 0)
+        {
+            MyInvois.Sdk.Client.ApiResponse<RawDocumentResponse> localVarResponse = GetRawDocumentWithHttpInfo(uuid, longId, sessionId);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Get raw document content Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>ApiResponse of RawDocumentResponse</returns>
+        public MyInvois.Sdk.Client.ApiResponse<RawDocumentResponse> GetRawDocumentWithHttpInfo(Guid uuid, string longId, string sessionId, int operationIndex = 0)
+        {
+            // verify the required parameter 'longId' is set
+            if (longId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'longId' when calling DocumentsApi->GetRawDocument");
+            }
+
+            // verify the required parameter 'sessionId' is set
+            if (sessionId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'sessionId' when calling DocumentsApi->GetRawDocument");
+            }
+
+            MyInvois.Sdk.Client.RequestOptions localVarRequestOptions = new MyInvois.Sdk.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = MyInvois.Sdk.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+            }
+
+            var localVarAccept = MyInvois.Sdk.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+            }
+
+            localVarRequestOptions.PathParameters.Add("uuid", MyInvois.Sdk.Client.ClientUtils.ParameterToString(uuid)); // path parameter
+            localVarRequestOptions.PathParameters.Add("longId", MyInvois.Sdk.Client.ClientUtils.ParameterToString(longId)); // path parameter
+            localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "sessionId", sessionId));
+
+            localVarRequestOptions.Operation = "DocumentsApi.GetRawDocument";
+            localVarRequestOptions.OperationIndex = operationIndex;
+
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Get<RawDocumentResponse>("/v1/documents/{uuid}/raw/{longId}", localVarRequestOptions, this.Configuration);
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("GetRawDocument", localVarResponse);
+                if (_exception != null)
+                {
+                    throw _exception;
+                }
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Get raw document content Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of RawDocumentResponse</returns>
+        public async System.Threading.Tasks.Task<RawDocumentResponse> GetRawDocumentAsync(Guid uuid, string longId, string sessionId, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+        {
+            MyInvois.Sdk.Client.ApiResponse<RawDocumentResponse> localVarResponse = await GetRawDocumentWithHttpInfoAsync(uuid, longId, sessionId, operationIndex, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Get raw document content Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="uuid">MyInvois document UUID</param>
+        /// <param name="longId">MyInvois document Long ID (used for raw document retrieval)</param>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (RawDocumentResponse)</returns>
+        public async System.Threading.Tasks.Task<MyInvois.Sdk.Client.ApiResponse<RawDocumentResponse>> GetRawDocumentWithHttpInfoAsync(Guid uuid, string longId, string sessionId, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+        {
+            // verify the required parameter 'longId' is set
+            if (longId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'longId' when calling DocumentsApi->GetRawDocument");
+            }
+
+            // verify the required parameter 'sessionId' is set
+            if (sessionId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'sessionId' when calling DocumentsApi->GetRawDocument");
+            }
+
+
+            MyInvois.Sdk.Client.RequestOptions localVarRequestOptions = new MyInvois.Sdk.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = MyInvois.Sdk.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+            }
+
+            var localVarAccept = MyInvois.Sdk.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+            }
+
+            localVarRequestOptions.PathParameters.Add("uuid", MyInvois.Sdk.Client.ClientUtils.ParameterToString(uuid)); // path parameter
+            localVarRequestOptions.PathParameters.Add("longId", MyInvois.Sdk.Client.ClientUtils.ParameterToString(longId)); // path parameter
+            localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "sessionId", sessionId));
+
+            localVarRequestOptions.Operation = "DocumentsApi.GetRawDocument";
+            localVarRequestOptions.OperationIndex = operationIndex;
+
+
+            // make the HTTP request
+            var localVarResponse = await this.AsynchronousClient.GetAsync<RawDocumentResponse>("/v1/documents/{uuid}/raw/{longId}", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("GetRawDocument", localVarResponse);
+                if (_exception != null)
+                {
+                    throw _exception;
+                }
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// List recent documents Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>RecentDocumentsResponse</returns>
+        public RecentDocumentsResponse GetRecentDocuments(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0)
+        {
+            MyInvois.Sdk.Client.ApiResponse<RecentDocumentsResponse> localVarResponse = GetRecentDocumentsWithHttpInfo(sessionId, pageNo, pageSize, submissionDateFrom, submissionDateTo, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// List recent documents Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>ApiResponse of RecentDocumentsResponse</returns>
+        public MyInvois.Sdk.Client.ApiResponse<RecentDocumentsResponse> GetRecentDocumentsWithHttpInfo(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0)
+        {
+            // verify the required parameter 'sessionId' is set
+            if (sessionId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'sessionId' when calling DocumentsApi->GetRecentDocuments");
+            }
+
+            MyInvois.Sdk.Client.RequestOptions localVarRequestOptions = new MyInvois.Sdk.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = MyInvois.Sdk.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+            }
+
+            var localVarAccept = MyInvois.Sdk.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+            }
+
+            localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "sessionId", sessionId));
+            if (pageNo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageNo", pageNo));
+            }
+            if (pageSize != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageSize", pageSize));
+            }
+            if (submissionDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateFrom", submissionDateFrom));
+            }
+            if (submissionDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateTo", submissionDateTo));
+            }
+            if (issueDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateFrom", issueDateFrom));
+            }
+            if (issueDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateTo", issueDateTo));
+            }
+            if (direction != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "direction", direction));
+            }
+            if (status != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "status", status));
+            }
+            if (documentType != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "documentType", documentType));
+            }
+            if (receiverId != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverId", receiverId));
+            }
+            if (receiverTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverTin", receiverTin));
+            }
+            if (issuerTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issuerTin", issuerTin));
+            }
+
+            localVarRequestOptions.Operation = "DocumentsApi.GetRecentDocuments";
+            localVarRequestOptions.OperationIndex = operationIndex;
+
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Get<RecentDocumentsResponse>("/v1/documents/recent", localVarRequestOptions, this.Configuration);
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("GetRecentDocuments", localVarResponse);
+                if (_exception != null)
+                {
+                    throw _exception;
+                }
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// List recent documents Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of RecentDocumentsResponse</returns>
+        public async System.Threading.Tasks.Task<RecentDocumentsResponse> GetRecentDocumentsAsync(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+        {
+            MyInvois.Sdk.Client.ApiResponse<RecentDocumentsResponse> localVarResponse = await GetRecentDocumentsWithHttpInfoAsync(sessionId, pageNo, pageSize, submissionDateFrom, submissionDateTo, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin, operationIndex, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// List recent documents Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (RecentDocumentsResponse)</returns>
+        public async System.Threading.Tasks.Task<MyInvois.Sdk.Client.ApiResponse<RecentDocumentsResponse>> GetRecentDocumentsWithHttpInfoAsync(string sessionId, int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+        {
+            // verify the required parameter 'sessionId' is set
+            if (sessionId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'sessionId' when calling DocumentsApi->GetRecentDocuments");
+            }
+
+
+            MyInvois.Sdk.Client.RequestOptions localVarRequestOptions = new MyInvois.Sdk.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = MyInvois.Sdk.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+            }
+
+            var localVarAccept = MyInvois.Sdk.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+            }
+
+            localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "sessionId", sessionId));
+            if (pageNo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageNo", pageNo));
+            }
+            if (pageSize != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageSize", pageSize));
+            }
+            if (submissionDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateFrom", submissionDateFrom));
+            }
+            if (submissionDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateTo", submissionDateTo));
+            }
+            if (issueDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateFrom", issueDateFrom));
+            }
+            if (issueDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateTo", issueDateTo));
+            }
+            if (direction != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "direction", direction));
+            }
+            if (status != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "status", status));
+            }
+            if (documentType != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "documentType", documentType));
+            }
+            if (receiverId != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverId", receiverId));
+            }
+            if (receiverTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverTin", receiverTin));
+            }
+            if (issuerTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issuerTin", issuerTin));
+            }
+
+            localVarRequestOptions.Operation = "DocumentsApi.GetRecentDocuments";
+            localVarRequestOptions.OperationIndex = operationIndex;
+
+
+            // make the HTTP request
+            var localVarResponse = await this.AsynchronousClient.GetAsync<RecentDocumentsResponse>("/v1/documents/recent", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("GetRecentDocuments", localVarResponse);
+                if (_exception != null)
+                {
+                    throw _exception;
+                }
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
         /// Reject a document Rejects a received document (changes state to rejected)
         /// </summary>
         /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
@@ -756,6 +1472,330 @@ namespace MyInvois.Sdk.Api
             if (this.ExceptionFactory != null)
             {
                 Exception _exception = this.ExceptionFactory("RejectDocument", localVarResponse);
+                if (_exception != null)
+                {
+                    throw _exception;
+                }
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Search documents Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>SearchDocumentsResponse</returns>
+        public SearchDocumentsResponse SearchDocuments(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0)
+        {
+            MyInvois.Sdk.Client.ApiResponse<SearchDocumentsResponse> localVarResponse = SearchDocumentsWithHttpInfo(sessionId, uuid, submissionUid, pageNo, pageSize, submissionDateFrom, submissionDateTo, continuationToken, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Search documents Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <returns>ApiResponse of SearchDocumentsResponse</returns>
+        public MyInvois.Sdk.Client.ApiResponse<SearchDocumentsResponse> SearchDocumentsWithHttpInfo(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0)
+        {
+            // verify the required parameter 'sessionId' is set
+            if (sessionId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'sessionId' when calling DocumentsApi->SearchDocuments");
+            }
+
+            MyInvois.Sdk.Client.RequestOptions localVarRequestOptions = new MyInvois.Sdk.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = MyInvois.Sdk.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+            }
+
+            var localVarAccept = MyInvois.Sdk.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+            }
+
+            localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "sessionId", sessionId));
+            if (uuid != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "uuid", uuid));
+            }
+            if (submissionUid != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionUid", submissionUid));
+            }
+            if (pageNo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageNo", pageNo));
+            }
+            if (pageSize != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageSize", pageSize));
+            }
+            if (submissionDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateFrom", submissionDateFrom));
+            }
+            if (submissionDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateTo", submissionDateTo));
+            }
+            if (continuationToken != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "continuationToken", continuationToken));
+            }
+            if (issueDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateFrom", issueDateFrom));
+            }
+            if (issueDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateTo", issueDateTo));
+            }
+            if (direction != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "direction", direction));
+            }
+            if (status != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "status", status));
+            }
+            if (documentType != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "documentType", documentType));
+            }
+            if (receiverId != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverId", receiverId));
+            }
+            if (receiverTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverTin", receiverTin));
+            }
+            if (issuerTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issuerTin", issuerTin));
+            }
+
+            localVarRequestOptions.Operation = "DocumentsApi.SearchDocuments";
+            localVarRequestOptions.OperationIndex = operationIndex;
+
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Get<SearchDocumentsResponse>("/v1/documents/search", localVarRequestOptions, this.Configuration);
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("SearchDocuments", localVarResponse);
+                if (_exception != null)
+                {
+                    throw _exception;
+                }
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Search documents Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of SearchDocumentsResponse</returns>
+        public async System.Threading.Tasks.Task<SearchDocumentsResponse> SearchDocumentsAsync(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+        {
+            MyInvois.Sdk.Client.ApiResponse<SearchDocumentsResponse> localVarResponse = await SearchDocumentsWithHttpInfoAsync(sessionId, uuid, submissionUid, pageNo, pageSize, submissionDateFrom, submissionDateTo, continuationToken, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin, operationIndex, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Search documents Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+        /// </summary>
+        /// <exception cref="MyInvois.Sdk.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="sessionId">Gateway session ID</param>
+        /// <param name="uuid">Filter by document UUID (optional)</param>
+        /// <param name="submissionUid">Filter by submission UID (optional)</param>
+        /// <param name="pageNo">Page number (1-based, default 1) (optional, default to 1)</param>
+        /// <param name="pageSize">Page size (default 10, max 100) (optional, default to 10)</param>
+        /// <param name="submissionDateFrom">Filter by submission date from (ISO 8601) (optional)</param>
+        /// <param name="submissionDateTo">Filter by submission date to (ISO 8601) (optional)</param>
+        /// <param name="continuationToken">Continuation token for pagination (optional)</param>
+        /// <param name="issueDateFrom">Filter by issue date from (ISO 8601) (optional)</param>
+        /// <param name="issueDateTo">Filter by issue date to (ISO 8601) (optional)</param>
+        /// <param name="direction">Filter by direction (optional)</param>
+        /// <param name="status">Filter by document status (optional)</param>
+        /// <param name="documentType">Filter by document type code (optional)</param>
+        /// <param name="receiverId">Filter by receiver ID (optional)</param>
+        /// <param name="receiverTin">Filter by receiver TIN (optional)</param>
+        /// <param name="issuerTin">Filter by issuer TIN (optional)</param>
+        /// <param name="operationIndex">Index associated with the operation.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (SearchDocumentsResponse)</returns>
+        public async System.Threading.Tasks.Task<MyInvois.Sdk.Client.ApiResponse<SearchDocumentsResponse>> SearchDocumentsWithHttpInfoAsync(string sessionId, Guid? uuid = default(Guid?), string? submissionUid = default(string?), int? pageNo = default(int?), int? pageSize = default(int?), DateTime? submissionDateFrom = default(DateTime?), DateTime? submissionDateTo = default(DateTime?), string? continuationToken = default(string?), DateTime? issueDateFrom = default(DateTime?), DateTime? issueDateTo = default(DateTime?), string? direction = default(string?), string? status = default(string?), string? documentType = default(string?), string? receiverId = default(string?), string? receiverTin = default(string?), string? issuerTin = default(string?), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+        {
+            // verify the required parameter 'sessionId' is set
+            if (sessionId == null)
+            {
+                throw new MyInvois.Sdk.Client.ApiException(400, "Missing required parameter 'sessionId' when calling DocumentsApi->SearchDocuments");
+            }
+
+
+            MyInvois.Sdk.Client.RequestOptions localVarRequestOptions = new MyInvois.Sdk.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = MyInvois.Sdk.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+            }
+
+            var localVarAccept = MyInvois.Sdk.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null)
+            {
+                localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+            }
+
+            localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "sessionId", sessionId));
+            if (uuid != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "uuid", uuid));
+            }
+            if (submissionUid != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionUid", submissionUid));
+            }
+            if (pageNo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageNo", pageNo));
+            }
+            if (pageSize != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "pageSize", pageSize));
+            }
+            if (submissionDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateFrom", submissionDateFrom));
+            }
+            if (submissionDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "submissionDateTo", submissionDateTo));
+            }
+            if (continuationToken != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "continuationToken", continuationToken));
+            }
+            if (issueDateFrom != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateFrom", issueDateFrom));
+            }
+            if (issueDateTo != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issueDateTo", issueDateTo));
+            }
+            if (direction != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "direction", direction));
+            }
+            if (status != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "status", status));
+            }
+            if (documentType != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "documentType", documentType));
+            }
+            if (receiverId != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverId", receiverId));
+            }
+            if (receiverTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "receiverTin", receiverTin));
+            }
+            if (issuerTin != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(MyInvois.Sdk.Client.ClientUtils.ParameterToMultiMap("", "issuerTin", issuerTin));
+            }
+
+            localVarRequestOptions.Operation = "DocumentsApi.SearchDocuments";
+            localVarRequestOptions.OperationIndex = operationIndex;
+
+
+            // make the HTTP request
+            var localVarResponse = await this.AsynchronousClient.GetAsync<SearchDocumentsResponse>("/v1/documents/search", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("SearchDocuments", localVarResponse);
                 if (_exception != null)
                 {
                     throw _exception;

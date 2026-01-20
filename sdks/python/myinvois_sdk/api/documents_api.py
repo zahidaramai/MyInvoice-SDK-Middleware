@@ -16,11 +16,16 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
+from datetime import datetime
 from pydantic import Field, StrictStr, field_validator
+from typing import Optional
 from typing_extensions import Annotated
 from myinvois_sdk.models.document_details import DocumentDetails
 from myinvois_sdk.models.document_state_change_request import DocumentStateChangeRequest
 from myinvois_sdk.models.document_state_change_response import DocumentStateChangeResponse
+from myinvois_sdk.models.raw_document_response import RawDocumentResponse
+from myinvois_sdk.models.recent_documents_response import RecentDocumentsResponse
+from myinvois_sdk.models.search_documents_response import SearchDocumentsResponse
 
 from myinvois_sdk.api_client import ApiClient, RequestSerialized
 from myinvois_sdk.api_response import ApiResponse
@@ -636,6 +641,827 @@ class DocumentsApi:
 
 
     @validate_call
+    def get_raw_document(
+        self,
+        uuid: Annotated[StrictStr, Field(description="MyInvois document UUID")],
+        long_id: Annotated[str, Field(min_length=1, strict=True, description="MyInvois document Long ID (used for raw document retrieval)")],
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RawDocumentResponse:
+        """Get raw document content
+
+        Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+
+        :param uuid: MyInvois document UUID (required)
+        :type uuid: str
+        :param long_id: MyInvois document Long ID (used for raw document retrieval) (required)
+        :type long_id: str
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_raw_document_serialize(
+            uuid=uuid,
+            long_id=long_id,
+            session_id=session_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "RawDocumentResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '404': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_raw_document_with_http_info(
+        self,
+        uuid: Annotated[StrictStr, Field(description="MyInvois document UUID")],
+        long_id: Annotated[str, Field(min_length=1, strict=True, description="MyInvois document Long ID (used for raw document retrieval)")],
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[RawDocumentResponse]:
+        """Get raw document content
+
+        Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+
+        :param uuid: MyInvois document UUID (required)
+        :type uuid: str
+        :param long_id: MyInvois document Long ID (used for raw document retrieval) (required)
+        :type long_id: str
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_raw_document_serialize(
+            uuid=uuid,
+            long_id=long_id,
+            session_id=session_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "RawDocumentResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '404': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_raw_document_without_preload_content(
+        self,
+        uuid: Annotated[StrictStr, Field(description="MyInvois document UUID")],
+        long_id: Annotated[str, Field(min_length=1, strict=True, description="MyInvois document Long ID (used for raw document retrieval)")],
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Get raw document content
+
+        Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+
+        :param uuid: MyInvois document UUID (required)
+        :type uuid: str
+        :param long_id: MyInvois document Long ID (used for raw document retrieval) (required)
+        :type long_id: str
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_raw_document_serialize(
+            uuid=uuid,
+            long_id=long_id,
+            session_id=session_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "RawDocumentResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '404': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_raw_document_serialize(
+        self,
+        uuid,
+        long_id,
+        session_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if uuid is not None:
+            _path_params['uuid'] = uuid
+        if long_id is not None:
+            _path_params['longId'] = long_id
+        # process the query parameters
+        if session_id is not None:
+            
+            _query_params.append(('sessionId', session_id))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/v1/documents/{uuid}/raw/{longId}',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def get_recent_documents(
+        self,
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        page_no: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="Page number (1-based, default 1)")] = None,
+        page_size: Annotated[Optional[Annotated[int, Field(le=100, strict=True, ge=1)]], Field(description="Page size (default 10, max 100)")] = None,
+        submission_date_from: Annotated[Optional[datetime], Field(description="Filter by submission date from (ISO 8601)")] = None,
+        submission_date_to: Annotated[Optional[datetime], Field(description="Filter by submission date to (ISO 8601)")] = None,
+        issue_date_from: Annotated[Optional[datetime], Field(description="Filter by issue date from (ISO 8601)")] = None,
+        issue_date_to: Annotated[Optional[datetime], Field(description="Filter by issue date to (ISO 8601)")] = None,
+        direction: Annotated[Optional[StrictStr], Field(description="Filter by direction")] = None,
+        status: Annotated[Optional[StrictStr], Field(description="Filter by document status")] = None,
+        document_type: Annotated[Optional[StrictStr], Field(description="Filter by document type code")] = None,
+        receiver_id: Annotated[Optional[StrictStr], Field(description="Filter by receiver ID")] = None,
+        receiver_tin: Annotated[Optional[StrictStr], Field(description="Filter by receiver TIN")] = None,
+        issuer_tin: Annotated[Optional[StrictStr], Field(description="Filter by issuer TIN")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RecentDocumentsResponse:
+        """List recent documents
+
+        Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param page_no: Page number (1-based, default 1)
+        :type page_no: int
+        :param page_size: Page size (default 10, max 100)
+        :type page_size: int
+        :param submission_date_from: Filter by submission date from (ISO 8601)
+        :type submission_date_from: datetime
+        :param submission_date_to: Filter by submission date to (ISO 8601)
+        :type submission_date_to: datetime
+        :param issue_date_from: Filter by issue date from (ISO 8601)
+        :type issue_date_from: datetime
+        :param issue_date_to: Filter by issue date to (ISO 8601)
+        :type issue_date_to: datetime
+        :param direction: Filter by direction
+        :type direction: str
+        :param status: Filter by document status
+        :type status: str
+        :param document_type: Filter by document type code
+        :type document_type: str
+        :param receiver_id: Filter by receiver ID
+        :type receiver_id: str
+        :param receiver_tin: Filter by receiver TIN
+        :type receiver_tin: str
+        :param issuer_tin: Filter by issuer TIN
+        :type issuer_tin: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_recent_documents_serialize(
+            session_id=session_id,
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_id=receiver_id,
+            receiver_tin=receiver_tin,
+            issuer_tin=issuer_tin,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "RecentDocumentsResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_recent_documents_with_http_info(
+        self,
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        page_no: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="Page number (1-based, default 1)")] = None,
+        page_size: Annotated[Optional[Annotated[int, Field(le=100, strict=True, ge=1)]], Field(description="Page size (default 10, max 100)")] = None,
+        submission_date_from: Annotated[Optional[datetime], Field(description="Filter by submission date from (ISO 8601)")] = None,
+        submission_date_to: Annotated[Optional[datetime], Field(description="Filter by submission date to (ISO 8601)")] = None,
+        issue_date_from: Annotated[Optional[datetime], Field(description="Filter by issue date from (ISO 8601)")] = None,
+        issue_date_to: Annotated[Optional[datetime], Field(description="Filter by issue date to (ISO 8601)")] = None,
+        direction: Annotated[Optional[StrictStr], Field(description="Filter by direction")] = None,
+        status: Annotated[Optional[StrictStr], Field(description="Filter by document status")] = None,
+        document_type: Annotated[Optional[StrictStr], Field(description="Filter by document type code")] = None,
+        receiver_id: Annotated[Optional[StrictStr], Field(description="Filter by receiver ID")] = None,
+        receiver_tin: Annotated[Optional[StrictStr], Field(description="Filter by receiver TIN")] = None,
+        issuer_tin: Annotated[Optional[StrictStr], Field(description="Filter by issuer TIN")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[RecentDocumentsResponse]:
+        """List recent documents
+
+        Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param page_no: Page number (1-based, default 1)
+        :type page_no: int
+        :param page_size: Page size (default 10, max 100)
+        :type page_size: int
+        :param submission_date_from: Filter by submission date from (ISO 8601)
+        :type submission_date_from: datetime
+        :param submission_date_to: Filter by submission date to (ISO 8601)
+        :type submission_date_to: datetime
+        :param issue_date_from: Filter by issue date from (ISO 8601)
+        :type issue_date_from: datetime
+        :param issue_date_to: Filter by issue date to (ISO 8601)
+        :type issue_date_to: datetime
+        :param direction: Filter by direction
+        :type direction: str
+        :param status: Filter by document status
+        :type status: str
+        :param document_type: Filter by document type code
+        :type document_type: str
+        :param receiver_id: Filter by receiver ID
+        :type receiver_id: str
+        :param receiver_tin: Filter by receiver TIN
+        :type receiver_tin: str
+        :param issuer_tin: Filter by issuer TIN
+        :type issuer_tin: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_recent_documents_serialize(
+            session_id=session_id,
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_id=receiver_id,
+            receiver_tin=receiver_tin,
+            issuer_tin=issuer_tin,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "RecentDocumentsResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_recent_documents_without_preload_content(
+        self,
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        page_no: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="Page number (1-based, default 1)")] = None,
+        page_size: Annotated[Optional[Annotated[int, Field(le=100, strict=True, ge=1)]], Field(description="Page size (default 10, max 100)")] = None,
+        submission_date_from: Annotated[Optional[datetime], Field(description="Filter by submission date from (ISO 8601)")] = None,
+        submission_date_to: Annotated[Optional[datetime], Field(description="Filter by submission date to (ISO 8601)")] = None,
+        issue_date_from: Annotated[Optional[datetime], Field(description="Filter by issue date from (ISO 8601)")] = None,
+        issue_date_to: Annotated[Optional[datetime], Field(description="Filter by issue date to (ISO 8601)")] = None,
+        direction: Annotated[Optional[StrictStr], Field(description="Filter by direction")] = None,
+        status: Annotated[Optional[StrictStr], Field(description="Filter by document status")] = None,
+        document_type: Annotated[Optional[StrictStr], Field(description="Filter by document type code")] = None,
+        receiver_id: Annotated[Optional[StrictStr], Field(description="Filter by receiver ID")] = None,
+        receiver_tin: Annotated[Optional[StrictStr], Field(description="Filter by receiver TIN")] = None,
+        issuer_tin: Annotated[Optional[StrictStr], Field(description="Filter by issuer TIN")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """List recent documents
+
+        Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param page_no: Page number (1-based, default 1)
+        :type page_no: int
+        :param page_size: Page size (default 10, max 100)
+        :type page_size: int
+        :param submission_date_from: Filter by submission date from (ISO 8601)
+        :type submission_date_from: datetime
+        :param submission_date_to: Filter by submission date to (ISO 8601)
+        :type submission_date_to: datetime
+        :param issue_date_from: Filter by issue date from (ISO 8601)
+        :type issue_date_from: datetime
+        :param issue_date_to: Filter by issue date to (ISO 8601)
+        :type issue_date_to: datetime
+        :param direction: Filter by direction
+        :type direction: str
+        :param status: Filter by document status
+        :type status: str
+        :param document_type: Filter by document type code
+        :type document_type: str
+        :param receiver_id: Filter by receiver ID
+        :type receiver_id: str
+        :param receiver_tin: Filter by receiver TIN
+        :type receiver_tin: str
+        :param issuer_tin: Filter by issuer TIN
+        :type issuer_tin: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_recent_documents_serialize(
+            session_id=session_id,
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_id=receiver_id,
+            receiver_tin=receiver_tin,
+            issuer_tin=issuer_tin,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "RecentDocumentsResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_recent_documents_serialize(
+        self,
+        session_id,
+        page_no,
+        page_size,
+        submission_date_from,
+        submission_date_to,
+        issue_date_from,
+        issue_date_to,
+        direction,
+        status,
+        document_type,
+        receiver_id,
+        receiver_tin,
+        issuer_tin,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        if session_id is not None:
+            
+            _query_params.append(('sessionId', session_id))
+            
+        if page_no is not None:
+            
+            _query_params.append(('pageNo', page_no))
+            
+        if page_size is not None:
+            
+            _query_params.append(('pageSize', page_size))
+            
+        if submission_date_from is not None:
+            if isinstance(submission_date_from, datetime):
+                _query_params.append(
+                    (
+                        'submissionDateFrom',
+                        submission_date_from.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('submissionDateFrom', submission_date_from))
+            
+        if submission_date_to is not None:
+            if isinstance(submission_date_to, datetime):
+                _query_params.append(
+                    (
+                        'submissionDateTo',
+                        submission_date_to.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('submissionDateTo', submission_date_to))
+            
+        if issue_date_from is not None:
+            if isinstance(issue_date_from, datetime):
+                _query_params.append(
+                    (
+                        'issueDateFrom',
+                        issue_date_from.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('issueDateFrom', issue_date_from))
+            
+        if issue_date_to is not None:
+            if isinstance(issue_date_to, datetime):
+                _query_params.append(
+                    (
+                        'issueDateTo',
+                        issue_date_to.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('issueDateTo', issue_date_to))
+            
+        if direction is not None:
+            
+            _query_params.append(('direction', direction))
+            
+        if status is not None:
+            
+            _query_params.append(('status', status))
+            
+        if document_type is not None:
+            
+            _query_params.append(('documentType', document_type))
+            
+        if receiver_id is not None:
+            
+            _query_params.append(('receiverId', receiver_id))
+            
+        if receiver_tin is not None:
+            
+            _query_params.append(('receiverTin', receiver_tin))
+            
+        if issuer_tin is not None:
+            
+            _query_params.append(('issuerTin', issuer_tin))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/v1/documents/recent',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
     def reject_document(
         self,
         uuid: Annotated[StrictStr, Field(description="MyInvois document UUID")],
@@ -926,6 +1752,571 @@ class DocumentsApi:
         return self.api_client.param_serialize(
             method='POST',
             resource_path='/v1/documents/{uuid}/reject',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def search_documents(
+        self,
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        uuid: Annotated[Optional[StrictStr], Field(description="Filter by document UUID")] = None,
+        submission_uid: Annotated[Optional[StrictStr], Field(description="Filter by submission UID")] = None,
+        page_no: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="Page number (1-based, default 1)")] = None,
+        page_size: Annotated[Optional[Annotated[int, Field(le=100, strict=True, ge=1)]], Field(description="Page size (default 10, max 100)")] = None,
+        submission_date_from: Annotated[Optional[datetime], Field(description="Filter by submission date from (ISO 8601)")] = None,
+        submission_date_to: Annotated[Optional[datetime], Field(description="Filter by submission date to (ISO 8601)")] = None,
+        continuation_token: Annotated[Optional[StrictStr], Field(description="Continuation token for pagination")] = None,
+        issue_date_from: Annotated[Optional[datetime], Field(description="Filter by issue date from (ISO 8601)")] = None,
+        issue_date_to: Annotated[Optional[datetime], Field(description="Filter by issue date to (ISO 8601)")] = None,
+        direction: Annotated[Optional[StrictStr], Field(description="Filter by direction")] = None,
+        status: Annotated[Optional[StrictStr], Field(description="Filter by document status")] = None,
+        document_type: Annotated[Optional[StrictStr], Field(description="Filter by document type code")] = None,
+        receiver_id: Annotated[Optional[StrictStr], Field(description="Filter by receiver ID")] = None,
+        receiver_tin: Annotated[Optional[StrictStr], Field(description="Filter by receiver TIN")] = None,
+        issuer_tin: Annotated[Optional[StrictStr], Field(description="Filter by issuer TIN")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> SearchDocumentsResponse:
+        """Search documents
+
+        Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param uuid: Filter by document UUID
+        :type uuid: str
+        :param submission_uid: Filter by submission UID
+        :type submission_uid: str
+        :param page_no: Page number (1-based, default 1)
+        :type page_no: int
+        :param page_size: Page size (default 10, max 100)
+        :type page_size: int
+        :param submission_date_from: Filter by submission date from (ISO 8601)
+        :type submission_date_from: datetime
+        :param submission_date_to: Filter by submission date to (ISO 8601)
+        :type submission_date_to: datetime
+        :param continuation_token: Continuation token for pagination
+        :type continuation_token: str
+        :param issue_date_from: Filter by issue date from (ISO 8601)
+        :type issue_date_from: datetime
+        :param issue_date_to: Filter by issue date to (ISO 8601)
+        :type issue_date_to: datetime
+        :param direction: Filter by direction
+        :type direction: str
+        :param status: Filter by document status
+        :type status: str
+        :param document_type: Filter by document type code
+        :type document_type: str
+        :param receiver_id: Filter by receiver ID
+        :type receiver_id: str
+        :param receiver_tin: Filter by receiver TIN
+        :type receiver_tin: str
+        :param issuer_tin: Filter by issuer TIN
+        :type issuer_tin: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._search_documents_serialize(
+            session_id=session_id,
+            uuid=uuid,
+            submission_uid=submission_uid,
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            continuation_token=continuation_token,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_id=receiver_id,
+            receiver_tin=receiver_tin,
+            issuer_tin=issuer_tin,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "SearchDocumentsResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def search_documents_with_http_info(
+        self,
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        uuid: Annotated[Optional[StrictStr], Field(description="Filter by document UUID")] = None,
+        submission_uid: Annotated[Optional[StrictStr], Field(description="Filter by submission UID")] = None,
+        page_no: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="Page number (1-based, default 1)")] = None,
+        page_size: Annotated[Optional[Annotated[int, Field(le=100, strict=True, ge=1)]], Field(description="Page size (default 10, max 100)")] = None,
+        submission_date_from: Annotated[Optional[datetime], Field(description="Filter by submission date from (ISO 8601)")] = None,
+        submission_date_to: Annotated[Optional[datetime], Field(description="Filter by submission date to (ISO 8601)")] = None,
+        continuation_token: Annotated[Optional[StrictStr], Field(description="Continuation token for pagination")] = None,
+        issue_date_from: Annotated[Optional[datetime], Field(description="Filter by issue date from (ISO 8601)")] = None,
+        issue_date_to: Annotated[Optional[datetime], Field(description="Filter by issue date to (ISO 8601)")] = None,
+        direction: Annotated[Optional[StrictStr], Field(description="Filter by direction")] = None,
+        status: Annotated[Optional[StrictStr], Field(description="Filter by document status")] = None,
+        document_type: Annotated[Optional[StrictStr], Field(description="Filter by document type code")] = None,
+        receiver_id: Annotated[Optional[StrictStr], Field(description="Filter by receiver ID")] = None,
+        receiver_tin: Annotated[Optional[StrictStr], Field(description="Filter by receiver TIN")] = None,
+        issuer_tin: Annotated[Optional[StrictStr], Field(description="Filter by issuer TIN")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[SearchDocumentsResponse]:
+        """Search documents
+
+        Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param uuid: Filter by document UUID
+        :type uuid: str
+        :param submission_uid: Filter by submission UID
+        :type submission_uid: str
+        :param page_no: Page number (1-based, default 1)
+        :type page_no: int
+        :param page_size: Page size (default 10, max 100)
+        :type page_size: int
+        :param submission_date_from: Filter by submission date from (ISO 8601)
+        :type submission_date_from: datetime
+        :param submission_date_to: Filter by submission date to (ISO 8601)
+        :type submission_date_to: datetime
+        :param continuation_token: Continuation token for pagination
+        :type continuation_token: str
+        :param issue_date_from: Filter by issue date from (ISO 8601)
+        :type issue_date_from: datetime
+        :param issue_date_to: Filter by issue date to (ISO 8601)
+        :type issue_date_to: datetime
+        :param direction: Filter by direction
+        :type direction: str
+        :param status: Filter by document status
+        :type status: str
+        :param document_type: Filter by document type code
+        :type document_type: str
+        :param receiver_id: Filter by receiver ID
+        :type receiver_id: str
+        :param receiver_tin: Filter by receiver TIN
+        :type receiver_tin: str
+        :param issuer_tin: Filter by issuer TIN
+        :type issuer_tin: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._search_documents_serialize(
+            session_id=session_id,
+            uuid=uuid,
+            submission_uid=submission_uid,
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            continuation_token=continuation_token,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_id=receiver_id,
+            receiver_tin=receiver_tin,
+            issuer_tin=issuer_tin,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "SearchDocumentsResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def search_documents_without_preload_content(
+        self,
+        session_id: Annotated[str, Field(strict=True, description="Gateway session ID")],
+        uuid: Annotated[Optional[StrictStr], Field(description="Filter by document UUID")] = None,
+        submission_uid: Annotated[Optional[StrictStr], Field(description="Filter by submission UID")] = None,
+        page_no: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="Page number (1-based, default 1)")] = None,
+        page_size: Annotated[Optional[Annotated[int, Field(le=100, strict=True, ge=1)]], Field(description="Page size (default 10, max 100)")] = None,
+        submission_date_from: Annotated[Optional[datetime], Field(description="Filter by submission date from (ISO 8601)")] = None,
+        submission_date_to: Annotated[Optional[datetime], Field(description="Filter by submission date to (ISO 8601)")] = None,
+        continuation_token: Annotated[Optional[StrictStr], Field(description="Continuation token for pagination")] = None,
+        issue_date_from: Annotated[Optional[datetime], Field(description="Filter by issue date from (ISO 8601)")] = None,
+        issue_date_to: Annotated[Optional[datetime], Field(description="Filter by issue date to (ISO 8601)")] = None,
+        direction: Annotated[Optional[StrictStr], Field(description="Filter by direction")] = None,
+        status: Annotated[Optional[StrictStr], Field(description="Filter by document status")] = None,
+        document_type: Annotated[Optional[StrictStr], Field(description="Filter by document type code")] = None,
+        receiver_id: Annotated[Optional[StrictStr], Field(description="Filter by receiver ID")] = None,
+        receiver_tin: Annotated[Optional[StrictStr], Field(description="Filter by receiver TIN")] = None,
+        issuer_tin: Annotated[Optional[StrictStr], Field(description="Filter by issuer TIN")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Search documents
+
+        Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+
+        :param session_id: Gateway session ID (required)
+        :type session_id: str
+        :param uuid: Filter by document UUID
+        :type uuid: str
+        :param submission_uid: Filter by submission UID
+        :type submission_uid: str
+        :param page_no: Page number (1-based, default 1)
+        :type page_no: int
+        :param page_size: Page size (default 10, max 100)
+        :type page_size: int
+        :param submission_date_from: Filter by submission date from (ISO 8601)
+        :type submission_date_from: datetime
+        :param submission_date_to: Filter by submission date to (ISO 8601)
+        :type submission_date_to: datetime
+        :param continuation_token: Continuation token for pagination
+        :type continuation_token: str
+        :param issue_date_from: Filter by issue date from (ISO 8601)
+        :type issue_date_from: datetime
+        :param issue_date_to: Filter by issue date to (ISO 8601)
+        :type issue_date_to: datetime
+        :param direction: Filter by direction
+        :type direction: str
+        :param status: Filter by document status
+        :type status: str
+        :param document_type: Filter by document type code
+        :type document_type: str
+        :param receiver_id: Filter by receiver ID
+        :type receiver_id: str
+        :param receiver_tin: Filter by receiver TIN
+        :type receiver_tin: str
+        :param issuer_tin: Filter by issuer TIN
+        :type issuer_tin: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._search_documents_serialize(
+            session_id=session_id,
+            uuid=uuid,
+            submission_uid=submission_uid,
+            page_no=page_no,
+            page_size=page_size,
+            submission_date_from=submission_date_from,
+            submission_date_to=submission_date_to,
+            continuation_token=continuation_token,
+            issue_date_from=issue_date_from,
+            issue_date_to=issue_date_to,
+            direction=direction,
+            status=status,
+            document_type=document_type,
+            receiver_id=receiver_id,
+            receiver_tin=receiver_tin,
+            issuer_tin=issuer_tin,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "SearchDocumentsResponse",
+            '400': "ErrorEnvelope",
+            '401': "ErrorEnvelope",
+            '429': "ErrorEnvelope",
+            '500': "ErrorEnvelope",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _search_documents_serialize(
+        self,
+        session_id,
+        uuid,
+        submission_uid,
+        page_no,
+        page_size,
+        submission_date_from,
+        submission_date_to,
+        continuation_token,
+        issue_date_from,
+        issue_date_to,
+        direction,
+        status,
+        document_type,
+        receiver_id,
+        receiver_tin,
+        issuer_tin,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        if session_id is not None:
+            
+            _query_params.append(('sessionId', session_id))
+            
+        if uuid is not None:
+            
+            _query_params.append(('uuid', uuid))
+            
+        if submission_uid is not None:
+            
+            _query_params.append(('submissionUid', submission_uid))
+            
+        if page_no is not None:
+            
+            _query_params.append(('pageNo', page_no))
+            
+        if page_size is not None:
+            
+            _query_params.append(('pageSize', page_size))
+            
+        if submission_date_from is not None:
+            if isinstance(submission_date_from, datetime):
+                _query_params.append(
+                    (
+                        'submissionDateFrom',
+                        submission_date_from.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('submissionDateFrom', submission_date_from))
+            
+        if submission_date_to is not None:
+            if isinstance(submission_date_to, datetime):
+                _query_params.append(
+                    (
+                        'submissionDateTo',
+                        submission_date_to.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('submissionDateTo', submission_date_to))
+            
+        if continuation_token is not None:
+            
+            _query_params.append(('continuationToken', continuation_token))
+            
+        if issue_date_from is not None:
+            if isinstance(issue_date_from, datetime):
+                _query_params.append(
+                    (
+                        'issueDateFrom',
+                        issue_date_from.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('issueDateFrom', issue_date_from))
+            
+        if issue_date_to is not None:
+            if isinstance(issue_date_to, datetime):
+                _query_params.append(
+                    (
+                        'issueDateTo',
+                        issue_date_to.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('issueDateTo', issue_date_to))
+            
+        if direction is not None:
+            
+            _query_params.append(('direction', direction))
+            
+        if status is not None:
+            
+            _query_params.append(('status', status))
+            
+        if document_type is not None:
+            
+            _query_params.append(('documentType', document_type))
+            
+        if receiver_id is not None:
+            
+            _query_params.append(('receiverId', receiver_id))
+            
+        if receiver_tin is not None:
+            
+            _query_params.append(('receiverTin', receiver_tin))
+            
+        if issuer_tin is not None:
+            
+            _query_params.append(('issuerTin', issuer_tin))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/v1/documents/search',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

@@ -93,7 +93,10 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *DocumentsApi* | [**cancel_document**](docs/DocumentsApi.md#cancel_document) | **POST** /v1/documents/{uuid}/cancel | Cancel a document
 *DocumentsApi* | [**get_document_details**](docs/DocumentsApi.md#get_document_details) | **GET** /v1/documents/{uuid}/details | Get document details
+*DocumentsApi* | [**get_raw_document**](docs/DocumentsApi.md#get_raw_document) | **GET** /v1/documents/{uuid}/raw/{longId} | Get raw document content
+*DocumentsApi* | [**get_recent_documents**](docs/DocumentsApi.md#get_recent_documents) | **GET** /v1/documents/recent | List recent documents
 *DocumentsApi* | [**reject_document**](docs/DocumentsApi.md#reject_document) | **POST** /v1/documents/{uuid}/reject | Reject a document
+*DocumentsApi* | [**search_documents**](docs/DocumentsApi.md#search_documents) | **GET** /v1/documents/search | Search documents
 *HealthApi* | [**get_health**](docs/HealthApi.md#get_health) | **GET** /healthz | Health check
 *HealthApi* | [**get_ready**](docs/HealthApi.md#get_ready) | **GET** /readyz | Readiness check
 *HealthApi* | [**get_version**](docs/HealthApi.md#get_version) | **GET** /version | Version information
@@ -111,6 +114,7 @@ Class | Method | HTTP request | Description
  - [AcceptedDocument](docs/AcceptedDocument.md)
  - [DocumentDetails](docs/DocumentDetails.md)
  - [DocumentInput](docs/DocumentInput.md)
+ - [DocumentListItem](docs/DocumentListItem.md)
  - [DocumentStateChangeRequest](docs/DocumentStateChangeRequest.md)
  - [DocumentStateChangeResponse](docs/DocumentStateChangeResponse.md)
  - [DocumentStatus](docs/DocumentStatus.md)
@@ -121,9 +125,12 @@ Class | Method | HTTP request | Description
  - [GatewayErrorUpstream](docs/GatewayErrorUpstream.md)
  - [HealthResponse](docs/HealthResponse.md)
  - [Mode](docs/Mode.md)
+ - [RawDocumentResponse](docs/RawDocumentResponse.md)
  - [ReadyResponse](docs/ReadyResponse.md)
  - [ReadyResponseChecks](docs/ReadyResponseChecks.md)
+ - [RecentDocumentsResponse](docs/RecentDocumentsResponse.md)
  - [RejectedDocument](docs/RejectedDocument.md)
+ - [SearchDocumentsResponse](docs/SearchDocumentsResponse.md)
  - [Session](docs/Session.md)
  - [SessionCreateIntermediary](docs/SessionCreateIntermediary.md)
  - [SessionCreateRequest](docs/SessionCreateRequest.md)
