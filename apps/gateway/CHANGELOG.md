@@ -1,5 +1,21 @@
 # @myinvois/gateway
 
+## 0.3.2
+
+### Patch Changes
+
+- feat(scripts): add comprehensive document issuing script
+
+  Add issue-document.ts script supporting all 9 MyInvois document types:
+  - Invoice (01) and Consolidated Invoice
+  - Credit Note (02), Debit Note (03), Refund Note (04)
+  - Self-billed Invoice (11), Credit (12), Debit (13), Refund (14) Notes
+
+  Features:
+  - Support for both v1.0 (unsigned) and v1.1 (signed) documents
+  - Automatic BillingReference for adjustment documents
+  - CLI options for all document parameters
+
 ## 0.3.1
 
 ### Patch Changes
