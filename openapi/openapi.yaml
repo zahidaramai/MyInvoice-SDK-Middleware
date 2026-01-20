@@ -398,6 +398,135 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+  /v1/documents/{uuid}/raw/{longId}:
+    get:
+      operationId: getRawDocument
+      summary: Get raw document content
+      description: |
+        Retrieves the raw document content (UBL XML or JSON) from MyInvois.
+        Requires both the document UUID and Long ID.
+        Rate limit: 125 RPM per clientId.
+      tags:
+        - Documents
+      parameters:
+        - $ref: "#/components/parameters/uuidPath"
+        - $ref: "#/components/parameters/longIdPath"
+        - $ref: "#/components/parameters/sessionIdQuery"
+      responses:
+        "200":
+          description: Raw document content
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RawDocumentResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/documents/recent:
+    get:
+      operationId: getRecentDocuments
+      summary: List recent documents
+      description: |
+        Lists recently processed documents with optional filters.
+        Results are paginated. Rate limit: 60 RPM per clientId.
+
+        Note: This endpoint is for listing/searching documents,
+        not for monitoring submission status (use GET /v1/submissions/{trackingId} instead).
+      tags:
+        - Documents
+      parameters:
+        - $ref: "#/components/parameters/sessionIdQuery"
+        - $ref: "#/components/parameters/pageNoQuery"
+        - $ref: "#/components/parameters/pageSizeQuery"
+        - $ref: "#/components/parameters/submissionDateFromQuery"
+        - $ref: "#/components/parameters/submissionDateToQuery"
+        - $ref: "#/components/parameters/issueDateFromQuery"
+        - $ref: "#/components/parameters/issueDateToQuery"
+        - $ref: "#/components/parameters/directionQuery"
+        - $ref: "#/components/parameters/documentStatusQuery"
+        - $ref: "#/components/parameters/documentTypeQuery"
+        - $ref: "#/components/parameters/receiverIdQuery"
+        - $ref: "#/components/parameters/receiverTinQuery"
+        - $ref: "#/components/parameters/issuerTinQuery"
+      responses:
+        "200":
+          description: List of recent documents
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecentDocumentsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/documents/search:
+    get:
+      operationId: searchDocuments
+      summary: Search documents
+      description: |
+        Searches documents with various filter criteria.
+        Results are paginated and support continuation tokens for large result sets.
+        Rate limit: 60 RPM per clientId.
+
+        Note: This endpoint is for document lookup/reporting,
+        not for monitoring submission status (use GET /v1/submissions/{trackingId} instead).
+      tags:
+        - Documents
+      parameters:
+        - $ref: "#/components/parameters/sessionIdQuery"
+        - $ref: "#/components/parameters/uuidQuery"
+        - $ref: "#/components/parameters/submissionUidQuery"
+        - $ref: "#/components/parameters/pageNoQuery"
+        - $ref: "#/components/parameters/pageSizeQuery"
+        - $ref: "#/components/parameters/submissionDateFromQuery"
+        - $ref: "#/components/parameters/submissionDateToQuery"
+        - $ref: "#/components/parameters/continuationTokenQuery"
+        - $ref: "#/components/parameters/issueDateFromQuery"
+        - $ref: "#/components/parameters/issueDateToQuery"
+        - $ref: "#/components/parameters/directionQuery"
+        - $ref: "#/components/parameters/documentStatusQuery"
+        - $ref: "#/components/parameters/documentTypeQuery"
+        - $ref: "#/components/parameters/receiverIdQuery"
+        - $ref: "#/components/parameters/receiverTinQuery"
+        - $ref: "#/components/parameters/issuerTinQuery"
+      responses:
+        "200":
+          description: Search results
+          headers:
+            X-Correlation-Id:
+              $ref: "#/components/headers/X-Correlation-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchDocumentsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/tin/validate:
     get:
       operationId: validateTin
@@ -490,6 +619,148 @@ components:
       schema:
         type: string
         format: uuid
+
+    longIdPath:
+      name: longId
+      in: path
+      required: true
+      description: MyInvois document Long ID (used for raw document retrieval)
+      schema:
+        type: string
+        minLength: 1
+
+    pageNoQuery:
+      name: pageNo
+      in: query
+      required: false
+      description: Page number (1-based, default 1)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    pageSizeQuery:
+      name: pageSize
+      in: query
+      required: false
+      description: Page size (default 10, max 100)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+
+    submissionDateFromQuery:
+      name: submissionDateFrom
+      in: query
+      required: false
+      description: Filter by submission date from (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+
+    submissionDateToQuery:
+      name: submissionDateTo
+      in: query
+      required: false
+      description: Filter by submission date to (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+
+    issueDateFromQuery:
+      name: issueDateFrom
+      in: query
+      required: false
+      description: Filter by issue date from (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+
+    issueDateToQuery:
+      name: issueDateTo
+      in: query
+      required: false
+      description: Filter by issue date to (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+
+    directionQuery:
+      name: direction
+      in: query
+      required: false
+      description: Filter by direction
+      schema:
+        type: string
+        enum:
+          - Sent
+          - Received
+
+    documentStatusQuery:
+      name: status
+      in: query
+      required: false
+      description: Filter by document status
+      schema:
+        type: string
+
+    documentTypeQuery:
+      name: documentType
+      in: query
+      required: false
+      description: Filter by document type code
+      schema:
+        type: string
+
+    receiverIdQuery:
+      name: receiverId
+      in: query
+      required: false
+      description: Filter by receiver ID
+      schema:
+        type: string
+
+    receiverTinQuery:
+      name: receiverTin
+      in: query
+      required: false
+      description: Filter by receiver TIN
+      schema:
+        type: string
+
+    issuerTinQuery:
+      name: issuerTin
+      in: query
+      required: false
+      description: Filter by issuer TIN
+      schema:
+        type: string
+
+    uuidQuery:
+      name: uuid
+      in: query
+      required: false
+      description: Filter by document UUID
+      schema:
+        type: string
+        format: uuid
+
+    submissionUidQuery:
+      name: submissionUid
+      in: query
+      required: false
+      description: Filter by submission UID
+      schema:
+        type: string
+
+    continuationTokenQuery:
+      name: continuationToken
+      in: query
+      required: false
+      description: Continuation token for pagination
+      schema:
+        type: string
 
   headers:
     X-Correlation-Id:
@@ -905,6 +1176,121 @@ components:
           type: string
         errorMS:
           type: string
+
+    RawDocumentResponse:
+      type: object
+      required:
+        - document
+        - format
+      properties:
+        document:
+          type: string
+          description: Raw document content (UBL XML or JSON)
+        format:
+          type: string
+          enum:
+            - XML
+            - JSON
+          description: Document format
+
+    DocumentListItem:
+      type: object
+      required:
+        - uuid
+        - submissionUid
+        - internalId
+        - typeName
+        - issuerTin
+        - status
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        submissionUid:
+          type: string
+        longId:
+          type: string
+          nullable: true
+        internalId:
+          type: string
+        typeName:
+          type: string
+        typeVersionName:
+          type: string
+          nullable: true
+        issuerTin:
+          type: string
+        issuerName:
+          type: string
+          nullable: true
+        receiverId:
+          type: string
+          nullable: true
+        receiverName:
+          type: string
+          nullable: true
+        dateTimeIssued:
+          type: string
+          format: date-time
+          nullable: true
+        dateTimeReceived:
+          type: string
+          format: date-time
+          nullable: true
+        dateTimeValidated:
+          type: string
+          format: date-time
+          nullable: true
+        totalPayableAmount:
+          type: string
+          nullable: true
+          description: Total payable amount as string (preserves decimal precision)
+        status:
+          type: string
+        cancelDateTime:
+          type: string
+          format: date-time
+          nullable: true
+        rejectDateTime:
+          type: string
+          format: date-time
+          nullable: true
+
+    RecentDocumentsResponse:
+      type: object
+      required:
+        - documents
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentListItem"
+        totalPages:
+          type: integer
+          nullable: true
+        totalCount:
+          type: integer
+          nullable: true
+
+    SearchDocumentsResponse:
+      type: object
+      required:
+        - documents
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentListItem"
+        totalPages:
+          type: integer
+          nullable: true
+        totalCount:
+          type: integer
+          nullable: true
+        continuationToken:
+          type: string
+          nullable: true
+          description: Token for fetching next page
 
     TinValidationResponse:
       type: object
