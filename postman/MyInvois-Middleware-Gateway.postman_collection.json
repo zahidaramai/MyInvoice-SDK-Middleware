@@ -1,0 +1,1748 @@
+{
+  "info": {
+    "_postman_id": "myinvois-middleware-gateway-v1",
+    "name": "MyInvois Middleware Gateway",
+    "description": "Complete API collection for the MyInvois Middleware Gateway - A Node.js/TypeScript middleware that simplifies integration with Malaysia's MyInvois e-invoicing system.\n\n## Features\n- Token caching (~60 minutes)\n- Rate-limit safety (endpoint-specific RPM caps)\n- Submission orchestration (batching constraints)\n- Background polling worker\n- Normalized error responses\n\n## Quick Start\n1. Set the `baseUrl` variable (default: http://localhost:3000)\n2. Create a session using POST /v1/sessions\n3. Use the returned sessionId for subsequent requests\n4. Submit documents and track their status\n\n## Environment Variables\n- `baseUrl`: Gateway server URL\n- `sessionId`: Active session ID (auto-set after session creation)\n- `trackingId`: Submission tracking ID (auto-set after submission)\n- `documentUuid`: Document UUID for operations\n- `documentLongId`: Document long ID for raw content retrieval\n\n## Authentication\nThis gateway uses session-based authentication. Create a session first, then use the sessionId in subsequent requests.",
+    "version": "0.1.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Gateway server base URL"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string",
+      "description": "Active session ID (auto-populated after session creation)"
+    },
+    {
+      "key": "trackingId",
+      "value": "",
+      "type": "string",
+      "description": "Submission tracking ID (auto-populated after submission)"
+    },
+    {
+      "key": "submissionUid",
+      "value": "",
+      "type": "string",
+      "description": "MyInvois submission UID"
+    },
+    {
+      "key": "documentUuid",
+      "value": "",
+      "type": "string",
+      "description": "Document UUID for document operations"
+    },
+    {
+      "key": "documentLongId",
+      "value": "",
+      "type": "string",
+      "description": "Document long ID for raw content retrieval"
+    },
+    {
+      "key": "clientId",
+      "value": "",
+      "type": "string",
+      "description": "MyInvois client ID"
+    },
+    {
+      "key": "clientSecret",
+      "value": "",
+      "type": "string",
+      "description": "MyInvois client secret"
+    },
+    {
+      "key": "onBehalfOf",
+      "value": "",
+      "type": "string",
+      "description": "TIN or TIN:ROB for intermediary mode"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Health check endpoints for monitoring gateway status. These endpoints do not require authentication.",
+      "item": [
+        {
+          "name": "Liveness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthz"]
+            },
+            "description": "Basic liveness probe. Returns 200 if the gateway process is running.\n\n**Use Case**: Kubernetes liveness probe, basic uptime monitoring."
+          },
+          "response": [
+            {
+              "name": "Healthy",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/healthz",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["healthz"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/readyz",
+              "host": ["{{baseUrl}}"],
+              "path": ["readyz"]
+            },
+            "description": "Readiness probe that checks database and Redis connectivity.\n\n**Use Case**: Kubernetes readiness probe, dependency health verification.\n\n**Checks**:\n- Database connection (PostgreSQL/SQLite)\n- Redis connection (for BullMQ)"
+          },
+          "response": [
+            {
+              "name": "Ready",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/readyz",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["readyz"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"checks\": {\n    \"database\": \"ok\",\n    \"redis\": \"ok\"\n  }\n}"
+            },
+            {
+              "name": "Not Ready",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/readyz",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["readyz"]
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"checks\": {\n    \"database\": \"ok\",\n    \"redis\": \"error\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Version Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/version",
+              "host": ["{{baseUrl}}"],
+              "path": ["version"]
+            },
+            "description": "Returns build and version information.\n\n**Use Case**: Deployment verification, debugging, CI/CD checks."
+          },
+          "response": [
+            {
+              "name": "Version Info",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/version",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["version"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"version\": \"0.1.0\",\n  \"buildTime\": \"2024-01-15T10:30:00Z\",\n  \"gitCommit\": \"abc1234\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "description": "Session management endpoints. Sessions authenticate with MyInvois and cache OAuth tokens.\n\n**Important Notes**:\n- Tokens are cached for ~60 minutes\n- Rate limit: 12 RPM for session creation\n- INTERMEDIARY mode requires `onBehalfOf` parameter",
+      "item": [
+        {
+          "name": "Create Session (Taxpayer Mode)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', response.id);",
+                  "    console.log('Session created:', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"{{clientId}}\",\n  \"clientSecret\": \"{{clientSecret}}\",\n  \"documentVersion\": \"1.0\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions"]
+            },
+            "description": "Creates a new gateway session in TAXPAYER mode (direct authentication).\n\n**Request Body**:\n- `env`: Environment - \"PROD\" or \"SANDBOX\"\n- `mode`: \"TAXPAYER\" for direct authentication\n- `clientId`: Your MyInvois client ID\n- `clientSecret`: Your MyInvois client secret\n- `documentVersion`: \"1.0\" (unsigned) or \"1.1\" (signed, requires certificate)\n- `scope`: Optional OAuth scope\n\n**Rate Limit**: 12 RPM per clientId\n\n**Auto-Set Variables**:\n- `sessionId` is automatically set from the response"
+          },
+          "response": [
+            {
+              "name": "Session Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"your-client-id\",\n  \"clientSecret\": \"your-client-secret\",\n  \"documentVersion\": \"1.0\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_abc123"
+                }
+              ],
+              "body": "{\n  \"id\": \"sess_abc123xyz\",\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"documentVersion\": \"1.0\",\n  \"createdAt\": \"2024-01-15T10:30:00Z\",\n  \"expiresAt\": \"2024-01-15T11:30:00Z\"\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"env\": \"INVALID\",\n  \"mode\": \"TAXPAYER\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 400,\n    \"errorCode\": \"VALIDATION_ERROR\",\n    \"messageEN\": \"Invalid environment. Must be PROD or SANDBOX.\",\n    \"propertyName\": \"env\"\n  }\n}"
+            },
+            {
+              "name": "Authentication Failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"invalid\",\n  \"clientSecret\": \"invalid\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 401,\n    \"errorCode\": \"AUTH_FAILED\",\n    \"messageEN\": \"Authentication failed with MyInvois\",\n    \"upstream\": {\n      \"service\": \"MYINVOIS\",\n      \"path\": \"/connect/token\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Session (Intermediary Mode)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', response.id);",
+                  "    console.log('Session created:', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"INTERMEDIARY\",\n  \"clientId\": \"{{clientId}}\",\n  \"clientSecret\": \"{{clientSecret}}\",\n  \"onBehalfOf\": \"{{onBehalfOf}}\",\n  \"documentVersion\": \"1.0\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions"]
+            },
+            "description": "Creates a new gateway session in INTERMEDIARY mode (acting on behalf of a taxpayer).\n\n**Request Body**:\n- `env`: Environment - \"PROD\" or \"SANDBOX\"\n- `mode`: \"INTERMEDIARY\" for acting on behalf of another taxpayer\n- `clientId`: Your MyInvois client ID\n- `clientSecret`: Your MyInvois client secret\n- `onBehalfOf`: **Required** - TIN or TIN:ROB format\n- `documentVersion`: \"1.0\" (unsigned) or \"1.1\" (signed)\n- `scope`: Optional OAuth scope\n\n**Rate Limit**: 12 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Session Created (Intermediary)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"INTERMEDIARY\",\n  \"clientId\": \"your-client-id\",\n  \"clientSecret\": \"your-client-secret\",\n  \"onBehalfOf\": \"C12345678901\",\n  \"documentVersion\": \"1.0\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_xyz789"
+                }
+              ],
+              "body": "{\n  \"id\": \"sess_xyz789abc\",\n  \"env\": \"SANDBOX\",\n  \"mode\": \"INTERMEDIARY\",\n  \"onBehalfOf\": \"C12345678901\",\n  \"documentVersion\": \"1.0\",\n  \"createdAt\": \"2024-01-15T10:30:00Z\",\n  \"expiresAt\": \"2024-01-15T11:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Session (v1.1 with Signing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', response.id);",
+                  "    console.log('Session created with signing:', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"{{clientId}}\",\n  \"clientSecret\": \"{{clientSecret}}\",\n  \"documentVersion\": \"1.1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions"]
+            },
+            "description": "Creates a session with document version 1.1 which enables digital signing.\n\n**Important**: \n- Version 1.1 requires a valid X.509 certificate configured on the gateway\n- Documents must be in JSON format (no XML support for v1.1)\n- Returns 503 if signing service is unavailable\n\n**Request Body**:\n- `documentVersion`: Set to \"1.1\" for digitally signed documents"
+          },
+          "response": [
+            {
+              "name": "Session Created (v1.1)",
+              "originalRequest": {
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"your-client-id\",\n  \"clientSecret\": \"your-client-secret\",\n  \"documentVersion\": \"1.1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"sess_signed123\",\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"documentVersion\": \"1.1\",\n  \"createdAt\": \"2024-01-15T10:30:00Z\",\n  \"expiresAt\": \"2024-01-15T11:30:00Z\"\n}"
+            },
+            {
+              "name": "Signing Unavailable",
+              "originalRequest": {
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"your-client-id\",\n  \"clientSecret\": \"your-client-secret\",\n  \"documentVersion\": \"1.1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions"]
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 503,\n    \"errorCode\": \"SIGNING_UNAVAILABLE\",\n    \"messageEN\": \"Document signing service is not available. Certificate may not be configured.\",\n    \"signing\": {\n      \"code\": \"SIGNING_DISABLED\",\n      \"phase\": \"loading\",\n      \"documentVersion\": \"1.1\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions", "{{sessionId}}"]
+            },
+            "description": "Retrieves details about an existing session.\n\n**Path Parameters**:\n- `sessionId`: Session ID (pattern: sess_[a-zA-Z0-9]+)\n\n**Use Case**: Check session validity, expiration time, configuration."
+          },
+          "response": [
+            {
+              "name": "Session Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions/sess_abc123xyz",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions", "sess_abc123xyz"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_get123"
+                }
+              ],
+              "body": "{\n  \"id\": \"sess_abc123xyz\",\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"documentVersion\": \"1.0\",\n  \"createdAt\": \"2024-01-15T10:30:00Z\",\n  \"expiresAt\": \"2024-01-15T11:30:00Z\"\n}"
+            },
+            {
+              "name": "Session Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions/sess_notexist",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions", "sess_notexist"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 404,\n    \"errorCode\": \"SESSION_NOT_FOUND\",\n    \"messageEN\": \"Session not found\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions", "{{sessionId}}"]
+            },
+            "description": "Deletes a session and invalidates cached OAuth tokens.\n\n**Path Parameters**:\n- `sessionId`: Session ID to delete\n\n**Side Effects**:\n- Invalidates all cached tokens for this session\n- Any pending operations using this session will fail"
+          },
+          "response": [
+            {
+              "name": "Session Deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/sessions/sess_abc123xyz",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "sessions", "sess_abc123xyz"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_del123"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submissions",
+      "description": "Document submission and status tracking endpoints.\n\n**Submission Constraints**:\n- Max 100 documents per submission\n- Max 5 MB total payload\n- Max 300 KB per document\n- Duplicate detection window: 10 minutes\n\n**Rate Limits**:\n- Submit: 100 RPM per clientId\n- Poll status: 300 RPM per clientId",
+      "item": [
+        {
+          "name": "Submit Documents (Raw Content)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('submissionUid', response.submissionUid);",
+                  "    if (response.acceptedDocuments && response.acceptedDocuments.length > 0) {",
+                  "        pm.collectionVariables.set('documentUuid', response.acceptedDocuments[0].uuid);",
+                  "    }",
+                  "    console.log('Submission tracking ID:', response.trackingId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"documents\": [\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-2024-0001\",\n      \"rawDocument\": \"{\\\"Invoice\\\": [{\\\"ID\\\": [{\\\"_\\\": \\\"INV-2024-0001\\\"}]}]}\"\n    }\n  ],\n  \"autoMinify\": false,\n  \"asyncPolling\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions"]
+            },
+            "description": "Submits documents to MyInvois using raw document content (auto-encoded and hashed).\n\n**Request Body**:\n- `sessionId`: Active session ID\n- `documents`: Array of documents (1-100)\n  - `format`: \"JSON\" or \"XML\"\n  - `codeNumber`: Your internal document reference\n  - `rawDocument`: Raw document content (auto-encoded to Base64, auto-hashed)\n- `autoMinify`: Minify JSON before encoding (default: false)\n- `asyncPolling`: Enable background polling (default: true)\n\n**Rate Limit**: 100 RPM per clientId\n\n**Auto-Set Variables**:\n- `trackingId`: Set from response\n- `submissionUid`: Set from response\n- `documentUuid`: Set from first accepted document"
+          },
+          "response": [
+            {
+              "name": "Submission Accepted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"sess_abc123xyz\",\n  \"documents\": [\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-2024-0001\",\n      \"rawDocument\": \"{...}\"\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/submissions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "submissions"]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_sub123"
+                }
+              ],
+              "body": "{\n  \"trackingId\": \"trk_abc123xyz\",\n  \"submissionUid\": \"SUB-20240115-123456\",\n  \"acceptedDocuments\": [\n    {\n      \"codeNumber\": \"INV-2024-0001\",\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\"\n    }\n  ],\n  \"rejectedDocuments\": []\n}"
+            },
+            {
+              "name": "Partial Rejection",
+              "originalRequest": {
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"sess_abc123xyz\",\n  \"documents\": [\n    {\"format\": \"JSON\", \"codeNumber\": \"INV-001\", \"rawDocument\": \"{...}\"},\n    {\"format\": \"JSON\", \"codeNumber\": \"INV-002\", \"rawDocument\": \"invalid\"}\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/submissions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "submissions"]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"trackingId\": \"trk_partial123\",\n  \"submissionUid\": \"SUB-20240115-123457\",\n  \"acceptedDocuments\": [\n    {\n      \"codeNumber\": \"INV-001\",\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440001\"\n    }\n  ],\n  \"rejectedDocuments\": [\n    {\n      \"codeNumber\": \"INV-002\",\n      \"error\": {\n        \"httpStatus\": 400,\n        \"errorCode\": \"INVALID_DOCUMENT\",\n        \"messageEN\": \"Document content is not valid JSON\"\n      }\n    }\n  ]\n}"
+            },
+            {
+              "name": "Duplicate Submission",
+              "originalRequest": {
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"sess_abc123xyz\",\n  \"documents\": [\n    {\"format\": \"JSON\", \"codeNumber\": \"INV-001\", \"rawDocument\": \"{...}\"}\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/submissions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "submissions"]
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Retry-After",
+                  "value": "600"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 422,\n    \"errorCode\": \"DUPLICATE_SUBMISSION\",\n    \"messageEN\": \"Document with this hash was submitted within the last 10 minutes\",\n    \"retryAfterSeconds\": 600\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Documents (Pre-encoded)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('submissionUid', response.submissionUid);",
+                  "    if (response.acceptedDocuments && response.acceptedDocuments.length > 0) {",
+                  "        pm.collectionVariables.set('documentUuid', response.acceptedDocuments[0].uuid);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"documents\": [\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-2024-0002\",\n      \"documentBase64\": \"eyJJbnZvaWNlIjogW3siSUQiOiBbeyJfIjogIklOVi0yMDI0LTAwMDIifV19XX0=\",\n      \"documentHashSha256\": \"a1b2c3d4e5f6...\"\n    }\n  ],\n  \"asyncPolling\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions"]
+            },
+            "description": "Submits documents with pre-computed Base64 encoding and SHA256 hash.\n\n**Use Case**: When you want full control over encoding and hashing.\n\n**Request Body**:\n- `documentBase64`: Pre-encoded Base64 content\n- `documentHashSha256`: Pre-computed SHA256 hash (HEXADECIMAL format)\n\n**Note**: Use HEX format for hash, not Base64."
+          },
+          "response": [
+            {
+              "name": "Pre-encoded Submission Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"trackingId\": \"trk_preenc123\",\n  \"submissionUid\": \"SUB-20240115-123458\",\n  \"acceptedDocuments\": [\n    {\n      \"codeNumber\": \"INV-2024-0002\",\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440002\"\n    }\n  ],\n  \"rejectedDocuments\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Documents (Batch)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('submissionUid', response.submissionUid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"documents\": [\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-2024-0010\",\n      \"rawDocument\": \"{\\\"Invoice\\\": [{\\\"ID\\\": [{\\\"_\\\": \\\"INV-2024-0010\\\"}]}]}\"\n    },\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-2024-0011\",\n      \"rawDocument\": \"{\\\"Invoice\\\": [{\\\"ID\\\": [{\\\"_\\\": \\\"INV-2024-0011\\\"}]}]}\"\n    },\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-2024-0012\",\n      \"rawDocument\": \"{\\\"Invoice\\\": [{\\\"ID\\\": [{\\\"_\\\": \\\"INV-2024-0012\\\"}]}]}\"\n    }\n  ],\n  \"asyncPolling\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions"]
+            },
+            "description": "Submits multiple documents in a single batch.\n\n**Constraints**:\n- Maximum 100 documents per batch\n- Total payload max 5 MB\n- Each document max 300 KB\n\n**Tip**: For large batches, the gateway handles chunking automatically."
+          },
+          "response": [
+            {
+              "name": "Batch Submission Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"trackingId\": \"trk_batch123\",\n  \"submissionUid\": \"SUB-20240115-BATCH\",\n  \"acceptedDocuments\": [\n    {\"codeNumber\": \"INV-2024-0010\", \"uuid\": \"uuid-10\"},\n    {\"codeNumber\": \"INV-2024-0011\", \"uuid\": \"uuid-11\"},\n    {\"codeNumber\": \"INV-2024-0012\", \"uuid\": \"uuid-12\"}\n  ],\n  \"rejectedDocuments\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Submission Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions/{{trackingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions", "{{trackingId}}"]
+            },
+            "description": "Retrieves the current status of a submission and its documents.\n\n**Path Parameters**:\n- `trackingId`: Tracking ID (pattern: trk_[a-zA-Z0-9]+)\n\n**Status Values**:\n- `SUBMITTED`: Initial state, awaiting processing\n- `PROCESSING`: Being validated by MyInvois\n- `VALID`: All documents validated successfully\n- `INVALID`: One or more documents failed validation\n- `CANCELLED`: Submission was cancelled\n\n**Rate Limit**: 300 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Submission Processing",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_status123"
+                }
+              ],
+              "body": "{\n  \"trackingId\": \"trk_abc123xyz\",\n  \"submissionUid\": \"SUB-20240115-123456\",\n  \"status\": \"PROCESSING\",\n  \"overallStatus\": \"InProgress\",\n  \"documents\": [\n    {\n      \"codeNumber\": \"INV-2024-0001\",\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"status\": \"Submitted\",\n      \"upstreamStatus\": \"Submitted\",\n      \"dateTimeValidated\": null,\n      \"issuerTin\": \"C12345678901\",\n      \"issuerName\": \"Test Company Sdn Bhd\"\n    }\n  ],\n  \"lastPolledAt\": \"2024-01-15T10:32:00Z\",\n  \"nextPollAt\": \"2024-01-15T10:32:05Z\",\n  \"pollAttempts\": 3,\n  \"finalizedAt\": null,\n  \"createdAt\": \"2024-01-15T10:30:00Z\",\n  \"updatedAt\": \"2024-01-15T10:32:00Z\"\n}"
+            },
+            {
+              "name": "Submission Valid",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"trackingId\": \"trk_abc123xyz\",\n  \"submissionUid\": \"SUB-20240115-123456\",\n  \"status\": \"VALID\",\n  \"overallStatus\": \"Valid\",\n  \"documents\": [\n    {\n      \"codeNumber\": \"INV-2024-0001\",\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"status\": \"Valid\",\n      \"longId\": \"LONG-ID-ABC123\",\n      \"upstreamStatus\": \"Valid\",\n      \"dateTimeValidated\": \"2024-01-15T10:35:00Z\",\n      \"issuerTin\": \"C12345678901\",\n      \"issuerName\": \"Test Company Sdn Bhd\",\n      \"receiverId\": \"C98765432109\",\n      \"receiverName\": \"Buyer Company\",\n      \"totalPayableAmount\": \"1180.00\"\n    }\n  ],\n  \"lastPolledAt\": \"2024-01-15T10:35:00Z\",\n  \"nextPollAt\": null,\n  \"pollAttempts\": 10,\n  \"finalizedAt\": \"2024-01-15T10:35:00Z\",\n  \"createdAt\": \"2024-01-15T10:30:00Z\",\n  \"updatedAt\": \"2024-01-15T10:35:00Z\"\n}"
+            },
+            {
+              "name": "Submission Invalid",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"trackingId\": \"trk_invalid123\",\n  \"submissionUid\": \"SUB-20240115-INVALID\",\n  \"status\": \"INVALID\",\n  \"overallStatus\": \"Invalid\",\n  \"documents\": [\n    {\n      \"codeNumber\": \"INV-2024-0001\",\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"status\": \"Invalid\",\n      \"upstreamStatus\": \"Invalid\",\n      \"dateTimeValidated\": \"2024-01-15T10:35:00Z\",\n      \"lastError\": {\n        \"httpStatus\": 400,\n        \"errorCode\": \"CF305\",\n        \"messageEN\": \"Invoice ID format is invalid\"\n      }\n    }\n  ],\n  \"finalizedAt\": \"2024-01-15T10:35:00Z\"\n}"
+            },
+            {
+              "name": "Submission Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 404,\n    \"errorCode\": \"SUBMISSION_NOT_FOUND\",\n    \"messageEN\": \"Submission with tracking ID not found\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Trigger Immediate Poll",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions/{{trackingId}}/poll",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions", "{{trackingId}}", "poll"]
+            },
+            "description": "Triggers an immediate status poll from MyInvois instead of waiting for the background worker.\n\n**Path Parameters**:\n- `trackingId`: Tracking ID of the submission\n\n**Response Codes**:\n- 200: Already finalized (no poll needed)\n- 202: Poll job enqueued\n- 409: Too soon since last poll (minimum 3 seconds)\n\n**Minimum Interval**: 3 seconds between manual polls"
+          },
+          "response": [
+            {
+              "name": "Poll Enqueued",
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_poll123"
+                }
+              ],
+              "body": "{\n  \"trackingId\": \"trk_abc123xyz\",\n  \"message\": \"Poll job enqueued\",\n  \"jobId\": \"job_123\"\n}"
+            },
+            {
+              "name": "Already Finalized",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"trackingId\": \"trk_abc123xyz\",\n  \"message\": \"Submission already finalized\",\n  \"overallStatus\": \"Valid\",\n  \"finalizedAt\": \"2024-01-15T10:35:00Z\"\n}"
+            },
+            {
+              "name": "Poll Too Soon",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Retry-After",
+                  "value": "3"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 409,\n    \"errorCode\": \"POLL_TOO_SOON\",\n    \"messageEN\": \"Minimum 3 seconds between polls\",\n    \"retryAfterSeconds\": 3\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "description": "Document management endpoints for querying, canceling, and rejecting validated documents.\n\n**Rate Limits**:\n- Cancel/Reject: 12 RPM per clientId\n- Get Details: 60 RPM per clientId\n- Get Raw: 125 RPM per clientId\n- Recent/Search: 60 RPM per clientId",
+      "item": [
+        {
+          "name": "Get Document Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/{{documentUuid}}/details?sessionId={{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "{{documentUuid}}", "details"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Active session ID"
+                }
+              ]
+            },
+            "description": "Retrieves detailed information about a specific document including validation status and errors.\n\n**Path Parameters**:\n- `uuid`: Document UUID\n\n**Query Parameters**:\n- `sessionId`: Active session ID (required)\n\n**Rate Limit**: 60 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Document Details",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_details123"
+                }
+              ],
+              "body": "{\n  \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"longId\": \"LONG-ID-ABC123\",\n  \"internalId\": \"INV-2024-0001\",\n  \"status\": \"Valid\",\n  \"dateTimeIssued\": \"2024-01-15T10:00:00Z\",\n  \"dateTimeReceived\": \"2024-01-15T10:30:00Z\",\n  \"dateTimeValidated\": \"2024-01-15T10:35:00Z\",\n  \"validationErrors\": []\n}"
+            },
+            {
+              "name": "Document with Validation Errors",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"uuid\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"longId\": null,\n  \"internalId\": \"INV-2024-0002\",\n  \"status\": \"Invalid\",\n  \"dateTimeIssued\": \"2024-01-15T10:00:00Z\",\n  \"dateTimeReceived\": \"2024-01-15T10:30:00Z\",\n  \"dateTimeValidated\": \"2024-01-15T10:35:00Z\",\n  \"validationErrors\": [\n    {\n      \"propertyName\": \"Invoice.ID\",\n      \"propertyPath\": \"Invoice[0].ID[0]._\",\n      \"errorCode\": \"CF305\",\n      \"error\": \"Invoice ID format is invalid\",\n      \"errorMS\": \"Format ID Invois tidak sah\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "Document Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 404,\n    \"errorCode\": \"DOCUMENT_NOT_FOUND\",\n    \"messageEN\": \"Document with UUID not found\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Raw Document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    console.log('Document format:', response.format);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/{{documentUuid}}/raw/{{documentLongId}}?sessionId={{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "{{documentUuid}}", "raw", "{{documentLongId}}"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Active session ID"
+                }
+              ]
+            },
+            "description": "Retrieves the original raw document content (UBL XML or JSON).\n\n**Path Parameters**:\n- `uuid`: Document UUID\n- `longId`: Document long ID (obtained from document details)\n\n**Query Parameters**:\n- `sessionId`: Active session ID (required)\n\n**Use Case**: Retrieve the original signed document for v1.1 submissions.\n\n**Rate Limit**: 125 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Raw Document (JSON)",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_raw123"
+                }
+              ],
+              "body": "{\n  \"document\": \"{\\\"Invoice\\\": [{\\\"ID\\\": [{\\\"_\\\": \\\"INV-2024-0001\\\"}]}]}\",\n  \"format\": \"JSON\"\n}"
+            },
+            {
+              "name": "Raw Document (XML)",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"document\": \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><Invoice>...</Invoice>\",\n  \"format\": \"XML\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"reason\": \"Invoice issued in error. Correct invoice to follow.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/{{documentUuid}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "{{documentUuid}}", "cancel"]
+            },
+            "description": "Cancels a validated document. Only the issuer can cancel their own documents.\n\n**Path Parameters**:\n- `uuid`: Document UUID to cancel\n\n**Request Body**:\n- `sessionId`: Active session ID\n- `reason`: Cancellation reason (1-500 characters)\n\n**Constraints**:\n- Document must be in Valid status\n- Only issuer can cancel\n- Cannot cancel already cancelled documents\n\n**Rate Limit**: 12 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Document Cancelled",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_cancel123"
+                }
+              ],
+              "body": "{\n  \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"cancelled\"\n}"
+            },
+            {
+              "name": "Forbidden - Not Issuer",
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 403,\n    \"errorCode\": \"FORBIDDEN\",\n    \"messageEN\": \"Only the document issuer can cancel this document\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"reason\": \"Invoice details do not match our purchase order.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/{{documentUuid}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "{{documentUuid}}", "reject"]
+            },
+            "description": "Rejects a document received from another party. Only the receiver can reject.\n\n**Path Parameters**:\n- `uuid`: Document UUID to reject\n\n**Request Body**:\n- `sessionId`: Active session ID\n- `reason`: Rejection reason (1-500 characters)\n\n**Constraints**:\n- Document must be in Valid status\n- Only receiver can reject\n- Time limit for rejection (typically 72 hours)\n\n**Rate Limit**: 12 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Document Rejected",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_reject123"
+                }
+              ],
+              "body": "{\n  \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"rejected\"\n}"
+            },
+            {
+              "name": "Forbidden - Not Receiver",
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 403,\n    \"errorCode\": \"FORBIDDEN\",\n    \"messageEN\": \"Only the document receiver can reject this document\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Recent Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/recent?sessionId={{sessionId}}&pageNo=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "recent"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Active session ID (required)"
+                },
+                {
+                  "key": "pageNo",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10",
+                  "description": "Results per page (1-100, default: 10)"
+                },
+                {
+                  "key": "submissionDateFrom",
+                  "value": "2024-01-01T00:00:00Z",
+                  "description": "Filter by submission date start",
+                  "disabled": true
+                },
+                {
+                  "key": "submissionDateTo",
+                  "value": "2024-12-31T23:59:59Z",
+                  "description": "Filter by submission date end",
+                  "disabled": true
+                },
+                {
+                  "key": "issueDateFrom",
+                  "value": "2024-01-01T00:00:00Z",
+                  "description": "Filter by issue date start",
+                  "disabled": true
+                },
+                {
+                  "key": "issueDateTo",
+                  "value": "2024-12-31T23:59:59Z",
+                  "description": "Filter by issue date end",
+                  "disabled": true
+                },
+                {
+                  "key": "direction",
+                  "value": "Sent",
+                  "description": "Filter by direction: Sent or Received",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "Valid",
+                  "description": "Filter by document status",
+                  "disabled": true
+                },
+                {
+                  "key": "documentType",
+                  "value": "01",
+                  "description": "Filter by document type code",
+                  "disabled": true
+                },
+                {
+                  "key": "receiverId",
+                  "value": "",
+                  "description": "Filter by receiver ID",
+                  "disabled": true
+                },
+                {
+                  "key": "receiverTin",
+                  "value": "",
+                  "description": "Filter by receiver TIN",
+                  "disabled": true
+                },
+                {
+                  "key": "issuerTin",
+                  "value": "",
+                  "description": "Filter by issuer TIN",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists recently submitted or received documents with optional filtering.\n\n**Query Parameters**:\n- `sessionId`: Active session ID (required)\n- `pageNo`: Page number (default: 1)\n- `pageSize`: Results per page (1-100, default: 10)\n- `submissionDateFrom/To`: Filter by submission date range\n- `issueDateFrom/To`: Filter by issue date range\n- `direction`: \"Sent\" or \"Received\"\n- `status`: Filter by document status\n- `documentType`: Filter by document type code\n- `receiverId`, `receiverTin`, `issuerTin`: Filter by party\n\n**Rate Limit**: 60 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Recent Documents List",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_recent123"
+                }
+              ],
+              "body": "{\n  \"documents\": [\n    {\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"submissionUid\": \"SUB-20240115-123456\",\n      \"longId\": \"LONG-ID-ABC123\",\n      \"internalId\": \"INV-2024-0001\",\n      \"typeName\": \"Invoice\",\n      \"typeVersionName\": \"1.0\",\n      \"issuerTin\": \"C12345678901\",\n      \"issuerName\": \"Test Company Sdn Bhd\",\n      \"receiverId\": \"C98765432109\",\n      \"receiverName\": \"Buyer Company\",\n      \"dateTimeIssued\": \"2024-01-15T10:00:00Z\",\n      \"dateTimeReceived\": \"2024-01-15T10:30:00Z\",\n      \"dateTimeValidated\": \"2024-01-15T10:35:00Z\",\n      \"totalPayableAmount\": \"1180.00\",\n      \"status\": \"Valid\",\n      \"cancelDateTime\": null,\n      \"rejectDateTime\": null\n    }\n  ],\n  \"totalPages\": 5,\n  \"totalCount\": 42\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/search?sessionId={{sessionId}}&pageNo=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "search"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Active session ID (required)"
+                },
+                {
+                  "key": "uuid",
+                  "value": "",
+                  "description": "Search by specific UUID",
+                  "disabled": true
+                },
+                {
+                  "key": "submissionUid",
+                  "value": "",
+                  "description": "Search by submission UID",
+                  "disabled": true
+                },
+                {
+                  "key": "pageNo",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10",
+                  "description": "Results per page (1-100, default: 10)"
+                },
+                {
+                  "key": "submissionDateFrom",
+                  "value": "2024-01-01T00:00:00Z",
+                  "description": "Filter by submission date start",
+                  "disabled": true
+                },
+                {
+                  "key": "submissionDateTo",
+                  "value": "2024-12-31T23:59:59Z",
+                  "description": "Filter by submission date end",
+                  "disabled": true
+                },
+                {
+                  "key": "continuationToken",
+                  "value": "",
+                  "description": "Token for large result sets",
+                  "disabled": true
+                },
+                {
+                  "key": "issueDateFrom",
+                  "value": "",
+                  "description": "Filter by issue date start",
+                  "disabled": true
+                },
+                {
+                  "key": "issueDateTo",
+                  "value": "",
+                  "description": "Filter by issue date end",
+                  "disabled": true
+                },
+                {
+                  "key": "direction",
+                  "value": "",
+                  "description": "Filter by direction",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by document status",
+                  "disabled": true
+                },
+                {
+                  "key": "documentType",
+                  "value": "",
+                  "description": "Filter by document type",
+                  "disabled": true
+                },
+                {
+                  "key": "receiverId",
+                  "value": "",
+                  "description": "Filter by receiver ID",
+                  "disabled": true
+                },
+                {
+                  "key": "receiverTin",
+                  "value": "",
+                  "description": "Filter by receiver TIN",
+                  "disabled": true
+                },
+                {
+                  "key": "issuerTin",
+                  "value": "",
+                  "description": "Filter by issuer TIN",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Search for documents with advanced filtering options.\n\n**Query Parameters**:\n- `sessionId`: Active session ID (required)\n- `uuid`: Search for specific document UUID\n- `submissionUid`: Search by submission UID\n- `pageNo`, `pageSize`: Pagination\n- `continuationToken`: For large result sets\n- Plus all filters from Recent Documents endpoint\n\n**Use Case**: More powerful search with UUID/submissionUid lookup.\n\n**Rate Limit**: 60 RPM per clientId"
+          },
+          "response": [
+            {
+              "name": "Search Results",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_search123"
+                }
+              ],
+              "body": "{\n  \"documents\": [\n    {\n      \"uuid\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"submissionUid\": \"SUB-20240115-123456\",\n      \"longId\": \"LONG-ID-ABC123\",\n      \"internalId\": \"INV-2024-0001\",\n      \"typeName\": \"Invoice\",\n      \"typeVersionName\": \"1.0\",\n      \"issuerTin\": \"C12345678901\",\n      \"issuerName\": \"Test Company Sdn Bhd\",\n      \"receiverId\": \"C98765432109\",\n      \"receiverName\": \"Buyer Company\",\n      \"dateTimeIssued\": \"2024-01-15T10:00:00Z\",\n      \"dateTimeReceived\": \"2024-01-15T10:30:00Z\",\n      \"dateTimeValidated\": \"2024-01-15T10:35:00Z\",\n      \"totalPayableAmount\": \"1180.00\",\n      \"status\": \"Valid\",\n      \"cancelDateTime\": null,\n      \"rejectDateTime\": null\n    }\n  ],\n  \"totalPages\": 1,\n  \"totalCount\": 1,\n  \"continuationToken\": null\n}"
+            },
+            {
+              "name": "Search with Continuation",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"documents\": [...],\n  \"totalPages\": 100,\n  \"totalCount\": 1000,\n  \"continuationToken\": \"eyJwYWdlIjoyLCJzaXplIjoxMH0=\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TIN Validation",
+      "description": "Taxpayer Identification Number (TIN) validation endpoints.\n\n**Caching**:\n- Valid results: ~30 days\n- Invalid results: ~7 days\n- Use `forceRefresh=1` to bypass cache",
+      "item": [
+        {
+          "name": "Validate TIN",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tin/validate?sessionId={{sessionId}}&tin=C12345678901&idType=BRN&idValue=202401234567",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tin", "validate"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Active session ID (required)"
+                },
+                {
+                  "key": "tin",
+                  "value": "C12345678901",
+                  "description": "TIN to validate (required)"
+                },
+                {
+                  "key": "idType",
+                  "value": "BRN",
+                  "description": "ID type: NRIC, PASSPORT, BRN, or ARMY (required)"
+                },
+                {
+                  "key": "idValue",
+                  "value": "202401234567",
+                  "description": "ID value to match (required)"
+                },
+                {
+                  "key": "forceRefresh",
+                  "value": "1",
+                  "description": "Bypass cache (optional): 1 or true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Validates a Taxpayer Identification Number (TIN) against MyInvois database.\n\n**Query Parameters**:\n- `sessionId`: Active session ID (required)\n- `tin`: TIN to validate (required)\n- `idType`: Type of identification (required)\n  - `NRIC`: National Registration Identity Card\n  - `PASSPORT`: Passport number\n  - `BRN`: Business Registration Number\n  - `ARMY`: Army number\n- `idValue`: The ID value to match against (required)\n- `forceRefresh`: Set to \"1\" or \"true\" to bypass cache\n\n**Response Headers**:\n- `X-Cache`: \"HIT\" or \"MISS\"\n- `X-Cache-TTL`: Seconds until cache expires\n\n**Caching**:\n- Valid results cached ~30 days\n- Invalid results cached ~7 days\n- Cache key includes: env, sessionId, tin, idType, and hashed idValue"
+          },
+          "response": [
+            {
+              "name": "TIN Valid (Cache Miss)",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_tin123"
+                },
+                {
+                  "key": "X-Cache",
+                  "value": "MISS"
+                },
+                {
+                  "key": "X-Cache-TTL",
+                  "value": "2592000"
+                }
+              ],
+              "body": "{\n  \"tin\": \"C12345678901\",\n  \"valid\": true,\n  \"name\": \"Test Company Sdn Bhd\",\n  \"cached\": false\n}"
+            },
+            {
+              "name": "TIN Valid (Cache Hit)",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_tin456"
+                },
+                {
+                  "key": "X-Cache",
+                  "value": "HIT"
+                },
+                {
+                  "key": "X-Cache-TTL",
+                  "value": "2500000"
+                }
+              ],
+              "body": "{\n  \"tin\": \"C12345678901\",\n  \"valid\": true,\n  \"name\": \"Test Company Sdn Bhd\",\n  \"cached\": true\n}"
+            },
+            {
+              "name": "TIN Invalid",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Cache",
+                  "value": "MISS"
+                },
+                {
+                  "key": "X-Cache-TTL",
+                  "value": "604800"
+                }
+              ],
+              "body": "{\n  \"tin\": \"C99999999999\",\n  \"valid\": false,\n  \"name\": null,\n  \"cached\": false\n}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 400,\n    \"errorCode\": \"VALIDATION_ERROR\",\n    \"messageEN\": \"Invalid idType. Must be one of: NRIC, PASSPORT, BRN, ARMY\",\n    \"propertyName\": \"idType\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate TIN (Force Refresh)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tin/validate?sessionId={{sessionId}}&tin=C12345678901&idType=BRN&idValue=202401234567&forceRefresh=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tin", "validate"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Active session ID"
+                },
+                {
+                  "key": "tin",
+                  "value": "C12345678901",
+                  "description": "TIN to validate"
+                },
+                {
+                  "key": "idType",
+                  "value": "BRN",
+                  "description": "ID type"
+                },
+                {
+                  "key": "idValue",
+                  "value": "202401234567",
+                  "description": "ID value"
+                },
+                {
+                  "key": "forceRefresh",
+                  "value": "1",
+                  "description": "Bypass cache and force fresh lookup"
+                }
+              ]
+            },
+            "description": "Validates TIN with cache bypass to get fresh data from MyInvois.\n\n**Use Case**: When you need the most up-to-date validation status."
+          },
+          "response": [
+            {
+              "name": "Fresh Validation Result",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Cache",
+                  "value": "MISS"
+                }
+              ],
+              "body": "{\n  \"tin\": \"C12345678901\",\n  \"valid\": true,\n  \"name\": \"Test Company Sdn Bhd\",\n  \"cached\": false\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Common Errors",
+      "description": "Examples of common error responses across all endpoints.",
+      "item": [
+        {
+          "name": "Rate Limit Exceeded (429)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions", "{{sessionId}}"]
+            },
+            "description": "Example of rate limit error. Respect the Retry-After header."
+          },
+          "response": [
+            {
+              "name": "Rate Limited",
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Retry-After",
+                  "value": "60"
+                },
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_rate123"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 429,\n    \"errorCode\": \"RATE_LIMIT_EXCEEDED\",\n    \"messageEN\": \"Rate limit exceeded. Please retry after 60 seconds.\",\n    \"retryAfterSeconds\": 60,\n    \"upstream\": {\n      \"service\": \"MYINVOIS\",\n      \"path\": \"/api/v1.0/documents\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Unauthorized (401)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions"]
+            },
+            "description": "Example of authentication failure."
+          },
+          "response": [
+            {
+              "name": "Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_unauth123"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 401,\n    \"errorCode\": \"UNAUTHORIZED\",\n    \"messageEN\": \"Session expired or invalid. Please create a new session.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validation Error (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions"]
+            },
+            "description": "Example of request validation error."
+          },
+          "response": [
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_val123"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 400,\n    \"errorCode\": \"VALIDATION_ERROR\",\n    \"messageEN\": \"Request validation failed\",\n    \"inner\": [\n      {\n        \"httpStatus\": 400,\n        \"errorCode\": \"REQUIRED_FIELD\",\n        \"messageEN\": \"clientId is required\",\n        \"propertyName\": \"clientId\",\n        \"propertyPath\": \"body.clientId\"\n      },\n      {\n        \"httpStatus\": 400,\n        \"errorCode\": \"REQUIRED_FIELD\",\n        \"messageEN\": \"clientSecret is required\",\n        \"propertyName\": \"clientSecret\",\n        \"propertyPath\": \"body.clientSecret\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upstream Error (5xx)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions"]
+            },
+            "description": "Example of MyInvois upstream error."
+          },
+          "response": [
+            {
+              "name": "Upstream Service Error",
+              "status": "Bad Gateway",
+              "code": 502,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "X-Correlation-Id",
+                  "value": "corr_upstream123"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"correlationId\": \"myinvois-corr-xyz\",\n    \"httpStatus\": 502,\n    \"errorCode\": \"UPSTREAM_ERROR\",\n    \"messageEN\": \"MyInvois service returned an error\",\n    \"upstream\": {\n      \"service\": \"MYINVOIS\",\n      \"path\": \"/api/v1.0/documentsubmissions\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Gateway Timeout",
+              "status": "Gateway Timeout",
+              "code": 504,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": {\n    \"httpStatus\": 504,\n    \"errorCode\": \"GATEWAY_TIMEOUT\",\n    \"messageEN\": \"Request to MyInvois timed out\",\n    \"upstream\": {\n      \"service\": \"MYINVOIS\",\n      \"path\": \"/api/v1.0/documentsubmissions\"\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Workflows",
+      "description": "Complete workflow examples demonstrating typical usage patterns.",
+      "item": [
+        {
+          "name": "1. Create Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', response.id);",
+                  "    console.log('Workflow: Session created -', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"env\": \"SANDBOX\",\n  \"mode\": \"TAXPAYER\",\n  \"clientId\": \"{{clientId}}\",\n  \"clientSecret\": \"{{clientSecret}}\",\n  \"documentVersion\": \"1.0\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sessions"]
+            },
+            "description": "**Step 1**: Create a session to authenticate with MyInvois.\n\nThis sets the `sessionId` variable for subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Submit Invoice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('submissionUid', response.submissionUid);",
+                  "    if (response.acceptedDocuments?.length > 0) {",
+                  "        pm.collectionVariables.set('documentUuid', response.acceptedDocuments[0].uuid);",
+                  "    }",
+                  "    console.log('Workflow: Submission accepted -', response.trackingId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"documents\": [\n    {\n      \"format\": \"JSON\",\n      \"codeNumber\": \"INV-WORKFLOW-001\",\n      \"rawDocument\": \"{\\\"Invoice\\\": [{\\\"ID\\\": [{\\\"_\\\": \\\"INV-WORKFLOW-001\\\"}], \\\"IssueDate\\\": [{\\\"_\\\": \\\"2024-01-15\\\"}]}]}\"\n    }\n  ],\n  \"asyncPolling\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions"]
+            },
+            "description": "**Step 2**: Submit an invoice document.\n\nThis sets `trackingId`, `submissionUid`, and `documentUuid` variables."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Check Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    console.log('Workflow: Status -', response.status);",
+                  "    if (response.documents?.length > 0 && response.documents[0].longId) {",
+                  "        pm.collectionVariables.set('documentLongId', response.documents[0].longId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/submissions/{{trackingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "submissions", "{{trackingId}}"]
+            },
+            "description": "**Step 3**: Check submission status.\n\nPoll this endpoint until status is VALID, INVALID, or CANCELLED.\n\nSets `documentLongId` when available."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Document Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/{{documentUuid}}/details?sessionId={{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "{{documentUuid}}", "details"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}"
+                }
+              ]
+            },
+            "description": "**Step 4**: Get detailed document information including validation errors."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Get Raw Document (Optional)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/documents/{{documentUuid}}/raw/{{documentLongId}}?sessionId={{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "documents", "{{documentUuid}}", "raw", "{{documentLongId}}"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}"
+                }
+              ]
+            },
+            "description": "**Step 5** (Optional): Retrieve the original signed document.\n\nUseful for v1.1 documents to get the signed version."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
