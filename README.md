@@ -9,6 +9,22 @@
 
 **Open-source middleware gateway for Malaysia's MyInvois e-invoicing system.** Provides a simplified, production-ready REST API layer between your applications and the official LHDN MyInvois API.
 
+### Fully Tested with All 9 Document Types
+
+This middleware has been **validated against the MyInvois Sandbox API** with all 9 document types in both **v1.0 (unsigned)** and **v1.1 (digitally signed)** formats. Every document type submission has been tested and returns valid long IDs from LHDN:
+
+| Document Type | v1.0 | v1.1 (Signed) |
+|---------------|:----:|:-------------:|
+| Invoice (01) | Validated | Validated |
+| Credit Note (02) | Validated | Validated |
+| Debit Note (03) | Validated | Validated |
+| Refund Note (04) | Validated | Validated |
+| Self-billed Invoice (11) | Validated | Validated |
+| Self-billed Credit Note (12) | Validated | Validated |
+| Self-billed Debit Note (13) | Validated | Validated |
+| Self-billed Refund Note (14) | Validated | Validated |
+| Consolidated Invoice | Validated | Validated |
+
 > **Disclaimer**: This is an unofficial community project and is not affiliated with LHDN (Lembaga Hasil Dalam Negeri Malaysia). See [DISCLAIMER.md](DISCLAIMER.md) for full terms.
 
 ---
@@ -24,6 +40,7 @@
 - [API Reference](#api-reference)
   - [Error Response Format (ErrorEnvelope)](#error-response-format-errorenvelope)
   - [Error Codes Reference](#error-codes-reference)
+- [Postman Collection](#postman-collection)
 - [Testing](#testing)
   - [Negative Tests (Error Handling)](#negative-tests-error-handling)
 - [SDKs](#sdks)
@@ -621,6 +638,57 @@ async function submitWithRetry(fn: () => Promise<Response>, maxRetries = 3) {
   throw new Error('Max retries exceeded');
 }
 ```
+
+---
+
+## Postman Collection
+
+A comprehensive Postman collection is included with pre-built requests for all API endpoints and all 9 document types.
+
+### Collection Location
+
+```
+postman/MyInvois-Middleware-Gateway.postman_collection.json
+```
+
+### Included Requests
+
+| Category | Requests |
+|----------|----------|
+| **Health** | Liveness Check, Readiness Check, Version Info |
+| **Sessions** | Create Session (Taxpayer), Create Session (Intermediary), Create Session (v1.1 Signing), Get Session, Delete Session |
+| **Document Submissions** | Invoice, Credit Note, Debit Note, Refund Note, Self-billed Invoice, Self-billed Credit Note, Self-billed Debit Note, Self-billed Refund Note, Consolidated Invoice |
+| **Submission Status** | Get Submission Status, Poll Submission |
+| **Document Operations** | Get Document Details, Cancel Document, Reject Document |
+| **TIN Validation** | Validate TIN |
+
+### Quick Start with Postman
+
+1. **Import the Collection**
+   - Open Postman
+   - Click **Import** > **Upload Files**
+   - Select `postman/MyInvois-Middleware-Gateway.postman_collection.json`
+
+2. **Configure Variables**
+   - Click on the collection name > **Variables** tab
+   - Set your credentials:
+     - `clientId`: Your MyInvois client ID
+     - `clientSecret`: Your MyInvois client secret
+     - `supplierTIN`: Your taxpayer TIN
+   - Save the collection
+
+3. **Start Testing**
+   - Run "Create Session (Taxpayer)" first to get a session ID
+   - The session ID is automatically saved to `{{sessionId}}`
+   - Submit any document type - tracking IDs are auto-captured
+   - Check status with "Get Submission Status"
+
+### Collection Features
+
+- **Auto-captured variables**: Session IDs, tracking IDs, and document UUIDs are automatically saved from responses
+- **Complete UBL schemas**: All document requests include valid UBL 2.1 JSON with correct structure
+- **Both v1.0 and v1.1**: Separate session creation requests for unsigned (v1.0) and signed (v1.1) submissions
+- **Request descriptions**: Each request includes documentation about required fields and expected behavior
 
 ---
 
@@ -2423,6 +2491,7 @@ For security vulnerabilities, please see [SECURITY.md](SECURITY.md).
 ### Project Documentation
 
 - [API Contract](openapi/openapi.yaml)
+- [Postman Collection](postman/MyInvois-Middleware-Gateway.postman_collection.json) - Ready-to-use API requests for all 9 document types
 - [Testing Guide](docs/testing.md) - Detailed testing strategy and MSW usage
 - [Troubleshooting Guide](docs/troubleshooting.md) - Error codes reference and debugging
 - [Contributing Guide](CONTRIBUTING.md)
