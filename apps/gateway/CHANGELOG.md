@@ -1,5 +1,11 @@
 # @myinvois/gateway
 
+## 0.3.3
+
+### Patch Changes
+
+- 375323c: docs: add postman collection section and v1.0/v1.1 validation status to README
+
 ## 0.3.2
 
 ### Patch Changes
