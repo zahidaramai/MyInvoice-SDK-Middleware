@@ -766,6 +766,483 @@ paths:
       summary: Get document details
       tags:
       - Documents
+  /v1/documents/{uuid}/raw/{longId}:
+    get:
+      description: |
+        Retrieves the raw document content (UBL XML or JSON) from MyInvois.
+        Requires both the document UUID and Long ID.
+        Rate limit: 125 RPM per clientId.
+      operationId: getRawDocument
+      parameters:
+      - description: MyInvois document UUID
+        explode: false
+        in: path
+        name: uuid
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      - description: MyInvois document Long ID (used for raw document retrieval)
+        explode: false
+        in: path
+        name: longId
+        required: true
+        schema:
+          minLength: 1
+          type: string
+        style: simple
+      - description: Gateway session ID
+        explode: true
+        in: query
+        name: sessionId
+        required: true
+        schema:
+          pattern: "^sess_[a-zA-Z0-9]+$"
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawDocumentResponse'
+          description: Raw document content
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Invalid request parameters
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Authentication required or failed
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Resource not found
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Rate limit exceeded
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Internal server error
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+      summary: Get raw document content
+      tags:
+      - Documents
+  /v1/documents/recent:
+    get:
+      description: |
+        Lists recently processed documents with optional filters.
+        Results are paginated. Rate limit: 60 RPM per clientId.
+
+        Note: This endpoint is for listing/searching documents,
+        not for monitoring submission status (use GET /v1/submissions/{trackingId} instead).
+      operationId: getRecentDocuments
+      parameters:
+      - description: Gateway session ID
+        explode: true
+        in: query
+        name: sessionId
+        required: true
+        schema:
+          pattern: "^sess_[a-zA-Z0-9]+$"
+          type: string
+        style: form
+      - description: "Page number (1-based, default 1)"
+        explode: true
+        in: query
+        name: pageNo
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - description: "Page size (default 10, max 100)"
+        explode: true
+        in: query
+        name: pageSize
+        required: false
+        schema:
+          default: 10
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - description: Filter by submission date from (ISO 8601)
+        explode: true
+        in: query
+        name: submissionDateFrom
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by submission date to (ISO 8601)
+        explode: true
+        in: query
+        name: submissionDateTo
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by issue date from (ISO 8601)
+        explode: true
+        in: query
+        name: issueDateFrom
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by issue date to (ISO 8601)
+        explode: true
+        in: query
+        name: issueDateTo
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by direction
+        explode: true
+        in: query
+        name: direction
+        required: false
+        schema:
+          enum:
+          - Sent
+          - Received
+          type: string
+        style: form
+      - description: Filter by document status
+        explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by document type code
+        explode: true
+        in: query
+        name: documentType
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by receiver ID
+        explode: true
+        in: query
+        name: receiverId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by receiver TIN
+        explode: true
+        in: query
+        name: receiverTin
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by issuer TIN
+        explode: true
+        in: query
+        name: issuerTin
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecentDocumentsResponse'
+          description: List of recent documents
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Invalid request parameters
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Authentication required or failed
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Rate limit exceeded
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Internal server error
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+      summary: List recent documents
+      tags:
+      - Documents
+  /v1/documents/search:
+    get:
+      description: |
+        Searches documents with various filter criteria.
+        Results are paginated and support continuation tokens for large result sets.
+        Rate limit: 60 RPM per clientId.
+
+        Note: This endpoint is for document lookup/reporting,
+        not for monitoring submission status (use GET /v1/submissions/{trackingId} instead).
+      operationId: searchDocuments
+      parameters:
+      - description: Gateway session ID
+        explode: true
+        in: query
+        name: sessionId
+        required: true
+        schema:
+          pattern: "^sess_[a-zA-Z0-9]+$"
+          type: string
+        style: form
+      - description: Filter by document UUID
+        explode: true
+        in: query
+        name: uuid
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: Filter by submission UID
+        explode: true
+        in: query
+        name: submissionUid
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Page number (1-based, default 1)"
+        explode: true
+        in: query
+        name: pageNo
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - description: "Page size (default 10, max 100)"
+        explode: true
+        in: query
+        name: pageSize
+        required: false
+        schema:
+          default: 10
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - description: Filter by submission date from (ISO 8601)
+        explode: true
+        in: query
+        name: submissionDateFrom
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by submission date to (ISO 8601)
+        explode: true
+        in: query
+        name: submissionDateTo
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Continuation token for pagination
+        explode: true
+        in: query
+        name: continuationToken
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by issue date from (ISO 8601)
+        explode: true
+        in: query
+        name: issueDateFrom
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by issue date to (ISO 8601)
+        explode: true
+        in: query
+        name: issueDateTo
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Filter by direction
+        explode: true
+        in: query
+        name: direction
+        required: false
+        schema:
+          enum:
+          - Sent
+          - Received
+          type: string
+        style: form
+      - description: Filter by document status
+        explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by document type code
+        explode: true
+        in: query
+        name: documentType
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by receiver ID
+        explode: true
+        in: query
+        name: receiverId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by receiver TIN
+        explode: true
+        in: query
+        name: receiverTin
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by issuer TIN
+        explode: true
+        in: query
+        name: issuerTin
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchDocumentsResponse'
+          description: Search results
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Invalid request parameters
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Authentication required or failed
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Rate limit exceeded
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Internal server error
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/X-Correlation-Id'
+      summary: Search documents
+      tags:
+      - Documents
   /v1/tin/validate:
     get:
       description: |
@@ -920,6 +1397,164 @@ components:
         format: uuid
         type: string
       style: simple
+    longIdPath:
+      description: MyInvois document Long ID (used for raw document retrieval)
+      explode: false
+      in: path
+      name: longId
+      required: true
+      schema:
+        minLength: 1
+        type: string
+      style: simple
+    pageNoQuery:
+      description: "Page number (1-based, default 1)"
+      explode: true
+      in: query
+      name: pageNo
+      required: false
+      schema:
+        default: 1
+        minimum: 1
+        type: integer
+      style: form
+    pageSizeQuery:
+      description: "Page size (default 10, max 100)"
+      explode: true
+      in: query
+      name: pageSize
+      required: false
+      schema:
+        default: 10
+        maximum: 100
+        minimum: 1
+        type: integer
+      style: form
+    submissionDateFromQuery:
+      description: Filter by submission date from (ISO 8601)
+      explode: true
+      in: query
+      name: submissionDateFrom
+      required: false
+      schema:
+        format: date-time
+        type: string
+      style: form
+    submissionDateToQuery:
+      description: Filter by submission date to (ISO 8601)
+      explode: true
+      in: query
+      name: submissionDateTo
+      required: false
+      schema:
+        format: date-time
+        type: string
+      style: form
+    issueDateFromQuery:
+      description: Filter by issue date from (ISO 8601)
+      explode: true
+      in: query
+      name: issueDateFrom
+      required: false
+      schema:
+        format: date-time
+        type: string
+      style: form
+    issueDateToQuery:
+      description: Filter by issue date to (ISO 8601)
+      explode: true
+      in: query
+      name: issueDateTo
+      required: false
+      schema:
+        format: date-time
+        type: string
+      style: form
+    directionQuery:
+      description: Filter by direction
+      explode: true
+      in: query
+      name: direction
+      required: false
+      schema:
+        enum:
+        - Sent
+        - Received
+        type: string
+      style: form
+    documentStatusQuery:
+      description: Filter by document status
+      explode: true
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+      style: form
+    documentTypeQuery:
+      description: Filter by document type code
+      explode: true
+      in: query
+      name: documentType
+      required: false
+      schema:
+        type: string
+      style: form
+    receiverIdQuery:
+      description: Filter by receiver ID
+      explode: true
+      in: query
+      name: receiverId
+      required: false
+      schema:
+        type: string
+      style: form
+    receiverTinQuery:
+      description: Filter by receiver TIN
+      explode: true
+      in: query
+      name: receiverTin
+      required: false
+      schema:
+        type: string
+      style: form
+    issuerTinQuery:
+      description: Filter by issuer TIN
+      explode: true
+      in: query
+      name: issuerTin
+      required: false
+      schema:
+        type: string
+      style: form
+    uuidQuery:
+      description: Filter by document UUID
+      explode: true
+      in: query
+      name: uuid
+      required: false
+      schema:
+        format: uuid
+        type: string
+      style: form
+    submissionUidQuery:
+      description: Filter by submission UID
+      explode: true
+      in: query
+      name: submissionUid
+      required: false
+      schema:
+        type: string
+      style: form
+    continuationTokenQuery:
+      description: Continuation token for pagination
+      explode: true
+      in: query
+      name: continuationToken
+      required: false
+      schema:
+        type: string
+      style: form
   responses:
     BadRequest:
       content:
@@ -1544,6 +2179,215 @@ components:
           type: string
         errorMS:
           type: string
+      type: object
+    RawDocumentResponse:
+      example:
+        document: document
+        format: XML
+      properties:
+        document:
+          description: Raw document content (UBL XML or JSON)
+          type: string
+        format:
+          description: Document format
+          enum:
+          - XML
+          - JSON
+          type: string
+      required:
+      - document
+      - format
+      type: object
+    DocumentListItem:
+      example:
+        issuerName: issuerName
+        receiverName: receiverName
+        rejectDateTime: 2000-01-23T04:56:07.000+00:00
+        typeName: typeName
+        typeVersionName: typeVersionName
+        cancelDateTime: 2000-01-23T04:56:07.000+00:00
+        longId: longId
+        uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        dateTimeReceived: 2000-01-23T04:56:07.000+00:00
+        issuerTin: issuerTin
+        internalId: internalId
+        receiverId: receiverId
+        totalPayableAmount: totalPayableAmount
+        dateTimeIssued: 2000-01-23T04:56:07.000+00:00
+        submissionUid: submissionUid
+        dateTimeValidated: 2000-01-23T04:56:07.000+00:00
+        status: status
+      properties:
+        uuid:
+          format: uuid
+          type: string
+        submissionUid:
+          type: string
+        longId:
+          nullable: true
+          type: string
+        internalId:
+          type: string
+        typeName:
+          type: string
+        typeVersionName:
+          nullable: true
+          type: string
+        issuerTin:
+          type: string
+        issuerName:
+          nullable: true
+          type: string
+        receiverId:
+          nullable: true
+          type: string
+        receiverName:
+          nullable: true
+          type: string
+        dateTimeIssued:
+          format: date-time
+          nullable: true
+          type: string
+        dateTimeReceived:
+          format: date-time
+          nullable: true
+          type: string
+        dateTimeValidated:
+          format: date-time
+          nullable: true
+          type: string
+        totalPayableAmount:
+          description: Total payable amount as string (preserves decimal precision)
+          nullable: true
+          type: string
+        status:
+          type: string
+        cancelDateTime:
+          format: date-time
+          nullable: true
+          type: string
+        rejectDateTime:
+          format: date-time
+          nullable: true
+          type: string
+      required:
+      - internalId
+      - issuerTin
+      - status
+      - submissionUid
+      - typeName
+      - uuid
+      type: object
+    RecentDocumentsResponse:
+      example:
+        documents:
+        - issuerName: issuerName
+          receiverName: receiverName
+          rejectDateTime: 2000-01-23T04:56:07.000+00:00
+          typeName: typeName
+          typeVersionName: typeVersionName
+          cancelDateTime: 2000-01-23T04:56:07.000+00:00
+          longId: longId
+          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          dateTimeReceived: 2000-01-23T04:56:07.000+00:00
+          issuerTin: issuerTin
+          internalId: internalId
+          receiverId: receiverId
+          totalPayableAmount: totalPayableAmount
+          dateTimeIssued: 2000-01-23T04:56:07.000+00:00
+          submissionUid: submissionUid
+          dateTimeValidated: 2000-01-23T04:56:07.000+00:00
+          status: status
+        - issuerName: issuerName
+          receiverName: receiverName
+          rejectDateTime: 2000-01-23T04:56:07.000+00:00
+          typeName: typeName
+          typeVersionName: typeVersionName
+          cancelDateTime: 2000-01-23T04:56:07.000+00:00
+          longId: longId
+          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          dateTimeReceived: 2000-01-23T04:56:07.000+00:00
+          issuerTin: issuerTin
+          internalId: internalId
+          receiverId: receiverId
+          totalPayableAmount: totalPayableAmount
+          dateTimeIssued: 2000-01-23T04:56:07.000+00:00
+          submissionUid: submissionUid
+          dateTimeValidated: 2000-01-23T04:56:07.000+00:00
+          status: status
+        totalPages: 0
+        totalCount: 6
+      properties:
+        documents:
+          items:
+            $ref: '#/components/schemas/DocumentListItem'
+          type: array
+        totalPages:
+          nullable: true
+          type: integer
+        totalCount:
+          nullable: true
+          type: integer
+      required:
+      - documents
+      type: object
+    SearchDocumentsResponse:
+      example:
+        documents:
+        - issuerName: issuerName
+          receiverName: receiverName
+          rejectDateTime: 2000-01-23T04:56:07.000+00:00
+          typeName: typeName
+          typeVersionName: typeVersionName
+          cancelDateTime: 2000-01-23T04:56:07.000+00:00
+          longId: longId
+          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          dateTimeReceived: 2000-01-23T04:56:07.000+00:00
+          issuerTin: issuerTin
+          internalId: internalId
+          receiverId: receiverId
+          totalPayableAmount: totalPayableAmount
+          dateTimeIssued: 2000-01-23T04:56:07.000+00:00
+          submissionUid: submissionUid
+          dateTimeValidated: 2000-01-23T04:56:07.000+00:00
+          status: status
+        - issuerName: issuerName
+          receiverName: receiverName
+          rejectDateTime: 2000-01-23T04:56:07.000+00:00
+          typeName: typeName
+          typeVersionName: typeVersionName
+          cancelDateTime: 2000-01-23T04:56:07.000+00:00
+          longId: longId
+          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          dateTimeReceived: 2000-01-23T04:56:07.000+00:00
+          issuerTin: issuerTin
+          internalId: internalId
+          receiverId: receiverId
+          totalPayableAmount: totalPayableAmount
+          dateTimeIssued: 2000-01-23T04:56:07.000+00:00
+          submissionUid: submissionUid
+          dateTimeValidated: 2000-01-23T04:56:07.000+00:00
+          status: status
+        totalPages: 0
+        totalCount: 6
+        continuationToken: continuationToken
+      properties:
+        documents:
+          items:
+            $ref: '#/components/schemas/DocumentListItem'
+          type: array
+        totalPages:
+          nullable: true
+          type: integer
+        totalCount:
+          nullable: true
+          type: integer
+        continuationToken:
+          description: Token for fetching next page
+          nullable: true
+          type: string
+      required:
+      - documents
       type: object
     TinValidationResponse:
       example:

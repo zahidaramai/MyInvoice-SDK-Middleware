@@ -21,6 +21,10 @@ import com.myinvois.sdk.model.DocumentDetails;
 import com.myinvois.sdk.model.DocumentStateChangeRequest;
 import com.myinvois.sdk.model.DocumentStateChangeResponse;
 import com.myinvois.sdk.model.ErrorEnvelope;
+import java.time.OffsetDateTime;
+import com.myinvois.sdk.model.RawDocumentResponse;
+import com.myinvois.sdk.model.RecentDocumentsResponse;
+import com.myinvois.sdk.model.SearchDocumentsResponse;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -265,6 +269,242 @@ public class DocumentsApi {
   }
 
   /**
+   * Get raw document content
+   * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+   * @param uuid MyInvois document UUID (required)
+   * @param longId MyInvois document Long ID (used for raw document retrieval) (required)
+   * @param sessionId Gateway session ID (required)
+   * @return RawDocumentResponse
+   * @throws ApiException if fails to make API call
+   */
+  public RawDocumentResponse getRawDocument(UUID uuid, String longId, String sessionId) throws ApiException {
+    ApiResponse<RawDocumentResponse> localVarResponse = getRawDocumentWithHttpInfo(uuid, longId, sessionId);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Get raw document content
+   * Retrieves the raw document content (UBL XML or JSON) from MyInvois. Requires both the document UUID and Long ID. Rate limit: 125 RPM per clientId. 
+   * @param uuid MyInvois document UUID (required)
+   * @param longId MyInvois document Long ID (used for raw document retrieval) (required)
+   * @param sessionId Gateway session ID (required)
+   * @return ApiResponse&lt;RawDocumentResponse&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<RawDocumentResponse> getRawDocumentWithHttpInfo(UUID uuid, String longId, String sessionId) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getRawDocumentRequestBuilder(uuid, longId, sessionId);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getRawDocument", localVarResponse);
+        }
+        return new ApiResponse<RawDocumentResponse>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<RawDocumentResponse>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getRawDocumentRequestBuilder(UUID uuid, String longId, String sessionId) throws ApiException {
+    // verify the required parameter 'uuid' is set
+    if (uuid == null) {
+      throw new ApiException(400, "Missing the required parameter 'uuid' when calling getRawDocument");
+    }
+    // verify the required parameter 'longId' is set
+    if (longId == null) {
+      throw new ApiException(400, "Missing the required parameter 'longId' when calling getRawDocument");
+    }
+    // verify the required parameter 'sessionId' is set
+    if (sessionId == null) {
+      throw new ApiException(400, "Missing the required parameter 'sessionId' when calling getRawDocument");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/v1/documents/{uuid}/raw/{longId}"
+        .replace("{uuid}", ApiClient.urlEncode(uuid.toString()))
+        .replace("{longId}", ApiClient.urlEncode(longId.toString()));
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "sessionId";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("sessionId", sessionId));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * List recent documents
+   * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+   * @param sessionId Gateway session ID (required)
+   * @param pageNo Page number (1-based, default 1) (optional, default to 1)
+   * @param pageSize Page size (default 10, max 100) (optional, default to 10)
+   * @param submissionDateFrom Filter by submission date from (ISO 8601) (optional)
+   * @param submissionDateTo Filter by submission date to (ISO 8601) (optional)
+   * @param issueDateFrom Filter by issue date from (ISO 8601) (optional)
+   * @param issueDateTo Filter by issue date to (ISO 8601) (optional)
+   * @param direction Filter by direction (optional)
+   * @param status Filter by document status (optional)
+   * @param documentType Filter by document type code (optional)
+   * @param receiverId Filter by receiver ID (optional)
+   * @param receiverTin Filter by receiver TIN (optional)
+   * @param issuerTin Filter by issuer TIN (optional)
+   * @return RecentDocumentsResponse
+   * @throws ApiException if fails to make API call
+   */
+  public RecentDocumentsResponse getRecentDocuments(String sessionId, Integer pageNo, Integer pageSize, OffsetDateTime submissionDateFrom, OffsetDateTime submissionDateTo, OffsetDateTime issueDateFrom, OffsetDateTime issueDateTo, String direction, String status, String documentType, String receiverId, String receiverTin, String issuerTin) throws ApiException {
+    ApiResponse<RecentDocumentsResponse> localVarResponse = getRecentDocumentsWithHttpInfo(sessionId, pageNo, pageSize, submissionDateFrom, submissionDateTo, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * List recent documents
+   * Lists recently processed documents with optional filters. Results are paginated. Rate limit: 60 RPM per clientId.  Note: This endpoint is for listing/searching documents, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+   * @param sessionId Gateway session ID (required)
+   * @param pageNo Page number (1-based, default 1) (optional, default to 1)
+   * @param pageSize Page size (default 10, max 100) (optional, default to 10)
+   * @param submissionDateFrom Filter by submission date from (ISO 8601) (optional)
+   * @param submissionDateTo Filter by submission date to (ISO 8601) (optional)
+   * @param issueDateFrom Filter by issue date from (ISO 8601) (optional)
+   * @param issueDateTo Filter by issue date to (ISO 8601) (optional)
+   * @param direction Filter by direction (optional)
+   * @param status Filter by document status (optional)
+   * @param documentType Filter by document type code (optional)
+   * @param receiverId Filter by receiver ID (optional)
+   * @param receiverTin Filter by receiver TIN (optional)
+   * @param issuerTin Filter by issuer TIN (optional)
+   * @return ApiResponse&lt;RecentDocumentsResponse&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<RecentDocumentsResponse> getRecentDocumentsWithHttpInfo(String sessionId, Integer pageNo, Integer pageSize, OffsetDateTime submissionDateFrom, OffsetDateTime submissionDateTo, OffsetDateTime issueDateFrom, OffsetDateTime issueDateTo, String direction, String status, String documentType, String receiverId, String receiverTin, String issuerTin) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getRecentDocumentsRequestBuilder(sessionId, pageNo, pageSize, submissionDateFrom, submissionDateTo, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getRecentDocuments", localVarResponse);
+        }
+        return new ApiResponse<RecentDocumentsResponse>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<RecentDocumentsResponse>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getRecentDocumentsRequestBuilder(String sessionId, Integer pageNo, Integer pageSize, OffsetDateTime submissionDateFrom, OffsetDateTime submissionDateTo, OffsetDateTime issueDateFrom, OffsetDateTime issueDateTo, String direction, String status, String documentType, String receiverId, String receiverTin, String issuerTin) throws ApiException {
+    // verify the required parameter 'sessionId' is set
+    if (sessionId == null) {
+      throw new ApiException(400, "Missing the required parameter 'sessionId' when calling getRecentDocuments");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/v1/documents/recent";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "sessionId";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("sessionId", sessionId));
+    localVarQueryParameterBaseName = "pageNo";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("pageNo", pageNo));
+    localVarQueryParameterBaseName = "pageSize";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("pageSize", pageSize));
+    localVarQueryParameterBaseName = "submissionDateFrom";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("submissionDateFrom", submissionDateFrom));
+    localVarQueryParameterBaseName = "submissionDateTo";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("submissionDateTo", submissionDateTo));
+    localVarQueryParameterBaseName = "issueDateFrom";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("issueDateFrom", issueDateFrom));
+    localVarQueryParameterBaseName = "issueDateTo";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("issueDateTo", issueDateTo));
+    localVarQueryParameterBaseName = "direction";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("direction", direction));
+    localVarQueryParameterBaseName = "status";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("status", status));
+    localVarQueryParameterBaseName = "documentType";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("documentType", documentType));
+    localVarQueryParameterBaseName = "receiverId";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("receiverId", receiverId));
+    localVarQueryParameterBaseName = "receiverTin";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("receiverTin", receiverTin));
+    localVarQueryParameterBaseName = "issuerTin";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("issuerTin", issuerTin));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
    * Reject a document
    * Rejects a received document (changes state to rejected)
    * @param uuid MyInvois document UUID (required)
@@ -340,6 +580,153 @@ public class DocumentsApi {
     } catch (IOException e) {
       throw new ApiException(e);
     }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Search documents
+   * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+   * @param sessionId Gateway session ID (required)
+   * @param uuid Filter by document UUID (optional)
+   * @param submissionUid Filter by submission UID (optional)
+   * @param pageNo Page number (1-based, default 1) (optional, default to 1)
+   * @param pageSize Page size (default 10, max 100) (optional, default to 10)
+   * @param submissionDateFrom Filter by submission date from (ISO 8601) (optional)
+   * @param submissionDateTo Filter by submission date to (ISO 8601) (optional)
+   * @param continuationToken Continuation token for pagination (optional)
+   * @param issueDateFrom Filter by issue date from (ISO 8601) (optional)
+   * @param issueDateTo Filter by issue date to (ISO 8601) (optional)
+   * @param direction Filter by direction (optional)
+   * @param status Filter by document status (optional)
+   * @param documentType Filter by document type code (optional)
+   * @param receiverId Filter by receiver ID (optional)
+   * @param receiverTin Filter by receiver TIN (optional)
+   * @param issuerTin Filter by issuer TIN (optional)
+   * @return SearchDocumentsResponse
+   * @throws ApiException if fails to make API call
+   */
+  public SearchDocumentsResponse searchDocuments(String sessionId, UUID uuid, String submissionUid, Integer pageNo, Integer pageSize, OffsetDateTime submissionDateFrom, OffsetDateTime submissionDateTo, String continuationToken, OffsetDateTime issueDateFrom, OffsetDateTime issueDateTo, String direction, String status, String documentType, String receiverId, String receiverTin, String issuerTin) throws ApiException {
+    ApiResponse<SearchDocumentsResponse> localVarResponse = searchDocumentsWithHttpInfo(sessionId, uuid, submissionUid, pageNo, pageSize, submissionDateFrom, submissionDateTo, continuationToken, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Search documents
+   * Searches documents with various filter criteria. Results are paginated and support continuation tokens for large result sets. Rate limit: 60 RPM per clientId.  Note: This endpoint is for document lookup/reporting, not for monitoring submission status (use GET /v1/submissions/{trackingId} instead). 
+   * @param sessionId Gateway session ID (required)
+   * @param uuid Filter by document UUID (optional)
+   * @param submissionUid Filter by submission UID (optional)
+   * @param pageNo Page number (1-based, default 1) (optional, default to 1)
+   * @param pageSize Page size (default 10, max 100) (optional, default to 10)
+   * @param submissionDateFrom Filter by submission date from (ISO 8601) (optional)
+   * @param submissionDateTo Filter by submission date to (ISO 8601) (optional)
+   * @param continuationToken Continuation token for pagination (optional)
+   * @param issueDateFrom Filter by issue date from (ISO 8601) (optional)
+   * @param issueDateTo Filter by issue date to (ISO 8601) (optional)
+   * @param direction Filter by direction (optional)
+   * @param status Filter by document status (optional)
+   * @param documentType Filter by document type code (optional)
+   * @param receiverId Filter by receiver ID (optional)
+   * @param receiverTin Filter by receiver TIN (optional)
+   * @param issuerTin Filter by issuer TIN (optional)
+   * @return ApiResponse&lt;SearchDocumentsResponse&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<SearchDocumentsResponse> searchDocumentsWithHttpInfo(String sessionId, UUID uuid, String submissionUid, Integer pageNo, Integer pageSize, OffsetDateTime submissionDateFrom, OffsetDateTime submissionDateTo, String continuationToken, OffsetDateTime issueDateFrom, OffsetDateTime issueDateTo, String direction, String status, String documentType, String receiverId, String receiverTin, String issuerTin) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = searchDocumentsRequestBuilder(sessionId, uuid, submissionUid, pageNo, pageSize, submissionDateFrom, submissionDateTo, continuationToken, issueDateFrom, issueDateTo, direction, status, documentType, receiverId, receiverTin, issuerTin);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("searchDocuments", localVarResponse);
+        }
+        return new ApiResponse<SearchDocumentsResponse>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<SearchDocumentsResponse>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder searchDocumentsRequestBuilder(String sessionId, UUID uuid, String submissionUid, Integer pageNo, Integer pageSize, OffsetDateTime submissionDateFrom, OffsetDateTime submissionDateTo, String continuationToken, OffsetDateTime issueDateFrom, OffsetDateTime issueDateTo, String direction, String status, String documentType, String receiverId, String receiverTin, String issuerTin) throws ApiException {
+    // verify the required parameter 'sessionId' is set
+    if (sessionId == null) {
+      throw new ApiException(400, "Missing the required parameter 'sessionId' when calling searchDocuments");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/v1/documents/search";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "sessionId";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("sessionId", sessionId));
+    localVarQueryParameterBaseName = "uuid";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("uuid", uuid));
+    localVarQueryParameterBaseName = "submissionUid";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("submissionUid", submissionUid));
+    localVarQueryParameterBaseName = "pageNo";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("pageNo", pageNo));
+    localVarQueryParameterBaseName = "pageSize";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("pageSize", pageSize));
+    localVarQueryParameterBaseName = "submissionDateFrom";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("submissionDateFrom", submissionDateFrom));
+    localVarQueryParameterBaseName = "submissionDateTo";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("submissionDateTo", submissionDateTo));
+    localVarQueryParameterBaseName = "continuationToken";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("continuationToken", continuationToken));
+    localVarQueryParameterBaseName = "issueDateFrom";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("issueDateFrom", issueDateFrom));
+    localVarQueryParameterBaseName = "issueDateTo";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("issueDateTo", issueDateTo));
+    localVarQueryParameterBaseName = "direction";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("direction", direction));
+    localVarQueryParameterBaseName = "status";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("status", status));
+    localVarQueryParameterBaseName = "documentType";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("documentType", documentType));
+    localVarQueryParameterBaseName = "receiverId";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("receiverId", receiverId));
+    localVarQueryParameterBaseName = "receiverTin";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("receiverTin", receiverTin));
+    localVarQueryParameterBaseName = "issuerTin";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("issuerTin", issuerTin));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

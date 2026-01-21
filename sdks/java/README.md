@@ -117,8 +117,14 @@ Class | Method | HTTP request | Description
 *DocumentsApi* | [**cancelDocumentWithHttpInfo**](docs/DocumentsApi.md#cancelDocumentWithHttpInfo) | **POST** /v1/documents/{uuid}/cancel | Cancel a document
 *DocumentsApi* | [**getDocumentDetails**](docs/DocumentsApi.md#getDocumentDetails) | **GET** /v1/documents/{uuid}/details | Get document details
 *DocumentsApi* | [**getDocumentDetailsWithHttpInfo**](docs/DocumentsApi.md#getDocumentDetailsWithHttpInfo) | **GET** /v1/documents/{uuid}/details | Get document details
+*DocumentsApi* | [**getRawDocument**](docs/DocumentsApi.md#getRawDocument) | **GET** /v1/documents/{uuid}/raw/{longId} | Get raw document content
+*DocumentsApi* | [**getRawDocumentWithHttpInfo**](docs/DocumentsApi.md#getRawDocumentWithHttpInfo) | **GET** /v1/documents/{uuid}/raw/{longId} | Get raw document content
+*DocumentsApi* | [**getRecentDocuments**](docs/DocumentsApi.md#getRecentDocuments) | **GET** /v1/documents/recent | List recent documents
+*DocumentsApi* | [**getRecentDocumentsWithHttpInfo**](docs/DocumentsApi.md#getRecentDocumentsWithHttpInfo) | **GET** /v1/documents/recent | List recent documents
 *DocumentsApi* | [**rejectDocument**](docs/DocumentsApi.md#rejectDocument) | **POST** /v1/documents/{uuid}/reject | Reject a document
 *DocumentsApi* | [**rejectDocumentWithHttpInfo**](docs/DocumentsApi.md#rejectDocumentWithHttpInfo) | **POST** /v1/documents/{uuid}/reject | Reject a document
+*DocumentsApi* | [**searchDocuments**](docs/DocumentsApi.md#searchDocuments) | **GET** /v1/documents/search | Search documents
+*DocumentsApi* | [**searchDocumentsWithHttpInfo**](docs/DocumentsApi.md#searchDocumentsWithHttpInfo) | **GET** /v1/documents/search | Search documents
 *HealthApi* | [**getHealth**](docs/HealthApi.md#getHealth) | **GET** /healthz | Health check
 *HealthApi* | [**getHealthWithHttpInfo**](docs/HealthApi.md#getHealthWithHttpInfo) | **GET** /healthz | Health check
 *HealthApi* | [**getReady**](docs/HealthApi.md#getReady) | **GET** /readyz | Readiness check
@@ -146,6 +152,7 @@ Class | Method | HTTP request | Description
  - [AcceptedDocument](docs/AcceptedDocument.md)
  - [DocumentDetails](docs/DocumentDetails.md)
  - [DocumentInput](docs/DocumentInput.md)
+ - [DocumentListItem](docs/DocumentListItem.md)
  - [DocumentStateChangeRequest](docs/DocumentStateChangeRequest.md)
  - [DocumentStateChangeResponse](docs/DocumentStateChangeResponse.md)
  - [DocumentStatus](docs/DocumentStatus.md)
@@ -156,9 +163,12 @@ Class | Method | HTTP request | Description
  - [GatewayErrorUpstream](docs/GatewayErrorUpstream.md)
  - [HealthResponse](docs/HealthResponse.md)
  - [Mode](docs/Mode.md)
+ - [RawDocumentResponse](docs/RawDocumentResponse.md)
  - [ReadyResponse](docs/ReadyResponse.md)
  - [ReadyResponseChecks](docs/ReadyResponseChecks.md)
+ - [RecentDocumentsResponse](docs/RecentDocumentsResponse.md)
  - [RejectedDocument](docs/RejectedDocument.md)
+ - [SearchDocumentsResponse](docs/SearchDocumentsResponse.md)
  - [Session](docs/Session.md)
  - [SessionCreateIntermediary](docs/SessionCreateIntermediary.md)
  - [SessionCreateRequest](docs/SessionCreateRequest.md)
