@@ -122,7 +122,10 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *DocumentsApi* | [**CancelDocument**](docs/DocumentsApi.md#canceldocument) | **POST** /v1/documents/{uuid}/cancel | Cancel a document
 *DocumentsApi* | [**GetDocumentDetails**](docs/DocumentsApi.md#getdocumentdetails) | **GET** /v1/documents/{uuid}/details | Get document details
+*DocumentsApi* | [**GetRawDocument**](docs/DocumentsApi.md#getrawdocument) | **GET** /v1/documents/{uuid}/raw/{longId} | Get raw document content
+*DocumentsApi* | [**GetRecentDocuments**](docs/DocumentsApi.md#getrecentdocuments) | **GET** /v1/documents/recent | List recent documents
 *DocumentsApi* | [**RejectDocument**](docs/DocumentsApi.md#rejectdocument) | **POST** /v1/documents/{uuid}/reject | Reject a document
+*DocumentsApi* | [**SearchDocuments**](docs/DocumentsApi.md#searchdocuments) | **GET** /v1/documents/search | Search documents
 *HealthApi* | [**GetHealth**](docs/HealthApi.md#gethealth) | **GET** /healthz | Health check
 *HealthApi* | [**GetReady**](docs/HealthApi.md#getready) | **GET** /readyz | Readiness check
 *HealthApi* | [**GetVersion**](docs/HealthApi.md#getversion) | **GET** /version | Version information
@@ -141,6 +144,7 @@ Class | Method | HTTP request | Description
  - [Model.AcceptedDocument](docs/AcceptedDocument.md)
  - [Model.DocumentDetails](docs/DocumentDetails.md)
  - [Model.DocumentInput](docs/DocumentInput.md)
+ - [Model.DocumentListItem](docs/DocumentListItem.md)
  - [Model.DocumentStateChangeRequest](docs/DocumentStateChangeRequest.md)
  - [Model.DocumentStateChangeResponse](docs/DocumentStateChangeResponse.md)
  - [Model.DocumentStatus](docs/DocumentStatus.md)
@@ -151,9 +155,12 @@ Class | Method | HTTP request | Description
  - [Model.HealthResponse](docs/HealthResponse.md)
  - [Model.Mode](docs/Mode.md)
  - [Model.ModelEnvironment](docs/ModelEnvironment.md)
+ - [Model.RawDocumentResponse](docs/RawDocumentResponse.md)
  - [Model.ReadyResponse](docs/ReadyResponse.md)
  - [Model.ReadyResponseChecks](docs/ReadyResponseChecks.md)
+ - [Model.RecentDocumentsResponse](docs/RecentDocumentsResponse.md)
  - [Model.RejectedDocument](docs/RejectedDocument.md)
+ - [Model.SearchDocumentsResponse](docs/SearchDocumentsResponse.md)
  - [Model.Session](docs/Session.md)
  - [Model.SessionCreateIntermediary](docs/SessionCreateIntermediary.md)
  - [Model.SessionCreateRequest](docs/SessionCreateRequest.md)
