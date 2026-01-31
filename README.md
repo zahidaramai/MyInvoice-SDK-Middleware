@@ -1,7 +1,7 @@
-# HashLHDN MyInvois Middleware
+# MyInvois Middleware Gateway
 
-[![CI](https://github.com/shmoulana/duitlhdn/actions/workflows/ci.yml/badge.svg)](https://github.com/shmoulana/duitlhdn/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/shmoulana/duitlhdn)](https://github.com/shmoulana/duitlhdn/releases)
+[![CI](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml/badge.svg)](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
@@ -10,11 +10,27 @@
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748?logo=prisma&logoColor=white)
 
-Enterprise-grade API middleware gateway for Malaysia's MyInvois e-invoicing system (LHDN).
+![MyInvois Middleware Gateway](asset/social-preview.png)
 
-**Client:** Hashmato | **Version:** 1.3.10 | **Production Ready**
+**Open-source middleware gateway for Malaysia's MyInvois e-invoicing system.** A production-ready REST API layer between your applications and the official LHDN MyInvois API, handling authentication, digital signing, document submission, status polling, and multi-tenant management.
 
-> **Production API:** `https://d18hdb19anlge7.cloudfront.net/api/v1`
+### Validated with Both v1.0 and v1.1
+
+This middleware has been **validated against the MyInvois Sandbox and Production APIs** with all 9 document types in both **v1.0 (unsigned)** and **v1.1 (digitally signed)** formats:
+
+| Document Type | v1.0 | v1.1 (Signed) |
+|---------------|:----:|:-------------:|
+| Invoice (01) | Validated | Validated |
+| Credit Note (02) | Validated | Validated |
+| Debit Note (03) | Validated | Validated |
+| Refund Note (04) | Validated | Validated |
+| Self-billed Invoice (11) | Validated | Validated |
+| Self-billed Credit Note (12) | Validated | Validated |
+| Self-billed Debit Note (13) | Validated | Validated |
+| Self-billed Refund Note (14) | Validated | Validated |
+| Consolidated Invoice | Validated | Validated |
+
+> **Disclaimer**: This is an unofficial community project and is not affiliated with LHDN (Lembaga Hasil Dalam Negeri Malaysia). See [DISCLAIMER.md](DISCLAIMER.md) for full terms.
 
 ---
 
@@ -24,27 +40,45 @@ Enterprise-grade API middleware gateway for Malaysia's MyInvois e-invoicing syst
 - [Quick Start](#quick-start)
 - [Architecture](#architecture)
 - [API Reference](#api-reference)
-- [Deployment](#deployment)
+  - [Authentication](#authentication-endpoints)
+  - [Submission Endpoints](#submission-endpoints)
+  - [Document Operations](#document-endpoints)
+  - [Management APIs](#management-endpoints)
+  - [Health & Monitoring](#health--monitoring)
+- [Digital Signing (v1.1)](#digital-signing-v11)
+- [Permissions & Roles](#permissions--roles)
 - [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Postman Collection](#postman-collection)
+- [Generated SDKs](#generated-sdks)
+- [Testing](#testing)
 - [Security](#security)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
 ## Features
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| **4 Submission Endpoints** | Consolidated, JustSave, B2B, B2C | ✅ Done |
-| **JWT Authentication** | Access + Refresh tokens, role-based | ✅ Done |
-| **User Management** | Users, Roles, Companies CRUD | ✅ Done |
-| **Document Operations** | List, Status, PDF, Cancel | ✅ Done |
-| **Digital Signing v1.1** | X.509 certificate signing (LHDN spec) | ✅ Done |
-| **Auto Status Polling** | Background polling every 30 minutes | ✅ Done |
-| **CORS Support** | All origins enabled | ✅ Done |
-| **Rate Limiting** | Built-in LHDN rate limit enforcement | ✅ Done |
-| **S3 Certificate Loading** | Load P12 from AWS S3 | ✅ Done |
-| **Prometheus Metrics** | `/metrics` endpoint | ✅ Done |
+| Feature | Description |
+|---------|-------------|
+| **4 Submission Types** | Consolidated B2C, JustSave (draft), B2B (buyer TIN+BRN), B2C (buyer NRIC) |
+| **JWT Authentication** | Access + Refresh tokens with role-based access control |
+| **Multi-Tenant Companies** | Full company management with MyInvois credential storage |
+| **User Management** | Users, Roles, Companies CRUD with permission gating |
+| **Document Operations** | List, Status, PDF, Cancel, QR Code, Share Links |
+| **Digital Signing v1.1** | X.509 PKCS#12 certificate signing per LHDN specification |
+| **Auto Status Polling** | Background polling for submission status updates |
+| **Monthly Consolidation** | Scheduled consolidation of draft B2C invoices |
+| **Draft Management** | Save, edit, update, and submit draft invoices |
+| **Rate Limiting** | Built-in LHDN rate limit enforcement (12/100/300 RPM) |
+| **ERP On-Behalf Mode** | Single ERP credentials for multiple suppliers |
+| **POS Integration** | Dedicated POS adapter with QR e-invoice registration |
+| **S3 Certificate Loading** | Load P12 certificates from AWS S3 or local paths |
+| **Prometheus Metrics** | Built-in `/metrics` endpoint for monitoring |
+| **Error Normalization** | Consistent error envelope with correlationId tracking |
+| **4 Generated SDKs** | TypeScript, Python, Java, C# clients from OpenAPI spec |
 
 ---
 
@@ -54,13 +88,13 @@ Enterprise-grade API middleware gateway for Malaysia's MyInvois e-invoicing syst
 
 - Node.js 22+
 - pnpm 9+
-- Docker (for local PostgreSQL/Redis)
+- Docker (for local PostgreSQL and Redis)
 
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/shmoulana/duitlhdn.git
-cd duitlhdn
+git clone https://github.com/zahidaramai/MyInvoice-SDK-Middleware.git
+cd MyInvoice-SDK-Middleware
 pnpm install
 ```
 
@@ -74,7 +108,7 @@ docker compose -f docker/docker-compose.yml up -d
 
 ```bash
 cp .env.example .env
-# Edit .env with your settings
+# Edit .env with your MyInvois credentials and database settings
 ```
 
 ### 4. Run Migrations & Seed
@@ -97,7 +131,7 @@ Gateway available at `http://localhost:3000`
 ```bash
 curl -X POST http://localhost:3000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@hashlhdn.com","password":"admin123"}'
+  -d '{"email":"admin@example.com","password":"admin123"}'
 ```
 
 ---
@@ -106,26 +140,29 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 
 ```
 ┌─────────────────┐     ┌──────────────────────────┐     ┌─────────────────┐
-│                 │     │    HashLHDN Gateway      │     │                 │
-│  Your Dashboard │────▶│  ┌──────────────────┐   │────▶│  MyInvois API   │
-│  (React/Vue)    │     │  │ JWT Auth         │   │     │  (LHDN)         │
-│                 │     │  │ CORS             │   │     │                 │
-└─────────────────┘     │  │ Rate Limiting    │   │     └─────────────────┘
-                        │  │ Digital Signing  │   │
-                        │  │ JSON → UBL 2.1   │   │
-                        │  └──────────────────┘   │
-                        └────────────┬────────────┘
+│                 │     │    MyInvois Gateway       │     │                 │
+│  Your Dashboard │────>│  ┌──────────────────┐    │────>│  MyInvois API   │
+│  (React/Vue)    │     │  │ JWT Auth         │    │     │  (LHDN)         │
+│                 │     │  │ RBAC             │    │     │                 │
+└─────────────────┘     │  │ Rate Limiting    │    │     └─────────────────┘
+                        │  │ Digital Signing  │    │
+┌─────────────────┐     │  │ JSON -> UBL 2.1  │    │
+│  POS System     │────>│  │ Error Normalizer │    │
+│                 │     │  └──────────────────┘    │
+└─────────────────┘     └────────────┬─────────────┘
                                      │
-                        ┌────────────▼────────────┐
-                        │    Auto Status Poller   │
-                        │    (Every 30 minutes)   │
-                        └────────────┬────────────┘
+                        ┌────────────▼─────────────┐
+                        │  Background Workers       │
+                        │  - Auto Status Poller     │
+                        │  - Monthly Consolidation  │
+                        └────────────┬─────────────┘
                                      │
           ┌──────────────────────────┼──────────────────────────┐
           │                          │                          │
    ┌──────▼──────┐           ┌───────▼───────┐          ┌──────▼──────┐
    │  PostgreSQL │           │    Redis      │          │  Prometheus │
-   │  (Prisma)   │           │  (Rate Limit) │          │  (Metrics)  │
+   │  (Prisma)   │           │  (BullMQ +    │          │  (Metrics)  │
+   │  10 models  │           │   Rate Limit) │          │             │
    └─────────────┘           └───────────────┘          └─────────────┘
 ```
 
@@ -135,16 +172,11 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 
 ### Base URL
 
-| Environment | URL |
-|-------------|-----|
-| **Production** | `https://d18hdb19anlge7.cloudfront.net/api/v1` |
-| **Local** | `http://localhost:3000/api/v1` |
+```
+http://localhost:3000/api/v1
+```
 
-All API endpoints below are relative to the base URL.
-
-### Authentication
-
-All endpoints except `/auth/login` require JWT token:
+All endpoints below are relative to the base URL. All endpoints except `/auth/login` require a JWT bearer token:
 
 ```
 Authorization: Bearer <access_token>
@@ -152,24 +184,15 @@ Authorization: Bearer <access_token>
 
 ---
 
-### Auth Endpoints
+### Authentication Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/auth/login` | Login, returns access + refresh tokens |
-| POST | `/api/v1/auth/logout` | Invalidate tokens |
-| POST | `/api/v1/auth/refresh` | Get new access token |
-| GET | `/api/v1/auth/me` | Get current user info |
-
-#### Login Request
-
-```json
-POST /api/v1/auth/login
-{
-  "email": "admin@hashlhdn.com",
-  "password": "admin123"
-}
-```
+| POST | `/auth/login` | Login with email/password |
+| POST | `/auth/logout` | Invalidate tokens |
+| POST | `/auth/refresh` | Exchange refresh token for new access token |
+| GET | `/auth/me` | Get current authenticated user |
+| POST | `/auth/switch-company` | Switch active company context |
 
 #### Login Response
 
@@ -180,7 +203,7 @@ POST /api/v1/auth/login
   "expiresIn": 900,
   "user": {
     "id": "abc123",
-    "email": "admin@hashlhdn.com",
+    "email": "admin@example.com",
     "name": "Admin",
     "role": "Admin"
   }
@@ -193,26 +216,18 @@ POST /api/v1/auth/login
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/hashlhdn/submit-consolidate` | Consolidated invoice (B2C daily sales) |
-| POST | `/api/v1/hashlhdn/submit-justsave` | Save without LHDN submission |
-| POST | `/api/v1/hashlhdn/submit-buyer` | B2B invoice (with buyer TIN + BRN) |
-| POST | `/api/v1/hashlhdn/submit-personal` | B2C invoice (with buyer NRIC) |
+| POST | `/hashlhdn/submit-consolidate` | Consolidated B2C invoice (daily sales) |
+| POST | `/hashlhdn/submit-justsave` | Save invoice as draft (no LHDN submission) |
+| POST | `/hashlhdn/submit-buyer` | B2B invoice (with buyer TIN + BRN) |
+| POST | `/hashlhdn/submit-personal` | B2C invoice (with buyer NRIC) |
 
 #### Legacy Unified Endpoint
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/documents/submit` | Unified submission with flags |
+| POST | `/documents/submit` | Unified submission with flags |
 
-**Request Flags:**
-- `ConsolidatedInvoice: true` → Consolidate endpoint
-- `SaveInvoice: true` → JustSave endpoint
-- `customer.IdType: "BRN"` → B2B endpoint
-- `customer.IdType: "NRIC"` → B2C endpoint
-
----
-
-### Submission Request Format
+#### Submission Request Format
 
 ```json
 POST /api/v1/hashlhdn/submit-buyer
@@ -255,34 +270,20 @@ POST /api/v1/hashlhdn/submit-buyer
 
 ---
 
-### Submission Response
-
-```json
-{
-  "success": true,
-  "data": {
-    "submissionId": "HJSD135P2S7D8IU",
-    "documents": [{
-      "uuid": "F9D425P6DS7D8IU",
-      "invoiceNumber": "INV-2026-001",
-      "status": "SUBMITTED",
-      "trackingId": "local-tracking-id"
-    }]
-  }
-}
-```
-
----
-
 ### Document Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/documents` | List documents with filters |
-| GET | `/api/v1/documents/:uuid/status` | Get document status |
-| GET | `/api/v1/documents/:uuid/pdf` | Download PDF |
-| POST | `/api/v1/documents/:uuid/cancel` | Cancel document |
-| POST | `/api/v1/documents/:trackingId/submit` | Submit saved draft |
+| GET | `/documents` | List documents (with filters, pagination) |
+| GET | `/documents/:uuid/status` | Get document status from MyInvois |
+| GET | `/documents/:uuid/pdf` | Download PDF |
+| POST | `/documents/:uuid/cancel` | Cancel submitted document |
+| GET | `/documents/:uuid/qr` | Generate QR code (PNG) |
+| GET | `/documents/:uuid/links` | Get all shareable links |
+| POST | `/documents/:trackingId/submit` | Submit a saved draft |
+| PUT | `/documents/:trackingId` | Update draft invoice data |
+| DELETE | `/documents/:trackingId` | Delete draft invoice |
+| GET | `/hashlhdn/invoices/:trackingId` | Get full invoice details |
 
 #### List Documents
 
@@ -290,17 +291,16 @@ POST /api/v1/hashlhdn/submit-buyer
 GET /api/v1/documents?companyId=xxx&status=VALID&page=1&limit=20
 ```
 
-#### Document Status Response
+#### Document Status Values
 
-```json
-{
-  "uuid": "F9D425P6DS7D8IU",
-  "status": "VALID",
-  "longId": "ABC123XYZ789...",
-  "invoiceNumber": "INV-2026-001",
-  "validatedAt": "2026-01-21T10:05:00Z"
-}
-```
+| Status | Description |
+|--------|-------------|
+| `DRAFT` | Saved locally, not submitted |
+| `PENDING` | Queued for submission |
+| `SUBMITTED` | Sent to MyInvois, awaiting validation |
+| `VALID` | Accepted by LHDN |
+| `INVALID` | Rejected by LHDN |
+| `CANCELLED` | Cancelled after validation |
 
 ---
 
@@ -310,122 +310,52 @@ GET /api/v1/documents?companyId=xxx&status=VALID&page=1&limit=20
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/users` | List all users |
-| POST | `/api/v1/users` | Create user |
-| GET | `/api/v1/users/:id` | Get user by ID |
-| PUT | `/api/v1/users/:id` | Update user |
-| DELETE | `/api/v1/users/:id` | Delete user |
+| GET | `/users` | List all users (paginated) |
+| POST | `/users` | Create user |
+| GET | `/users/:id` | Get user by ID |
+| PUT | `/users/:id` | Update user |
+| DELETE | `/users/:id` | Delete user |
+| PUT | `/users/:id/role` | Assign role to user |
+| POST | `/users/:userId/companies/:companyId` | Link user to company |
+| DELETE | `/users/:userId/companies/:companyId` | Unlink user from company |
 
 #### Roles
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/roles` | List all roles |
-| POST | `/api/v1/roles` | Create role |
-| GET | `/api/v1/roles/:id` | Get role by ID |
-| PUT | `/api/v1/roles/:id` | Update role |
-| DELETE | `/api/v1/roles/:id` | Delete role |
+| GET | `/roles` | List all roles (paginated) |
+| GET | `/roles/all` | Get all roles (for dropdowns) |
+| GET | `/roles/permissions` | Get available permissions |
+| POST | `/roles` | Create role |
+| GET | `/roles/:id` | Get role by ID |
+| PUT | `/roles/:id` | Update role |
+| DELETE | `/roles/:id` | Delete role |
 
 #### Companies
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/companies` | List companies |
-| POST | `/api/v1/companies` | Create company |
-| GET | `/api/v1/companies/:id` | Get company |
-| PUT | `/api/v1/companies/:id` | Update company |
-| DELETE | `/api/v1/companies/:id` | Delete company |
-| PUT | `/api/v1/companies/:id/credentials` | Set MyInvois credentials |
+| GET | `/companies` | List companies (paginated) |
+| GET | `/companies/all` | Get all companies (for dropdowns) |
+| POST | `/companies` | Create company |
+| GET | `/companies/:id` | Get company details |
+| PUT | `/companies/:id` | Update company |
+| DELETE | `/companies/:id` | Delete company |
+| PUT | `/companies/:id/credentials` | Set MyInvois API credentials |
 
-#### User-Company Mapping
-
-Link users to companies for access control. A user can be linked to multiple companies.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/companies/all` | Get all companies (for dropdown) |
-| POST | `/api/v1/users/:userId/companies/:companyId` | Link user to company |
-| DELETE | `/api/v1/users/:userId/companies/:companyId` | Unlink user from company |
-| GET | `/api/v1/users/:userId` | Get user with linked companies |
-
-**Alternative endpoints (from company side):**
+#### POS Integration
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/companies/:companyId/users/:userId` | Link user to company |
-| DELETE | `/api/v1/companies/:companyId/users/:userId` | Unlink user from company |
+| POST | `/pos/register` | Register invoice for public QR sharing |
+| POST | `/pos/invoices` | Bulk POS invoice upload |
+| GET | `/pos/transactions` | Fetch POS transactions |
 
-##### UI Workflow: Map User to Company
+#### Public Routes (No Auth)
 
-**Step 1: Get companies for dropdown**
-
-```
-GET /api/v1/companies/all
-```
-
-Response:
-```json
-{
-  "data": [
-    {
-      "id": "5ac34ecc-dcc0-4e9c-beaf-ea468fe6c05d",
-      "name": "B POINT STATION SDN. BHD",
-      "tin": "C24558460090",
-      "idValue": "202401000123"
-    }
-  ]
-}
-```
-
-**Step 2: Link selected company to user**
-
-```
-POST /api/v1/users/{userId}/companies/{companyId}
-```
-
-Response:
-```json
-{
-  "message": "User linked to company successfully"
-}
-```
-
-**Step 3: View user's linked companies**
-
-```
-GET /api/v1/users/{userId}
-```
-
-Response:
-```json
-{
-  "id": "ab404e1a-808d-4324-8f1d-49957f388ff6",
-  "email": "admin@hashlhdn.com",
-  "name": "Admin User",
-  "role": {
-    "id": "role-id",
-    "name": "Admin"
-  },
-  "companies": [
-    {
-      "id": "5ac34ecc-dcc0-4e9c-beaf-ea468fe6c05d",
-      "name": "B POINT STATION SDN. BHD",
-      "tin": "C24558460090"
-    }
-  ],
-  "isActive": true,
-  "createdAt": "2026-01-20T12:00:00.000Z",
-  "updatedAt": "2026-01-22T10:00:00.000Z"
-}
-```
-
-**Step 4: Remove link (if needed)**
-
-```
-DELETE /api/v1/users/{userId}/companies/{companyId}
-```
-
-Response: `204 No Content`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/public/:posInvoiceId` | Public e-invoice registration page |
 
 ---
 
@@ -434,89 +364,10 @@ Response: `204 No Content`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Basic health check |
-| GET | `/healthz` | Kubernetes health probe |
-| GET | `/readyz` | Readiness probe (DB/Redis) |
+| GET | `/healthz` | Kubernetes liveness probe |
+| GET | `/readyz` | Readiness probe (DB + Redis) |
 | GET | `/metrics` | Prometheus metrics |
 | GET | `/version` | Version info |
-
----
-
-## Deployment
-
-### Option 1: AWS Elastic Beanstalk (Recommended)
-
-**Full Guide:** [documentation/AWS-EB-DEPLOYMENT-GUIDE.md](documentation/AWS-EB-DEPLOYMENT-GUIDE.md)
-
-```bash
-# 1. Build deployment package
-./scripts/deploy-eb.sh v1.2.0
-
-# 2. Upload to S3
-aws s3 cp .deploy/hashlhdn-v1.2.0.zip \
-  s3://your-bucket/hashlhdn-middleware/v1.2.0.zip
-
-# 3. Create application version
-aws elasticbeanstalk create-application-version \
-  --application-name hashlhdn-middleware \
-  --version-label "v1.2.0" \
-  --source-bundle S3Bucket=your-bucket,S3Key=hashlhdn-middleware/v1.2.0.zip
-
-# 4. Deploy
-aws elasticbeanstalk update-environment \
-  --environment-name hashlhdn-prod \
-  --version-label "v1.2.0"
-```
-
-### Option 2: Docker Compose
-
-**Full Guide:** [documentation/DEPLOYMENT.md](documentation/DEPLOYMENT.md)
-
-```bash
-# 1. Copy environment template
-cp .env.production.template .env
-
-# 2. Edit configuration
-nano .env
-
-# 3. Deploy
-docker compose -f docker/docker-compose.prod.yml up -d
-
-# 4. Run migrations
-docker compose exec gateway npx prisma migrate deploy
-```
-
----
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | ✅ | - | PostgreSQL connection string |
-| `REDIS_URL` | ✅ | - | Redis connection string |
-| `JWT_SECRET` | ✅ | - | Access token signing key (64 hex chars) |
-| `JWT_REFRESH_SECRET` | ✅ | - | Refresh token signing key (64 hex chars) |
-| `NODE_ENV` | ❌ | development | Environment (production/development) |
-| `PORT` | ❌ | 3000 | Server port |
-| `LOG_LEVEL` | ❌ | debug | Logging level (debug/info/warn/error) |
-| `JWT_ACCESS_EXPIRY` | ❌ | 15m | Access token expiry |
-| `JWT_REFRESH_EXPIRY` | ❌ | 7d | Refresh token expiry |
-| `SIGNING_ENABLED` | ❌ | true | Enable document signing |
-| `SIGNING_DEFAULT_VERSION` | ❌ | 1.1 | Default document version |
-| `SIGNING_PKCS12_PATH` | ❌ | - | Path to P12 certificate (local or S3) |
-| `SIGNING_PKCS12_PASSPHRASE` | ❌ | - | P12 certificate passphrase |
-| `MYINVOIS_ENV` | ❌ | SANDBOX | MyInvois environment (SANDBOX/PROD) |
-| `METRICS_ENABLED` | ❌ | true | Enable Prometheus metrics |
-
-### Generate Secure Secrets
-
-```bash
-# JWT secrets (64 hex characters)
-openssl rand -hex 32
-
-# Example output: a1b2c3d4e5f6789...
-```
 
 ---
 
@@ -526,8 +377,10 @@ Documents submitted with `documentVersion: "1.1"` are automatically signed using
 
 ### Certificate Setup
 
-**Option 1: Local File**
+**Option 1: Local PKCS#12 File**
 ```env
+SIGNING_ENABLED=true
+SIGNING_DEFAULT_VERSION=1.1
 SIGNING_PKCS12_PATH=/path/to/certificate.p12
 SIGNING_PKCS12_PASSPHRASE=your-password
 ```
@@ -538,211 +391,227 @@ SIGNING_PKCS12_PATH=s3://your-bucket/certificates/signing.p12
 SIGNING_PKCS12_PASSPHRASE=your-password
 ```
 
+**Option 3: PEM Files**
+```env
+SIGNING_CERT_PATH=/path/to/cert.pem
+SIGNING_KEY_PATH=/path/to/key.pem
+SIGNING_KEY_PASSPHRASE=your-password
+```
+
 ### Signing Process
 
-1. Gateway receives document
+1. Gateway receives document with `documentVersion: "1.1"`
 2. Calculates document hash (SHA-256)
-3. Signs hash with private key from P12 certificate
-4. Adds signature to UBL document
+3. Signs hash with RSA-SHA256 using private key
+4. Injects UBL XAdES signature into document
 5. Submits signed document to MyInvois
 
 ---
 
 ## Permissions & Roles
 
-Role-based access control with **6 permissions**. These are the **only valid permission values** - do not create custom permissions.
+Role-based access control with **6 permissions**:
 
-### Available Permissions
-
-| Permission | Description | Endpoints Covered |
-|------------|-------------|-------------------|
+| Permission | Description | Endpoints |
+|------------|-------------|-----------|
 | `submit:invoice` | Submit invoices to LHDN | `/hashlhdn/*`, `/documents/submit` |
-| `read:documents` | View documents and statuses | `/documents`, `/documents/:uuid/status` |
+| `read:documents` | View documents and statuses | `/documents`, `/documents/:uuid/*` |
 | `cancel:documents` | Cancel submitted documents | `/documents/:uuid/cancel` |
-| `manage:users` | Create, edit, delete, view users | `/users/*` |
-| `manage:roles` | Create, edit, delete, view roles | `/roles/*` |
-| `manage:companies` | Create, edit, delete, view companies | `/companies/*` |
-
-### Get Permissions from API
-
-```
-GET /api/v1/roles/permissions
-```
-
-Response:
-```json
-{
-  "permissions": [
-    "submit:invoice",
-    "read:documents",
-    "cancel:documents",
-    "manage:users",
-    "manage:roles",
-    "manage:companies"
-  ]
-}
-```
-
-**Important for UI developers:** Use this endpoint to populate permission dropdowns. Only these 6 values are valid.
+| `manage:users` | User CRUD operations | `/users/*` |
+| `manage:roles` | Role CRUD operations | `/roles/*` |
+| `manage:companies` | Company CRUD operations | `/companies/*` |
 
 ### Default Roles (Pre-seeded)
 
-| Role | Description | Permissions |
-|------|-------------|-------------|
-| **Admin** | Full system administrator | All 6 permissions |
-| **Invoice Manager** | Staff handling invoice operations | `submit:invoice`, `read:documents`, `cancel:documents` |
-| **Viewer** | Read-only access | `read:documents` |
+| Role | Permissions |
+|------|-------------|
+| **Admin** | All 6 permissions |
+| **Invoice Manager** | `submit:invoice`, `read:documents`, `cancel:documents` |
+| **Viewer** | `read:documents` |
 
-### Permission Matrix
+Custom roles can be created via the API using any combination of the 6 permissions.
 
-| Role | submit:invoice | read:documents | cancel:documents | manage:users | manage:roles | manage:companies |
-|------|:--------------:|:--------------:|:----------------:|:------------:|:------------:|:----------------:|
-| Admin | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Invoice Manager | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Viewer | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+---
 
-### Creating Custom Roles
+## Configuration
 
-You can create additional roles via API, but **must use only the 6 available permissions**.
+### Required Environment Variables
 
-```
-POST /api/v1/roles
-```
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `JWT_SECRET` | Access token signing key (64 hex chars) |
+| `JWT_REFRESH_SECRET` | Refresh token signing key (64 hex chars) |
 
-Request:
-```json
-{
-  "name": "Accountant",
-  "description": "Can submit and view invoices",
-  "permissions": ["submit:invoice", "read:documents"]
-}
-```
+### Optional Environment Variables
 
-Response:
-```json
-{
-  "id": "role-uuid",
-  "name": "Accountant",
-  "description": "Can submit and view invoices",
-  "permissions": ["submit:invoice", "read:documents"],
-  "createdAt": "2026-01-22T10:00:00.000Z"
-}
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 3000 | Server port |
+| `NODE_ENV` | development | Environment mode |
+| `LOG_LEVEL` | debug | Logging level (debug/info/warn/error) |
+| `JWT_ACCESS_EXPIRY` | 15m | Access token TTL |
+| `JWT_REFRESH_EXPIRY` | 7d | Refresh token TTL |
+| `MYINVOIS_ENV` | SANDBOX | MyInvois environment (SANDBOX/PROD) |
+| `SIGNING_ENABLED` | false | Enable v1.1 document signing |
+| `SIGNING_DEFAULT_VERSION` | 1.0 | Default document version |
+| `SIGNING_PKCS12_PATH` | - | Path to P12 certificate |
+| `SIGNING_PKCS12_PASSPHRASE` | - | P12 passphrase |
+| `ERP_MODE` | false | Enable ERP intermediary mode |
+| `ENABLE_MONTHLY_CONSOLIDATION` | false | Enable monthly draft consolidation |
+| `METRICS_ENABLED` | true | Enable Prometheus metrics |
 
-### Roles Endpoints
+### Generate Secure Secrets
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/roles` | List all roles (paginated) |
-| GET | `/api/v1/roles/all` | Get all roles (for dropdown) |
-| GET | `/api/v1/roles/permissions` | Get available permissions |
-| POST | `/api/v1/roles` | Create role |
-| GET | `/api/v1/roles/:id` | Get role by ID |
-| PUT | `/api/v1/roles/:id` | Update role |
-| DELETE | `/api/v1/roles/:id` | Delete role |
-
-### Assign Role to User
-
-```
-PUT /api/v1/users/:id/role
+```bash
+openssl rand -hex 32
 ```
 
-Request:
-```json
-{
-  "roleId": "role-uuid"
-}
+---
+
+## Deployment
+
+### Option 1: Docker Compose
+
+```bash
+cp .env.production.template .env
+# Edit .env with production values
+
+docker compose -f docker/docker-compose.prod.yml up -d
+docker compose exec gateway npx prisma migrate deploy
 ```
+
+### Option 2: AWS Elastic Beanstalk
+
+Full guide: [documentation/AWS-EB-DEPLOYMENT-GUIDE.md](documentation/AWS-EB-DEPLOYMENT-GUIDE.md)
+
+```bash
+./scripts/deploy-eb.sh v1.0.0
+```
+
+### Option 3: Docker (Standalone)
+
+```bash
+docker build -t myinvois-gateway .
+docker run -p 3000:3000 --env-file .env myinvois-gateway
+```
+
+---
+
+## Postman Collection
+
+A comprehensive Postman collection is included with pre-built requests for all API endpoints.
+
+### Import
+
+```
+documentation/HashLHDN-API-v1.1.2.postman_collection.json
+```
+
+1. Open Postman > **Import** > Upload the collection file
+2. Set `baseUrl` variable to your API URL
+3. Run "Login" first to get tokens
+4. All subsequent requests use the token automatically
+
+---
+
+## Generated SDKs
+
+Auto-generated client SDKs from the OpenAPI specification:
+
+| Language | Location |
+|----------|----------|
+| TypeScript | `sdks/typescript/` |
+| Python | `sdks/python/` |
+| Java | `sdks/java/` |
+| C# / .NET | `sdks/dotnet/` |
+
+OpenAPI spec: `documentation/openapi.yaml`
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Run with coverage
+pnpm test -- --coverage
+
+# Run linting + type check + tests + build
+pnpm check
+
+# Run specific test file
+pnpm --filter @myinvois/gateway test -- signing.test.ts
+```
+
+### Test Structure
+
+| Type | Location |
+|------|----------|
+| Unit tests | `packages/*/test/` |
+| Route tests | `apps/gateway/src/routes/**/*.test.ts` |
+| Integration tests | `test/integration/` |
+| E2E tests | `test/e2e/` |
+| Negative tests | `apps/gateway/test/negative/` |
+| Contract tests | `test/openapi/` |
 
 ---
 
 ## Project Structure
 
 ```
-duitlhdn/
+MyInvoice-SDK-Middleware/
 ├── apps/
 │   ├── gateway/                 # REST API (Fastify)
 │   │   ├── src/
-│   │   │   ├── adapters/hashlhdn/   # Submission endpoints
-│   │   │   ├── auth/                # JWT authentication
-│   │   │   ├── management/          # User/Role/Company CRUD
-│   │   │   ├── polling/             # Auto status poller
-│   │   │   ├── config/              # S3 loader, signing config
-│   │   │   └── routes/              # Core routes
-│   │   ├── .ebextensions/           # EB configuration
-│   │   └── Procfile                 # EB process file
-│   └── worker/                  # Background job processor
+│   │   │   ├── adapters/        # HashLHDN + POS adapters
+│   │   │   ├── auth/            # JWT authentication
+│   │   │   ├── management/      # User/Role/Company CRUD
+│   │   │   ├── polling/         # Auto status poller + consolidation
+│   │   │   ├── public/          # Public QR registration
+│   │   │   ├── config/          # Signing, S3 loader
+│   │   │   ├── plugins/         # Fastify plugins
+│   │   │   └── routes/          # Core v1 routes
+│   │   ├── prisma/              # Database schema + migrations
+│   │   └── test/                # Gateway tests
+│   └── worker/                  # Background job processor (BullMQ)
 ├── packages/
 │   ├── contracts/               # Shared TypeScript types
-│   ├── core/                    # Rate limiter, utilities
-│   ├── myinvois-client/         # MyInvois API client
+│   ├── core/                    # Rate limiter, error normalization
+│   ├── myinvois-client/         # Typed MyInvois API client
 │   ├── signing/                 # X.509 signing (v1.1)
-│   └── storage/                 # Prisma + PostgreSQL
-│       └── prisma/
-│           ├── schema.prisma    # Database schema
-│           └── seed.ts          # Database seeder
-├── docker/
-│   ├── docker-compose.yml       # Development
-│   └── docker-compose.prod.yml  # Production
-├── scripts/
-│   ├── deploy-eb.sh             # EB deployment builder
-│   └── deploy.sh                # Docker deployment
-├── documentation/
-│   ├── openapi.yaml             # OpenAPI 3.0 spec
-│   ├── AWS-EB-DEPLOYMENT-GUIDE.md
-│   ├── DEPLOYMENT.md
-│   └── HashLHDN-API-*.postman_collection.json
-└── .github/workflows/           # CI/CD pipelines
+│   └── storage/                 # Prisma ORM + PostgreSQL
+├── sdks/                        # Generated client SDKs
+│   ├── typescript/
+│   ├── python/
+│   ├── java/
+│   └── dotnet/
+├── docker/                      # Docker Compose configs
+├── documentation/               # OpenAPI spec, deployment guides
+├── scripts/                     # Build + deploy scripts
+├── test/                        # E2E + integration tests
+└── Dockerfile                   # Multi-stage production build
 ```
 
 ---
 
-## Commands
+## Database Models
 
-### Development
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start dev server (hot reload)
-pnpm --filter @myinvois/gateway dev
-
-# Build all packages
-pnpm build
-
-# Run tests
-pnpm test
-
-# Run linting + type check + tests + build
-pnpm check
-```
-
-### Database
-
-```bash
-# Run migrations
-pnpm --filter @myinvois/storage prisma migrate dev
-
-# Generate Prisma client
-pnpm --filter @myinvois/storage prisma generate
-
-# Seed database
-pnpm --filter @myinvois/storage prisma db seed
-
-# Open Prisma Studio
-pnpm --filter @myinvois/storage prisma studio
-```
-
-### Deployment
-
-```bash
-# Build EB deployment package
-./scripts/deploy-eb.sh v1.2.0
-
-# Docker Compose deployment
-./scripts/deploy.sh deploy
-```
+| Model | Purpose |
+|-------|---------|
+| `User` | Platform user accounts |
+| `Role` | Roles with permission arrays |
+| `Company` | Multi-tenant company entities with MyInvois credentials |
+| `UserCompany` | User-Company many-to-many linking |
+| `RefreshToken` | JWT refresh token tracking |
+| `Invoice` | Invoice storage with full lifecycle |
+| `Submission` | Gateway submission tracking |
+| `SubmissionDocument` | Individual documents within submissions |
+| `IdempotencyWindow` | 10-minute deduplication window |
+| `TinValidateCache` | TIN validation result caching |
 
 ---
 
@@ -757,8 +626,6 @@ pnpm --filter @myinvois/storage prisma studio
 | 05 | Sales Tax on Low Value Goods |
 | 06 | Not Applicable |
 | E | Tax Exemption |
-
----
 
 ## State Codes
 
@@ -788,27 +655,25 @@ pnpm --filter @myinvois/storage prisma studio
 
 ### Best Practices
 
-1. **Use strong JWT secrets** (64+ hex characters)
-2. **Enable HTTPS** in production (via CloudFront or ALB)
-3. **Restrict security groups** to minimum required
-4. **Enable RDS encryption** at rest
-5. **Rotate secrets** annually
-6. **Monitor CloudWatch** for anomalies
+1. Use strong JWT secrets (64+ hex characters)
+2. Enable HTTPS in production (via reverse proxy or load balancer)
+3. Restrict database access to minimum required
+4. Enable database encryption at rest
+5. Rotate secrets regularly
+6. Monitor application logs for anomalies
 
-### CORS Configuration
+### CORS
 
-Currently configured to allow all origins:
+Currently allows all origins. To restrict, modify `apps/gateway/src/app.ts`:
 
 ```typescript
 cors({
-  origin: true,
+  origin: ["https://your-domain.com"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 })
 ```
-
-To restrict to specific domains, modify `apps/gateway/src/app.ts`.
 
 ---
 
@@ -816,102 +681,86 @@ To restrict to specific domains, modify `apps/gateway/src/app.ts`.
 
 ### Common Issues
 
-#### 401 Unauthorized
-
-- Token expired → Use `/auth/refresh` to get new token
-- Invalid token → Re-login via `/auth/login`
-
-#### 403 Forbidden
-
-- Missing permissions → Check user role permissions
-- Wrong company → User not linked to company
-
-#### 502 Bad Gateway (EB)
-
-- App failed to start → Check CloudWatch logs
-- Missing env vars → Verify EB configuration
-- Database connection → Check security groups
-
-#### Certificate Errors
-
-- File not found → Verify `SIGNING_PKCS12_PATH`
-- Invalid password → Check `SIGNING_PKCS12_PASSPHRASE`
-- S3 access denied → Check IAM permissions
+| Issue | Solution |
+|-------|----------|
+| **401 Unauthorized** | Token expired - use `/auth/refresh` for new token |
+| **403 Forbidden** | Missing permissions or user not linked to company |
+| **429 Too Many Requests** | Rate limit hit - respect `Retry-After` header |
+| **Certificate Errors** | Verify `SIGNING_PKCS12_PATH` and passphrase |
+| **Database Connection** | Check `DATABASE_URL` and PostgreSQL is running |
 
 ### Debug Commands
 
 ```bash
-# Local logs
-pnpm --filter @myinvois/gateway dev 2>&1 | tee app.log
-
-# EB logs
-eb logs hashlhdn-prod
-
-# Docker logs
-docker compose logs -f gateway
+# Local dev with verbose logging
+LOG_LEVEL=debug pnpm --filter @myinvois/gateway dev
 
 # Test health
 curl http://localhost:3000/health
+
+# Docker logs
+docker compose logs -f gateway
 ```
 
 ---
 
-## API Documentation
+## Commands Reference
 
-### Postman Collection
+```bash
+# Development
+pnpm install                              # Install all dependencies
+pnpm --filter @myinvois/gateway dev       # Start gateway (hot reload)
+pnpm build                                # Build all packages
+pnpm check                                # Lint + typecheck + test + build
 
-Import `documentation/HashLHDN-API-v1.1.2.postman_collection.json` into Postman:
+# Testing
+pnpm test                                 # Run all tests
+pnpm test -- --coverage                   # With coverage
 
-1. Open Postman
-2. Click **Import**
-3. Upload the collection file
-4. Set `baseUrl` variable to your API URL
+# Database
+pnpm --filter @myinvois/storage prisma migrate dev    # Run migrations
+pnpm --filter @myinvois/storage prisma generate       # Generate client
+pnpm --filter @myinvois/storage prisma db seed        # Seed database
+pnpm --filter @myinvois/storage prisma studio         # Open Prisma Studio
 
-### OpenAPI Specification
-
-Available at `documentation/openapi.yaml`
-
-Import into:
-- Swagger UI
-- Stoplight Studio
-- Postman
-- Any OpenAPI-compatible tool
-
----
-
-## Release History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| v1.2.1 | 2026-01-22 | Final deliverable with production URL documentation |
-| v1.2.0 | 2026-01-21 | CORS support, auto-polling, S3 certificates, production deploy |
-| v1.1.1 | 2026-01-20 | Fixed v1.1 signature format per LHDN spec |
-| v1.1.0 | 2026-01-19 | Added v1.1 digital signing |
-| v1.0.0 | 2026-01-18 | Initial HashLHDN implementation |
+# OpenAPI
+npx @stoplight/spectral-cli lint documentation/openapi.yaml
+```
 
 ---
 
-## AWS EB Deployment Changelog
+## Resources
 
-**Current Production:** `v1.0.28-cors` | **Platform:** Node.js 22 on Amazon Linux 2023
+### External References
 
-| EB Version | Date | Description |
-|------------|------|-------------|
-| v1.0.28-cors | 2026-01-21 | CORS support for all origins |
-| v1-0-27-autopoller | 2026-01-21 | Auto status polling every 30 minutes |
-| hashlhdn-v1-0-25 | 2026-01-21 | S3 certificate loading, PROD environment |
-| hashlhdn-v1-0-24b | 2026-01-21 | OpenTelemetry fixes for EB |
-| v1-0-23 | 2026-01-21 | Prisma client generation fix |
-| v1-0-22 | 2026-01-20 | Database migrations, seeding disabled |
-| v1-0-15 | 2026-01-20 | Initial EB deployment with Node.js 22 |
+- [MyInvois SDK Documentation](https://sdk.myinvois.hasil.gov.my/)
+- [Submit Documents API](https://sdk.myinvois.hasil.gov.my/einvoicingapi/02-submit-documents/)
+- [Get Submission API](https://sdk.myinvois.hasil.gov.my/einvoicingapi/06-get-submission/)
+- [Standard Error Response](https://sdk.myinvois.hasil.gov.my/standard-error-response/)
+- [JSON Digital Signature](https://sdk.myinvois.hasil.gov.my/signature-creation-json/)
+
+### Project Documentation
+
+- [OpenAPI Specification](documentation/openapi.yaml)
+- [Postman Collection](documentation/HashLHDN-API-v1.1.2.postman_collection.json)
+- [AWS EB Deployment Guide](documentation/AWS-EB-DEPLOYMENT-GUIDE.md)
+- [Docker Deployment Guide](documentation/DEPLOYMENT.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Disclaimer](DISCLAIMER.md)
 
 ---
 
-## Support
+## Contributing
 
-- **GitHub Issues:** https://github.com/shmoulana/duitlhdn/issues
-- **Documentation:** `/documentation` folder
-- **API Reference:** Postman collection
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/my-feature`)
+3. Ensure tests pass (`pnpm check`)
+4. Commit your changes
+5. Push to the branch
+6. Open a Pull Request
 
 ---
 
@@ -919,29 +768,18 @@ Import into:
 
 **Zahid Aramai** - Full-Stack Developer & System Architect
 
-Specialized in enterprise API development, e-invoicing integrations, and cloud infrastructure. Expert in Node.js, TypeScript, PostgreSQL, Redis, and AWS services.
-
-| Contact | |
-|---------|---|
-| **Email** | hello@zahidaramai.com |
-| **Phone** | +601151978879 |
+| | |
+|---|---|
 | **Website** | [zahidaramai.com](https://zahidaramai.com) |
-
-**Expertise:**
-- MyInvois / LHDN e-Invoicing Integration
-- Enterprise API Gateway Development
-- Digital Signing & Cryptography (X.509, PKCS#12)
-- AWS Infrastructure (EB, RDS, ElastiCache, S3, CloudFront)
-- High-performance Node.js Applications
+| **Email** | hello@zahidaramai.com |
+| **GitHub** | [@zahidaramai](https://github.com/zahidaramai) |
 
 ---
 
 ## License
 
-Proprietary - Hashmato / KLCUBE NETWORK Enterprise
-
-This software is developed exclusively for Hashmato under proposal PROP-HASH-001. Unauthorized use, reproduction, or distribution is prohibited.
+[MIT License](LICENSE) - see LICENSE file for details.
 
 ---
 
-**KLCUBE NETWORK Enterprise** | Developed by [Zahid Aramai](https://zahidaramai.com) for Hashmato
+**Built by [Zahid Aramai](https://zahidaramai.com)**
