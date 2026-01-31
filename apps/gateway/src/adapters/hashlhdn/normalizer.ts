@@ -80,6 +80,8 @@ export interface OriginalItem {
   taxRate?: number;
   taxAmount?: number;
   total?: number;
+  // Tax exemption reason (required when taxCode is "E", per LHDN 6 Apr 2024)
+  taxExemptionReason?: string;
   unitOfMeasure?: string;
   productCode?: string;
   classification?: string;
@@ -98,6 +100,8 @@ export interface OriginalInvoice {
   total: number;
   reference?: string;
   currency?: string;
+  // Currency exchange rate (required when currency != MYR, per LHDN 9 Aug 2025)
+  exchangeRate?: number;
   // Customer (client's original field name)
   customer?: OriginalCustomer;
   // Buyer (our internal field name - also accepted)
@@ -180,6 +184,7 @@ export function normalizeItem(item: OriginalItem): InvoiceItem {
     taxRate: item.taxRate ?? 0,
     taxAmount: item.taxAmount ?? 0,
     total: item.total ?? 0,
+    taxExemptionReason: item.taxExemptionReason,
     unitOfMeasure: item.unitOfMeasure,
     productCode: item.productCode,
     classification: item.classification,
@@ -197,7 +202,9 @@ function validateAndNormalizeDate(dateStr: string | undefined, fieldName: string
 
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) {
-    throw new Error(`Invalid ${fieldName} format. Use ISO 8601 format (e.g., 2026-01-28T12:00:00+08:00)`);
+    throw new Error(
+      `Invalid ${fieldName} format. Use ISO 8601 format (e.g., 2026-01-28T12:00:00+08:00)`
+    );
   }
 
   // Prevent dates too far in the future (typos like 2099)
@@ -226,6 +233,7 @@ export function normalizeInvoice(original: OriginalInvoice): Invoice {
     total: original.total,
     reference: original.reference,
     currency: original.currency || "MYR",
+    exchangeRate: original.exchangeRate,
     buyer: customer ? normalizeCustomerToBuyer(customer) : undefined,
     items: (original.items || []).map(normalizeItem),
   };

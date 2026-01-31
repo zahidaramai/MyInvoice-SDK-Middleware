@@ -238,6 +238,20 @@ export interface UBLJsonTaxTotal {
 }
 
 // =============================================================================
+// Exchange Rate Types
+// =============================================================================
+
+/**
+ * Tax exchange rate (required when invoice currency != MYR)
+ * Per LHDN release note 9 Aug 2025 - enforced in production since 1 Sep 2025
+ */
+export interface UBLJsonTaxExchangeRate {
+  SourceCurrencyCode: Array<UBLJsonValue<CurrencyCode>>;
+  TargetCurrencyCode: Array<UBLJsonValue<CurrencyCode>>;
+  CalculationRate: UBLJsonNumeric;
+}
+
+// =============================================================================
 // Payment Types
 // =============================================================================
 
@@ -462,6 +476,7 @@ export interface UBLJsonInvoiceContentV1_0 {
   }>;
   DocumentCurrencyCode: Array<UBLJsonValue<CurrencyCode>>;
   TaxCurrencyCode?: Array<UBLJsonValue<CurrencyCode>>;
+  TaxExchangeRate?: UBLJsonTaxExchangeRate[];
   InvoicePeriod?: UBLJsonInvoicePeriod[];
   BillingReference?: UBLJsonBillingReference[];
   AdditionalDocumentReference?: UBLJsonAdditionalDocumentReference[];
