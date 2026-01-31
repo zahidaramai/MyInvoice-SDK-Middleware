@@ -9,10 +9,34 @@ export default defineConfig({
       "**/node_modules/**",
       "**/dist/**",
       "**/sdks/**", // Exclude generated SDKs
+      "**/.deploy/**", // Exclude deployment builds
     ],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html"],
+      reporter: ["text", "text-summary", "json", "html"],
+      include: [
+        "apps/gateway/src/**/*.ts",
+        "apps/worker/src/**/*.ts",
+        "packages/core/src/**/*.ts",
+        "packages/storage/src/**/*.ts",
+        "packages/signing/src/**/*.ts",
+        "packages/contracts/src/**/*.ts",
+        "packages/myinvois-client/src/**/*.ts",
+      ],
+      exclude: [
+        "**/*.test.ts",
+        "**/*.d.ts",
+        "**/index.ts", // Re-export files
+        "**/types.ts", // Type-only files
+        "**/sdks/**",
+        "**/models/**", // Generated SDK models
+        "**/apis/**", // Generated SDK APIs
+        "**/server.ts", // Entry points
+        "**/main.ts", // Entry points
+        "apps/gateway/src/config.ts", // Config loading
+        "apps/gateway/src/config/**", // Config files
+        "packages/myinvois-client/src/*-client.ts", // Auto-generated clients
+      ],
     },
     // Global setup for Testcontainers (E2E tests)
     // Set SKIP_TESTCONTAINERS=true to skip for unit tests only

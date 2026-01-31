@@ -9,6 +9,7 @@ import { resolveSystemBaseUrl, type RateLimiter } from "@myinvois/core";
 import type { SessionCredentials, UpstreamMeta, UpstreamError } from "../types.js";
 import { TokenManager } from "../tokenManager.js";
 import { RATE_LIMITS } from "../rateLimits.js";
+import { extractUpstreamMeta } from "../utils/extractUpstreamMeta.js";
 import type {
   SubmitDocumentsRequest,
   SubmitDocumentsResponse,
@@ -28,27 +29,6 @@ function createTimeoutController(timeoutMs: number): { controller: AbortControll
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   return { controller, timeoutId };
-}
-
-/**
- * Extract upstream metadata from response headers
- */
-function extractUpstreamMeta(headers: Headers): UpstreamMeta {
-  const meta: UpstreamMeta = {};
-
-  const correlationId = headers.get("correlationid") || headers.get("x-correlation-id");
-  if (correlationId) meta.correlationId = correlationId;
-
-  const limit = headers.get("x-rate-limit-limit");
-  if (limit) meta.rateLimitLimit = parseInt(limit, 10);
-
-  const remaining = headers.get("x-rate-limit-remaining");
-  if (remaining) meta.rateLimitRemaining = parseInt(remaining, 10);
-
-  const reset = headers.get("x-rate-limit-reset");
-  if (reset) meta.rateLimitReset = parseInt(reset, 10);
-
-  return meta;
 }
 
 /**
@@ -88,11 +68,38 @@ function normalizeAccepted(
 function normalizeRejected(
   docs: SubmitDocumentsUpstreamResponse["rejectedDocuments"]
 ): NormalizedRejectedDocument[] {
-  return docs.map((d) => ({
-    codeNumber: d.invoiceCodeNumber,
-    errorCode: d.error?.code,
-    errorMessage: d.error?.message,
-  }));
+  return docs.map((d) => {
+    // Collect all available error details
+    const errorDetails: Array<{ code?: string; message?: string; target?: string; propertyName?: string; propertyPath?: string }> = [];
+
+    // Include base error info if it has details beyond code/message
+    if (d.error?.target || d.error?.propertyName || d.error?.propertyPath) {
+      errorDetails.push({
+        code: d.error.code,
+        message: d.error.message,
+        target: d.error.target,
+        propertyName: d.error.propertyName,
+        propertyPath: d.error.propertyPath,
+      });
+    }
+
+    // Include nested details
+    if (d.error?.details?.length) {
+      errorDetails.push(...d.error.details);
+    }
+
+    // Include innerError details
+    if (d.error?.innerError?.length) {
+      errorDetails.push(...d.error.innerError);
+    }
+
+    return {
+      codeNumber: d.invoiceCodeNumber,
+      errorCode: d.error?.code,
+      errorMessage: d.error?.message,
+      errorDetails: errorDetails.length > 0 ? errorDetails : undefined,
+    };
+  });
 }
 
 export interface SubmitDocumentsOptions {
@@ -202,9 +209,9 @@ export async function submitDocuments(
         if (typeof errorBody.code === "string") {
           errorCode = errorBody.code;
         }
-        // Check for duplicate submission
+        // P2-19: Case-insensitive check for duplicate submission
         if (
-          errorCode === "DuplicateSubmission" ||
+          errorCode?.toLowerCase() === "duplicatesubmission" ||
           errorMessage.toLowerCase().includes("duplicate")
         ) {
           errorCode = "DUPLICATE_SUBMISSION";
@@ -245,6 +252,25 @@ export async function submitDocuments(
     if (response.status === 401) {
       const refreshResult = await tokenManager.refreshToken(session);
       if (refreshResult.ok) {
+        // P1-11: Re-check rate limit before retry to prevent bypass
+        if (rateLimiter) {
+          const retryRateResult = rateLimiter.consume(session.clientId, RATE_LIMITS.SUBMIT);
+          if (!retryRateResult.allowed) {
+            return {
+              ok: false,
+              error: {
+                status: 429,
+                message: "Submit rate limit exceeded on retry",
+                code: "RATE_LIMIT_EXCEEDED",
+                meta: {
+                  rateLimitLimit: retryRateResult.limit,
+                  rateLimitRemaining: retryRateResult.remaining,
+                },
+              },
+            };
+          }
+        }
+
         // Retry with new token and fresh timeout
         const { controller: retryController, timeoutId: retryTimeoutId } = createTimeoutController(DEFAULT_TIMEOUT_MS);
         headers.Authorization = `Bearer ${refreshResult.token.accessToken}`;

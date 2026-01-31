@@ -5,6 +5,14 @@ import { generateDocumentHash, canonicalizeDocument } from './hash.js';
 import { SignatureGenerationError } from './errors.js';
 
 /**
+ * Format a date as ISO string without milliseconds
+ * Official LHDN format: "2025-04-15T01:58:17Z" (no milliseconds)
+ */
+function formatSigningTime(date: Date): string {
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+/**
  * UBL Signature URIs
  */
 export const SIGNATURE_URIS = {
@@ -18,14 +26,12 @@ export const SIGNATURE_URIS = {
 
 /**
  * Create the SignedInfo structure in MyInvois UBL JSON array format
- *
- * Per official LHDN sample, Reference order must be:
- * 1. SignedProperties reference (Type: http://uri.etsi.org/01903/v1.3.2#SignedProperties)
- * 2. Document reference (Type: '', URI: '')
- *
- * IMPORTANT: Use static IDs without timestamps per official LHDN sample
  */
 function createSignedInfoUBL(digestValue: string, propsDigest: string, _timestamp: string): unknown[] {
+  // Match official LHDN sample structure:
+  // - SignedProperties reference FIRST, document reference SECOND
+  // - No Id fields in references
+  // - Type comes before URI in each reference
   return [
     {
       SignatureMethod: [
@@ -35,7 +41,7 @@ function createSignedInfoUBL(digestValue: string, propsDigest: string, _timestam
         }
       ],
       Reference: [
-        // First: SignedProperties reference
+        // First reference: SignedProperties (per official sample)
         {
           Type: 'http://uri.etsi.org/01903/v1.3.2#SignedProperties',
           URI: '#id-xades-signed-props',
@@ -47,7 +53,7 @@ function createSignedInfoUBL(digestValue: string, propsDigest: string, _timestam
           ],
           DigestValue: [{ _: propsDigest }]
         },
-        // Second: Document reference
+        // Second reference: Document (per official sample)
         {
           Type: '',
           URI: '',
@@ -113,7 +119,7 @@ function createKeyInfoUBL(
 
 /**
  * Create the QualifyingProperties structure in MyInvois UBL JSON array format
- * Per official LHDN sample, use static IDs without timestamps
+ * Per official LHDN sample, this uses QualifyingProperties (not XadesQualifyingProperties)
  */
 function createQualifyingPropertiesUBL(
   signingTime: Date,
@@ -164,20 +170,8 @@ function createQualifyingPropertiesUBL(
 }
 
 /**
- * Format signing time without milliseconds
- * MyInvois expects format: 2026-01-20T05:46:25Z (not 2026-01-20T05:46:25.123Z)
- */
-function formatSigningTime(date: Date): string {
-  return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
-}
-
-/**
- * Create the full QualifyingProperties structure for hashing (to generate propsDigest)
- *
- * IMPORTANT: Per LHDN SDK documentation, the propsDigest must be calculated from the
- * full QualifyingProperties structure including the Target attribute, NOT just SignedProperties.
- *
- * Use static IDs without timestamps per official LHDN sample
+ * Create the QualifyingProperties structure for hashing (to generate propsDigest)
+ * Per LHDN SDK: Hash the full QualifyingProperties including Target wrapper
  */
 function createQualifyingPropertiesForHashing(
   signingTime: Date,
@@ -185,6 +179,9 @@ function createQualifyingPropertiesForHashing(
   certInfo: CertificateInfo,
   _timestamp: string
 ): Record<string, unknown> {
+  // Per LHDN SDK documentation: The propsDigest is calculated by hashing
+  // the full QualifyingProperties structure (Target + SignedProperties),
+  // NOT just the SignedProperties alone
   return {
     Target: 'signature',
     SignedProperties: [
@@ -227,15 +224,6 @@ function createQualifyingPropertiesForHashing(
 
 /**
  * Create the complete signature block in MyInvois UBL JSON format
- *
- * Per official LHDN sample, the element order must be:
- * 1. Id
- * 2. Object (containing QualifyingProperties)
- * 3. KeyInfo
- * 4. SignatureValue
- * 5. SignedInfo
- *
- * IMPORTANT: Use static ID 'signature' per official LHDN sample
  */
 export function createSignatureBlock(
   digestValue: string,
@@ -263,8 +251,6 @@ export function createSignatureBlock(
       subject: certInfo.subject.raw
     },
     signingTime: formatSigningTime(signingTime),
-    // Element order per official LHDN sample: Id, Object, KeyInfo, SignatureValue, SignedInfo
-    // Use static ID 'signature' per official LHDN sample
     _raw: {
       Id: 'signature',
       Object: [
@@ -451,14 +437,15 @@ export function sign(
   // Step 2: Calculate certificate digest (SHA256 of DER certificate, base64)
   const certDigestBase64 = calculateCertificateDigest(certPem);
 
-  // Step 3: Create full QualifyingProperties (Target + SignedProperties) and calculate its digest
-  // IMPORTANT: Per LHDN SDK, hash the full QualifyingProperties structure, NOT just SignedProperties
+  // Step 3: Create QualifyingProperties and calculate its digest
+  // Per LHDN SDK: Hash the full QualifyingProperties (Target + SignedProperties)
   const qualifyingProps = createQualifyingPropertiesForHashing(signingTime, certDigestBase64, certInfo, timestamp);
   const qualifyingPropsJson = JSON.stringify(qualifyingProps);
   const propsDigest = crypto.createHash('sha256').update(qualifyingPropsJson, 'utf8').digest('base64');
 
-  // Step 4: Sign the document bytes (canonicalized document)
-  // Per MyInvois, sign the minified document JSON, not SignedInfo
+  // Step 4: Sign the canonicalized document
+  // Per MyInvois SDK, the signature is created by signing the document bytes
+  // using RSA-SHA256 (which internally hashes the document with SHA256)
   const docBytesToSign = canonicalizeDocument(document);
   const signatureValue = signData(docBytesToSign, privateKey);
 

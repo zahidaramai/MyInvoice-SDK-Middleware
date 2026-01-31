@@ -97,22 +97,22 @@ function removeSignatureExtension(doc: Record<string, unknown>): Record<string, 
 /**
  * Canonicalize a document for consistent hashing
  *
- * This function:
- * 1. Removes the UBLExtensions (signature block location)
- * 2. Serializes to JSON without whitespace
+ * Per MyInvois SDK specification, JSON documents are canonicalized by:
+ * 1. Removing UBLExtensions and Signature blocks
+ * 2. Minifying by removing whitespaces, line breaks, and comments
  *
- * Per LHDN MyInvois SDK documentation, the document hash should use standard
- * JSON.stringify() output WITHOUT key sorting. This differs from some XML
- * canonicalization standards.
+ * IMPORTANT: Keys are NOT sorted. MyInvois expects JSON.stringify() order.
+ * See: https://sdk.myinvois.hasil.gov.my/signature-creation/
  *
  * @param document - The document to canonicalize
- * @returns Canonicalized JSON string
+ * @returns Canonicalized JSON string (minified, no key sorting)
  */
 export function canonicalizeDocument(document: Record<string, unknown>): string {
-  // Remove signature extension
+  // Remove signature extension (UBLExtensions and Signature blocks)
   const docWithoutSig = removeSignatureExtension(document);
 
-  // Serialize without whitespace - NO key sorting per MyInvois SDK spec
+  // Serialize without whitespace - NO KEY SORTING per MyInvois spec
+  // JSON.stringify already produces minified output without whitespace
   return JSON.stringify(docWithoutSig);
 }
 

@@ -9,6 +9,56 @@ import { disconnectPrisma, resetPrismaClient } from "@myinvois/storage";
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
+// In-memory cache for mocking TIN validation cache
+const mockTinCache = new Map<string, {
+  result: string;
+  taxpayerName?: string;
+  expiresAt: Date;
+  correlationId?: string;
+}>();
+
+// Mock the TIN cache storage functions (Prisma not available in unit tests)
+vi.mock("@myinvois/storage", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@myinvois/storage")>();
+  return {
+    ...original,
+    getTinValidateCache: vi.fn().mockImplementation(async (input: {
+      env: string;
+      sessionId: string;
+      tin: string;
+      idType: string;
+      idValueHash: string;
+    }) => {
+      const key = `${input.env}:${input.sessionId}:${input.tin}:${input.idType}:${input.idValueHash}`;
+      const cached = mockTinCache.get(key);
+      if (cached && cached.expiresAt > new Date()) {
+        return cached;
+      }
+      return null;
+    }),
+    setTinValidateCache: vi.fn().mockImplementation(async (input: {
+      env: string;
+      sessionId: string;
+      tin: string;
+      idType: string;
+      idValueHash: string;
+      result: string;
+      taxpayerName?: string;
+      expiresAt: Date;
+      correlationId?: string;
+    }) => {
+      const key = `${input.env}:${input.sessionId}:${input.tin}:${input.idType}:${input.idValueHash}`;
+      mockTinCache.set(key, {
+        result: input.result,
+        taxpayerName: input.taxpayerName,
+        expiresAt: input.expiresAt,
+        correlationId: input.correlationId,
+      });
+      return input;
+    }),
+  };
+});
+
 describe("Taxpayer Routes", () => {
   let app: FastifyInstance;
   let sessionId: string;
@@ -16,6 +66,7 @@ describe("Taxpayer Routes", () => {
   beforeEach(async () => {
     // Reset all mocks and instances
     mockFetch.mockReset();
+    mockTinCache.clear();
     resetInstances();
     sessionStore.clear();
 

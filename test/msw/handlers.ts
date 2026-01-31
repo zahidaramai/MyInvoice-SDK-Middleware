@@ -294,50 +294,58 @@ const changeDocumentStateHandler = http.put(
 
 // === Get Document Details Handler ===
 
-const getDocumentDetailsHandler = http.get(
-  `${SANDBOX_BASE_URL}/api/v1.0/documents/:uuid/details`,
-  async ({ params, request }) => {
-    if (mockState.isRateLimited("getDetails")) {
-      return rateLimitedResponse();
-    }
+// Helper function for document details response
+function createDocumentDetailsResponse(params: { uuid: string }, request: Request) {
+  if (mockState.isRateLimited("getDetails")) {
+    return rateLimitedResponse();
+  }
 
-    if (!validateToken(request)) {
-      return unauthorizedResponse();
-    }
+  if (!validateToken(request)) {
+    return unauthorizedResponse();
+  }
 
-    const { uuid } = params;
-    const doc = mockState.getDocument(uuid as string);
+  const { uuid } = params;
+  const doc = mockState.getDocument(uuid as string);
 
-    if (!doc) {
-      return HttpResponse.json(
-        { message: "Document not found", code: "DocumentNotFound" },
-        { status: 404, headers: correlationHeaders() }
-      );
-    }
-
+  if (!doc) {
     return HttpResponse.json(
-      {
-        uuid: doc.uuid,
-        submissionUid: doc.submissionUid,
-        longId: doc.longId,
-        internalId: doc.codeNumber,
-        typeName: "01", // Invoice
-        issuerTin: doc.issuerTin,
-        issuerName: doc.issuerName,
-        receiverId: doc.receiverId,
-        receiverName: doc.receiverName,
-        dateTimeIssued: doc.dateTimeIssued,
-        dateTimeReceived: doc.dateTimeReceived,
-        dateTimeValidated: doc.dateTimeValidated,
-        totalPayableAmount: doc.totalPayableAmount,
-        status: doc.status,
-        cancelDateTime: doc.cancelDateTime,
-        rejectDateTime: doc.rejectDateTime,
-        documentStatusReason: doc.statusReason,
-      },
-      { status: 200, headers: correlationHeaders() }
+      { message: "Document not found", code: "DocumentNotFound" },
+      { status: 404, headers: correlationHeaders() }
     );
   }
+
+  return HttpResponse.json(
+    {
+      uuid: doc.uuid,
+      submissionUid: doc.submissionUid,
+      longId: doc.longId,
+      internalId: doc.codeNumber,
+      typeName: "01", // Invoice
+      issuerTin: doc.issuerTin,
+      issuerName: doc.issuerName,
+      receiverId: doc.receiverId,
+      receiverName: doc.receiverName,
+      dateTimeIssued: doc.dateTimeIssued,
+      dateTimeReceived: doc.dateTimeReceived,
+      dateTimeValidated: doc.dateTimeValidated,
+      totalPayableAmount: doc.totalPayableAmount,
+      status: doc.status,
+      cancelDateTime: doc.cancelDateTime,
+      rejectDateTime: doc.rejectDateTime,
+      documentStatusReason: doc.statusReason,
+    },
+    { status: 200, headers: correlationHeaders() }
+  );
+}
+
+const getDocumentDetailsHandler = http.get(
+  `${SANDBOX_BASE_URL}/api/v1.0/documents/:uuid/details`,
+  async ({ params, request }) => createDocumentDetailsResponse(params as { uuid: string }, request)
+);
+
+const prodGetDocumentDetailsHandler = http.get(
+  `${PROD_BASE_URL}/api/v1.0/documents/:uuid/details`,
+  async ({ params, request }) => createDocumentDetailsResponse(params as { uuid: string }, request)
 );
 
 // === Validate TIN Handler ===
@@ -395,6 +403,7 @@ export const handlers = [
   // Document actions
   changeDocumentStateHandler,
   getDocumentDetailsHandler,
+  prodGetDocumentDetailsHandler,
 
   // Taxpayer validation
   validateTinHandler,
@@ -407,5 +416,6 @@ export {
   getSubmissionHandler,
   changeDocumentStateHandler,
   getDocumentDetailsHandler,
+  prodGetDocumentDetailsHandler,
   validateTinHandler,
 };

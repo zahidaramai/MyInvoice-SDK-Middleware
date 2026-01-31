@@ -1,0 +1,1779 @@
+{
+  "info": {
+    "_postman_id": "duitlhdn-api-collection-2026",
+    "name": "DuitLHDN API - Complete Collection",
+    "description": "Comprehensive API collection for DuitLHDN MyInvois Middleware.\n\n## Variable Naming Convention\n- `baseUrl` - API base URL\n- `accessToken` - JWT access token (15min expiry)\n- `refreshToken` - JWT refresh token (7 days expiry)\n- `posToken` - Long-lived POS token (10 years)\n- `companyId` - Company UUID\n- `trackingId` - Internal tracking ID (e.g., HASH-abc123)\n- `myinvoisUuid` - MyInvois document UUID (26 chars)\n- `myinvoisLongId` - MyInvois long ID for sharing\n- `posInvoiceId` - POS invoice ID for QR (e.g., BP-12345678)\n- `invoiceNumber` - Original invoice number\n\n## Authentication\nMost endpoints require Bearer token authentication.\nPOS endpoints use long-lived tokens.\nPublic endpoints require no authentication.\n\n## Environments\n- Production: https://api.duitlhdn.com\n- Local: http://localhost:3000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.duitlhdn.com",
+      "type": "string",
+      "description": "API Base URL"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT Access Token (15min expiry)"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT Refresh Token (7 days expiry)"
+    },
+    {
+      "key": "posToken",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJoYXNobWF0by1wb3MiLCJwZXJtaXNzaW9ucyI6WyJzdWJtaXQ6aW52b2ljZSJdLCJ0eXBlIjoicG9zIiwiaWF0IjoxNzY5NDkwOTYxLCJleHAiOjIwODQ4NTA5NjF9.PpqVjpSQPcWbxgnl1g5x-C2G1pMRc1q78JrX2VbdvNU",
+      "type": "string",
+      "description": "Long-lived POS Token (10 years expiry)"
+    },
+    {
+      "key": "companyId",
+      "value": "bc1151e6-b7a6-469e-864d-e5c77ebed3d8",
+      "type": "string",
+      "description": "Company UUID"
+    },
+    {
+      "key": "trackingId",
+      "value": "",
+      "type": "string",
+      "description": "Internal Tracking ID (e.g., HASH-abc123)"
+    },
+    {
+      "key": "myinvoisUuid",
+      "value": "",
+      "type": "string",
+      "description": "MyInvois Document UUID (26 chars)"
+    },
+    {
+      "key": "myinvoisLongId",
+      "value": "",
+      "type": "string",
+      "description": "MyInvois Long ID for sharing"
+    },
+    {
+      "key": "posInvoiceId",
+      "value": "",
+      "type": "string",
+      "description": "POS Invoice ID for QR code (e.g., BP-12345678)"
+    },
+    {
+      "key": "invoiceNumber",
+      "value": "",
+      "type": "string",
+      "description": "Original Invoice Number"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "User UUID"
+    },
+    {
+      "key": "roleId",
+      "value": "",
+      "type": "string",
+      "description": "Role UUID"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "description": "User authentication and token management",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('accessToken', response.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', response.refreshToken);",
+                  "    if (response.user && response.user.companyId) {",
+                  "        pm.collectionVariables.set('companyId', response.user.companyId);",
+                  "    }",
+                  "    console.log('Tokens saved to collection variables');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hashlhdn.com\",\n  \"password\": \"admin123\",\n  \"companyId\": \"{{companyId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate user and get access/refresh tokens.\n\n**Response includes:**\n- `accessToken` - JWT for API calls (15min expiry)\n- `refreshToken` - For token renewal (7 days expiry)\n- `user` - User details with permissions"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('accessToken', response.accessToken);",
+                  "    if (response.refreshToken) {",
+                  "        pm.collectionVariables.set('refreshToken', response.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Get new access token using refresh token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            },
+            "description": "Get current authenticated user details."
+          },
+          "response": []
+        },
+        {
+          "name": "Switch Company",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('accessToken', response.accessToken);",
+                  "    pm.collectionVariables.set('companyId', response.companyId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/switch-company",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "switch-company"]
+            },
+            "description": "Switch to a different company context."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate POS Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('posToken', response.token);",
+                  "    console.log('POS Token saved (10 years expiry)');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"POS Terminal 1\",\n  \"companyId\": \"{{companyId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/pos-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "pos-token"]
+            },
+            "description": "Generate long-lived POS token (10 years).\n\n**Requires:** `manage:companies` permission"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\",\n  \"all\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Invalidate refresh token. Set `all: true` to revoke all sessions."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Company Management",
+      "description": "Company CRUD operations.\n\n**Required Permission:** `manage:companies`",
+      "item": [
+        {
+          "name": "List Companies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "isActive", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "List companies with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Companies (Dropdown)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", "all"]
+            },
+            "description": "Get all active companies for dropdown selection."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Company",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('companyId', response.id);",
+                  "    console.log('Company ID saved:', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Company Sdn Bhd\",\n  \"tin\": \"C24558460090\",\n  \"idType\": \"BRN\",\n  \"idValue\": \"201501009208\",\n  \"address\": \"123 Jalan Example\",\n  \"city\": \"Kuala Lumpur\",\n  \"state\": \"14\",\n  \"postalCode\": \"50000\",\n  \"country\": \"MYS\",\n  \"phone\": \"03-1234-5678\",\n  \"email\": \"contact@example.com\",\n  \"industryCode\": \"66191\",\n  \"industryName\": \"Wholesales and Retail\",\n  \"myinvoisEnv\": \"PROD\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies"]
+            },
+            "description": "Create a new company.\n\n**Field Mapping:**\n- `name` or `companyName`\n- `address` or `address1`\n- `state` or `stateCode`"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Company (Legacy Format)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('companyId', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tin\": \"C24558460090\",\n  \"companyName\": \"B POINT STATION SDN. BHD\",\n  \"address1\": \"NO. 9022, JALAN DATO ABDULLAH TAHIR\",\n  \"email\": \"contact@bpoint.com\",\n  \"telephone\": \"0392211334\",\n  \"city\": \"JOHOR BAHRU\",\n  \"postalCode\": \"56290\",\n  \"stateCode\": \"14\",\n  \"industry1\": \"66191\",\n  \"industryCode1\": \"Wholesales and Retail\",\n  \"country\": \"MYS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", "create"]
+            },
+            "description": "Create company using legacy/original format with PascalCase fields."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Company by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", "{{companyId}}"]
+            },
+            "description": "Get company details by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Company Name\",\n  \"phone\": \"03-9999-8888\",\n  \"email\": \"updated@example.com\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", "{{companyId}}"]
+            },
+            "description": "Update company details."
+          },
+          "response": []
+        },
+        {
+          "name": "Update MyInvois Credentials",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"myinvoisClientId\": \"your-client-id\",\n  \"myinvoisClientSecret\": \"your-client-secret\",\n  \"myinvoisEnv\": \"PROD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/credentials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", "{{companyId}}", "credentials"]
+            },
+            "description": "Update company's MyInvois API credentials.\n\n**Note:** In ERP mode, per-company credentials are optional."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. User Management",
+      "description": "User CRUD operations.\n\n**Required Permission:** `manage:users`",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "roleId", "value": "", "disabled": true },
+                { "key": "isActive", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "List users with pagination and filters."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('userId', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123\",\n  \"name\": \"New User\",\n  \"roleId\": \"{{roleId}}\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"]
+            },
+            "description": "Create a new user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "Get user details by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "Update user details."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "Delete user by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Link User to Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}", "companies", "{{companyId}}"]
+            },
+            "description": "Assign user to a company."
+          },
+          "response": []
+        },
+        {
+          "name": "Unlink User from Company",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}", "companies", "{{companyId}}"]
+            },
+            "description": "Remove user from company."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Role Management",
+      "description": "Role CRUD operations.\n\n**Required Permission:** `manage:roles`",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "List roles with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Roles (Dropdown)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", "all"]
+            },
+            "description": "Get all roles for dropdown selection."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('roleId', response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invoice Submitter\",\n  \"description\": \"Can submit and view invoices\",\n  \"permissions\": [\n    \"submit:invoice\",\n    \"read:documents\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles"]
+            },
+            "description": "Create a new role.\n\n**Available Permissions:**\n- `submit:invoice`\n- `read:documents`\n- `cancel:documents`\n- `manage:users`\n- `manage:roles`\n- `manage:companies`"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", "{{roleId}}"]
+            },
+            "description": "Get role details by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Role Name\",\n  \"permissions\": [\n    \"submit:invoice\",\n    \"read:documents\",\n    \"cancel:documents\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", "{{roleId}}"]
+            },
+            "description": "Update role details."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", "{{roleId}}"]
+            },
+            "description": "Delete role by ID.\n\n**Note:** Fails if users are assigned to this role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Invoice Submission",
+      "description": "Submit invoices to MyInvois LHDN.\n\n**Required Permission:** `submit:invoice`",
+      "item": [
+        {
+          "name": "Submit Consolidated (B2C Daily Sales)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('invoiceNumber', response.invoiceNumber);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "    if (response.myinvoisUuid) {",
+                  "        pm.collectionVariables.set('myinvoisUuid', response.myinvoisUuid);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"documentVersion\": \"1.1\",\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"CONS-001\",\n      \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n      \"amount\": 100.00,\n      \"discount\": 0,\n      \"rounding\": 0,\n      \"taxAmount\": 0,\n      \"total\": 100.00,\n      \"items\": [\n        {\n          \"description\": \"Daily Sales - Walk-in Customers\",\n          \"quantity\": 10,\n          \"unitPrice\": 10.00,\n          \"discount\": 0,\n          \"taxCode\": \"06\",\n          \"taxRate\": 0,\n          \"taxAmount\": 0,\n          \"total\": 100.00\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-consolidate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-consolidate"]
+            },
+            "description": "Submit consolidated invoice (multiple small sales combined into one e-invoice).\n\n**Use for:** Daily B2C sales without buyer details.\n\n**Response:**\n- `trackingId` - Internal tracking ID\n- `invoiceNumber` - Your invoice number\n- `posInvoiceId` - QR code ID\n- `status` - SUBMITTING/SUBMITTED"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit B2B (Buyer with TIN + BRN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('invoiceNumber', response.invoiceNumber);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"documentVersion\": \"1.1\",\n  \"invoice\": {\n    \"invoiceNumber\": \"BUYER-001\",\n    \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n    \"amount\": 1000.00,\n    \"discount\": 0,\n    \"rounding\": 0,\n    \"taxAmount\": 60.00,\n    \"total\": 1060.00,\n    \"buyer\": {\n      \"tin\": \"C25235029040\",\n      \"name\": \"Buyer Company Sdn Bhd\",\n      \"idType\": \"BRN\",\n      \"idValue\": \"20170104319\",\n      \"address\": \"16A, Jalan SS 25/23\",\n      \"city\": \"Petaling Jaya\",\n      \"state\": \"10\",\n      \"postalCode\": \"47301\",\n      \"country\": \"MYS\",\n      \"phone\": \"0163218549\",\n      \"email\": \"buyer@company.com\"\n    },\n    \"items\": [\n      {\n        \"description\": \"Professional Services\",\n        \"quantity\": 1,\n        \"unitPrice\": 1000.00,\n        \"discount\": 0,\n        \"taxCode\": \"01\",\n        \"taxRate\": 6,\n        \"taxAmount\": 60.00,\n        \"total\": 1060.00\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-buyer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-buyer"]
+            },
+            "description": "Submit B2B invoice with buyer TIN and BRN.\n\n**Required buyer fields:**\n- `tin` - Buyer's Tax ID\n- `idType` - Must be \"BRN\"\n- `idValue` - Business Registration Number"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Personal (B2C with NRIC)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('invoiceNumber', response.invoiceNumber);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"documentVersion\": \"1.1\",\n  \"invoice\": {\n    \"invoiceNumber\": \"PERSONAL-001\",\n    \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n    \"amount\": 500.00,\n    \"discount\": 0,\n    \"rounding\": 0,\n    \"taxAmount\": 30.00,\n    \"total\": 530.00,\n    \"buyer\": {\n      \"name\": \"Ahmad bin Abdullah\",\n      \"idType\": \"NRIC\",\n      \"idValue\": \"801025145127\",\n      \"address\": \"123 Jalan Merdeka\",\n      \"city\": \"Kuala Lumpur\",\n      \"state\": \"14\",\n      \"postalCode\": \"50000\",\n      \"country\": \"MYS\",\n      \"phone\": \"0123456789\",\n      \"email\": \"ahmad@email.com\"\n    },\n    \"items\": [\n      {\n        \"description\": \"Consumer Product\",\n        \"quantity\": 1,\n        \"unitPrice\": 500.00,\n        \"discount\": 0,\n        \"taxCode\": \"01\",\n        \"taxRate\": 6,\n        \"taxAmount\": 30.00,\n        \"total\": 530.00\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-personal",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-personal"]
+            },
+            "description": "Submit B2C invoice with buyer NRIC.\n\n**Required buyer fields:**\n- `name` - Buyer's full name\n- `idType` - Must be \"NRIC\"\n- `idValue` - IC Number (12 digits)"
+          },
+          "response": []
+        },
+        {
+          "name": "Save Draft (JustSave)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('invoiceNumber', response.invoiceNumber);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"invoice\": {\n    \"invoiceNumber\": \"DRAFT-001\",\n    \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n    \"amount\": 50.00,\n    \"discount\": 0,\n    \"rounding\": 0,\n    \"taxAmount\": 3.00,\n    \"total\": 53.00,\n    \"items\": [\n      {\n        \"description\": \"Sample Item\",\n        \"quantity\": 1,\n        \"unitPrice\": 50.00,\n        \"discount\": 0,\n        \"taxCode\": \"01\",\n        \"taxRate\": 6,\n        \"taxAmount\": 3.00,\n        \"total\": 53.00\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-justsave",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-justsave"]
+            },
+            "description": "Save invoice as DRAFT without submitting to MyInvois.\n\n**Use for:**\n- POS transactions awaiting buyer registration\n- Invoices to be consolidated later\n\n**Status:** DRAFT"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Draft to MyInvois",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.myinvoisUuid) {",
+                  "        pm.collectionVariables.set('myinvoisUuid', response.myinvoisUuid);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentVersion\": \"1.1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{trackingId}}/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{trackingId}}", "submit"]
+            },
+            "description": "Submit a saved DRAFT invoice to MyInvois.\n\n**Workflow:**\n1. Create draft with `/submit-justsave`\n2. Submit draft with this endpoint\n3. Poll status until VALID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Unified Submit (Legacy Format)",
+      "description": "Client's original format with flags and PascalCase fields.\n\nThe normalizer automatically converts to internal format.",
+      "item": [
+        {
+          "name": "Unified Submit - Consolidated",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('invoiceNumber', response.invoiceNumber);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"ConsolidatedInvoice\": true,\n  \"documentVersion\": \"1.1\",\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"CONSO-001\",\n      \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n      \"amount\": 33.00,\n      \"discount\": 0,\n      \"rounding\": 0,\n      \"taxAmount\": 2.64,\n      \"total\": 35.64,\n      \"items\": [\n        {\n          \"description\": \"Americano\",\n          \"quantity\": 2,\n          \"unitPrice\": 12.00,\n          \"discount\": 0,\n          \"taxCode\": \"02\",\n          \"taxRate\": 8,\n          \"taxAmount\": 1.92,\n          \"total\": 25.92\n        },\n        {\n          \"description\": \"Croissant\",\n          \"quantity\": 1,\n          \"unitPrice\": 9.00,\n          \"discount\": 0,\n          \"taxCode\": \"02\",\n          \"taxRate\": 8,\n          \"taxAmount\": 0.72,\n          \"total\": 9.72\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit"]
+            },
+            "description": "Unified submit with `ConsolidatedInvoice: true` flag.\n\n**Auto-detection:**\n- `ConsolidatedInvoice: true` → Consolidated\n- `SaveInvoice: true` → Draft\n- `buyer.idType: BRN` → B2B\n- `buyer.idType: NRIC` → Personal"
+          },
+          "response": []
+        },
+        {
+          "name": "Unified Submit - Save Draft",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"SaveInvoice\": true,\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"SAVE-001\",\n      \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n      \"amount\": 27.80,\n      \"discount\": 0,\n      \"rounding\": 0,\n      \"taxAmount\": 1.57,\n      \"total\": 29.37,\n      \"items\": [\n        {\n          \"description\": \"Coffee\",\n          \"quantity\": 2,\n          \"unitPrice\": 13.90,\n          \"discount\": 0,\n          \"taxCode\": \"02\",\n          \"taxRate\": 6,\n          \"taxAmount\": 1.57,\n          \"total\": 29.37\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit"]
+            },
+            "description": "Unified submit with `SaveInvoice: true` flag.\n\nSaves as DRAFT without MyInvois submission."
+          },
+          "response": []
+        },
+        {
+          "name": "Unified Submit - B2B (Legacy Format)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"documentVersion\": \"1.1\",\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"BUYER-001\",\n      \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n      \"amount\": 1000.00,\n      \"discount\": 0,\n      \"rounding\": 0,\n      \"taxAmount\": 60.00,\n      \"total\": 1060.00,\n      \"customer\": {\n        \"Tin\": \"C25235029040\",\n        \"Name\": \"Dinesoft Sdn Bhd\",\n        \"Address1\": \"16A & 16B, Jalan SS 25/23\",\n        \"PostalCode\": \"47301\",\n        \"City\": \"Selangor\",\n        \"StateCode\": \"10\",\n        \"Telephone\": \"0163218549\",\n        \"IdType\": \"BRN\",\n        \"IdValue\": \"20170104319\"\n      },\n      \"items\": [\n        {\n          \"description\": \"Professional Services\",\n          \"quantity\": 1,\n          \"unitPrice\": 1000.00,\n          \"discount\": 0,\n          \"taxCode\": \"01\",\n          \"taxRate\": 6,\n          \"taxAmount\": 60.00,\n          \"total\": 1060.00\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit"]
+            },
+            "description": "Unified submit with `customer` object (PascalCase).\n\n**Auto-detected as B2B** when `IdType: BRN`."
+          },
+          "response": []
+        },
+        {
+          "name": "Unified Submit - Personal (Legacy Format)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('posInvoiceId', response.posInvoiceId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"documentVersion\": \"1.1\",\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"PERSO-001\",\n      \"invoiceDate\": \"2026-01-27T04:00:00Z\",\n      \"amount\": 500.00,\n      \"discount\": 0,\n      \"rounding\": 0,\n      \"taxAmount\": 30.00,\n      \"total\": 530.00,\n      \"customer\": {\n        \"tin\": \"801025145127\",\n        \"name\": \"Leong\",\n        \"customerIcNo\": \"751120085713\",\n        \"address1\": \"B-30-2, The Holmes 2\",\n        \"postalCode\": \"56000\",\n        \"stateCode\": \"14\",\n        \"city\": \"Kuala Lumpur\",\n        \"telephone\": \"9221133422\",\n        \"idType\": \"NRIC\",\n        \"IdValue\": \"801025145127\"\n      },\n      \"items\": [\n        {\n          \"description\": \"Consumer Product\",\n          \"quantity\": 1,\n          \"unitPrice\": 500.00,\n          \"discount\": 0,\n          \"taxCode\": \"01\",\n          \"taxRate\": 6,\n          \"taxAmount\": 30.00,\n          \"total\": 530.00\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit"]
+            },
+            "description": "Unified submit with mixed-case `customer` object.\n\n**Auto-detected as Personal** when `idType: NRIC`.\n\n**Note:** Accepts both `customerIcNo` and `IdValue` for NRIC."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. POS Integration",
+      "description": "Point-of-Sale integration endpoints.\n\nUses long-lived POS token (10 years).",
+      "item": [
+        {
+          "name": "POS Submit Invoice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('posInvoiceId', response.invoiceId || response.posInvoiceId);",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    console.log('POS Invoice ID:', response.invoiceId);",
+                  "    console.log('QR URL:', response.qrUrl);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{posToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"ConsolidatedInvoice\": true,\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"POS-001\",\n      \"invoiceDate\": \"2026-01-27T04:47:15Z\",\n      \"paymentType\": \"CASH\",\n      \"amount\": 27.80,\n      \"discount\": 0,\n      \"rounding\": 0,\n      \"taxAmount\": 1.57,\n      \"total\": 29.37,\n      \"items\": [\n        {\n          \"description\": \"Americano\",\n          \"quantity\": 2,\n          \"unitPrice\": 12.00,\n          \"discount\": 0,\n          \"taxCode\": \"02\",\n          \"taxRate\": 6,\n          \"taxAmount\": 1.37,\n          \"total\": 25.37\n        },\n        {\n          \"description\": \"Croissant\",\n          \"quantity\": 1,\n          \"unitPrice\": 3.80,\n          \"discount\": 0,\n          \"taxCode\": \"02\",\n          \"taxRate\": 6,\n          \"taxAmount\": 0.20,\n          \"total\": 4.00\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pos/invoice",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pos", "invoice"]
+            },
+            "description": "Submit POS invoice.\n\n**Response:**\n- `invoiceId` - POS Invoice ID for QR\n- `qrUrl` - Public registration URL\n- `expiresAt` - QR code expiry\n\n**QR URL format:** `https://www.duitlhdn.com/e/{posInvoiceId}`"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Document Operations",
+      "description": "Retrieve and manage submitted documents.",
+      "item": [
+        {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents?companyId={{companyId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "VALID", "disabled": true },
+                { "key": "fromDate", "value": "2026-01-01", "disabled": true },
+                { "key": "toDate", "value": "2026-12-31", "disabled": true }
+              ]
+            },
+            "description": "List documents with filters.\n\n**Status values:** DRAFT, SUBMITTING, SUBMITTED, VALID, INVALID, CANCELLED"
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch Document (by any ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('trackingId', response.trackingId);",
+                  "    pm.collectionVariables.set('invoiceNumber', response.invoiceNumber);",
+                  "    if (response.myinvoisUuid) {",
+                  "        pm.collectionVariables.set('myinvoisUuid', response.myinvoisUuid);",
+                  "    }",
+                  "    if (response.myinvoisLongId) {",
+                  "        pm.collectionVariables.set('myinvoisLongId', response.myinvoisLongId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"InvoiceId\": \"{{trackingId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/fetch",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "fetch"]
+            },
+            "description": "Fetch document by any ID type.\n\n**InvoiceId accepts:**\n- `trackingId` - Internal tracking ID\n- `myinvoisUuid` - MyInvois UUID\n- `posInvoiceId` - POS Invoice ID\n- `invoiceNumber` - Original invoice number (requires CompanyId)\n\n**Response includes `links` when status is VALID:**\n- `share` - MyInvois share link\n- `verify` - MyInvois verify link\n- `qr` - QR code endpoint\n- `view` - View link"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document by Tracking ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.myinvoisUuid) {",
+                  "        pm.collectionVariables.set('myinvoisUuid', response.myinvoisUuid);",
+                  "    }",
+                  "    if (response.myinvoisLongId) {",
+                  "        pm.collectionVariables.set('myinvoisLongId', response.myinvoisLongId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{trackingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{trackingId}}"]
+            },
+            "description": "Get document details by tracking ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{myinvoisUuid}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{myinvoisUuid}}", "status"]
+            },
+            "description": "Get document status from MyInvois by UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Document Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.myinvoisLongId) {",
+                  "        pm.collectionVariables.set('myinvoisLongId', response.myinvoisLongId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{myinvoisUuid}}/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{myinvoisUuid}}", "refresh"]
+            },
+            "description": "Manually refresh document status from MyInvois API.\n\nUpdates database with latest status and longId."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Share Link",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hashlhdn/invoices/share-link?id={{trackingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "invoices", "share-link"],
+              "query": [
+                { "key": "id", "value": "{{trackingId}}" }
+              ]
+            },
+            "description": "Get MyInvois share link by any ID.\n\n**Query param `id` accepts:**\n- `trackingId`\n- `myinvoisUuid`\n- `posInvoiceId`\n\n**Only available for VALID documents.**"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document Links",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{myinvoisUuid}}/links",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{myinvoisUuid}}", "links"]
+            },
+            "description": "Get all links for a document.\n\n**Returns:**\n- `share` - MyInvois share link\n- `verify` - Verification link\n- `qr` - QR code endpoint\n- `pdf` - PDF download endpoint"
+          },
+          "response": []
+        },
+        {
+          "name": "Get QR Code",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{myinvoisUuid}}/qr",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{myinvoisUuid}}", "qr"]
+            },
+            "description": "Get QR code image (PNG) for document.\n\n**Response:** `image/png`"
+          },
+          "response": []
+        },
+        {
+          "name": "Download PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{myinvoisUuid}}/pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{myinvoisUuid}}", "pdf"]
+            },
+            "description": "Download invoice PDF.\n\n**Response:** `application/pdf`"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Draft Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceNumber\": \"UPDATED-001\",\n  \"invoiceDate\": \"2026-01-27T06:00:00Z\",\n  \"invoices\": [\n    {\n      \"invoiceNumber\": \"UPDATED-001\",\n      \"invoiceDate\": \"2026-01-27T06:00:00Z\",\n      \"amount\": 100.00,\n      \"discount\": 0,\n      \"taxAmount\": 6.00,\n      \"total\": 106.00,\n      \"items\": [\n        {\n          \"description\": \"Updated Item\",\n          \"quantity\": 2,\n          \"unitPrice\": 50.00,\n          \"taxCode\": \"01\",\n          \"taxRate\": 6,\n          \"taxAmount\": 6.00,\n          \"total\": 106.00\n        }\n      ]\n    }\n  ],\n  \"documentVersion\": \"1.1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{trackingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{trackingId}}"]
+            },
+            "description": "Update a DRAFT or INVALID invoice.\n\n**Only works for:** DRAFT, INVALID status"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Draft Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{trackingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{trackingId}}"]
+            },
+            "description": "Delete a DRAFT invoice.\n\n**Only works for:** DRAFT status"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Document issued in error\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/{{myinvoisUuid}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "{{myinvoisUuid}}", "cancel"]
+            },
+            "description": "Cancel a VALID document at MyInvois.\n\n**Required Permission:** `cancel:documents`\n\n**Note:** Cancelled documents cannot be undone."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Document (Legacy)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"CompanyId\": \"{{companyId}}\",\n  \"Uuid\": \"{{myinvoisUuid}}\",\n  \"reason\": \"Document issued in error\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "cancel"]
+            },
+            "description": "Cancel document using legacy format with body params."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Public Endpoints",
+      "description": "No authentication required.\n\nFor customer self-registration via QR code.",
+      "item": [
+        {
+          "name": "Get Invoice for Registration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/invoice/{{posInvoiceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "invoice", "{{posInvoiceId}}"]
+            },
+            "description": "Get invoice details for customer registration.\n\n**No authentication required.**\n\nReturns invoice summary for buyer to view before registering."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Buyer Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyer\": {\n    \"nationality\": \"MY\",\n    \"idType\": \"NRIC\",\n    \"idValue\": \"801025145127\",\n    \"tin\": \"801025145127\",\n    \"name\": \"Ahmad bin Abdullah\",\n    \"phone\": \"0123456789\",\n    \"email\": \"ahmad@email.com\",\n    \"address1\": \"123 Jalan Merdeka\",\n    \"postalCode\": \"50000\",\n    \"city\": \"Kuala Lumpur\",\n    \"state\": \"14\",\n    \"country\": \"MYS\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/invoice/{{posInvoiceId}}/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "invoice", "{{posInvoiceId}}", "submit"]
+            },
+            "description": "Submit buyer info to register e-invoice.\n\n**No authentication required.**\n\n**Nationality values:** MY, SG, ID, etc.\n\n**idType values:** NRIC, PASSPORT, ARMY, BRN"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10. Admin Endpoints",
+      "description": "Administrative operations.\n\n**Required Permission:** `manage:companies` (superadmin)",
+      "item": [
+        {
+          "name": "Trigger Status Polling",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/admin/trigger-poll",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "admin", "trigger-poll"]
+            },
+            "description": "Manually trigger status polling for all SUBMITTED invoices.\n\nUpdates status from MyInvois API."
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Daily Consolidation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/admin/consolidate-now",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "admin", "consolidate-now"]
+            },
+            "description": "Manually trigger daily consolidation job.\n\nConsolidates all DRAFT invoices per company."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Consolidation Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/admin/consolidation-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "admin", "consolidation-stats"]
+            },
+            "description": "Get consolidation job statistics.\n\n**Returns:**\n- `enabled` - Feature flag status\n- `running` - Scheduler running\n- `lastRun` - Last execution date\n- `schedule` - Cron schedule"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11. Health & Status",
+      "description": "Health check endpoints.\n\nNo authentication required.",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthz"]
+            },
+            "description": "Basic health check endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Kubernetes readiness probe."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -13,6 +13,21 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,7 +50,7 @@ jobs:
         run: npx prisma migrate deploy
         working-directory: packages/storage
         env:
-          DATABASE_URL: file:./test.db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
 
       - name: Build all packages
         run: pnpm build
@@ -43,12 +58,12 @@ jobs:
       - name: Run tests
         run: pnpm test
         env:
-          DATABASE_URL: file:${{ github.workspace }}/packages/storage/prisma/test.db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
 
       - name: Package OpenAPI spec
         run: |
           mkdir -p release-assets
-          cp openapi/openapi.yaml release-assets/openapi.yaml
+          cp documentation/openapi.yaml release-assets/openapi.yaml
 
       - name: Package TypeScript SDK
         if: hashFiles('sdks/typescript/**') != ''

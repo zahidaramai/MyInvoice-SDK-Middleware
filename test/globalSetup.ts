@@ -8,7 +8,7 @@
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { RedisContainer } from "@testcontainers/redis";
 import { execSync } from "child_process";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 

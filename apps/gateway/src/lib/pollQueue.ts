@@ -7,6 +7,7 @@
 
 import { Queue, type JobsOptions } from "bullmq";
 import { Redis } from "ioredis";
+import { pollQueueLogger } from "./appLogger.js";
 
 export const POLL_QUEUE_NAME = "poll-submission";
 
@@ -108,7 +109,8 @@ export async function enqueuePoll(
     );
     return job.id || trackingId;
   } catch (error) {
-    console.error("Failed to enqueue poll job:", error);
+    // P2-01: Use structured logger instead of console.error
+    pollQueueLogger.error({ error }, "Failed to enqueue poll job");
     return null;
   }
 }

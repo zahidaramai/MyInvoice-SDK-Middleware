@@ -5,9 +5,130 @@
  * These tests verify that signing integrates correctly with the gateway.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { buildApp } from "../../src/app.js";
 import type { FastifyInstance } from "fastify";
+
+// Mock storage functions when no database available (SKIP_TESTCONTAINERS=true)
+vi.mock("@myinvois/storage", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@myinvois/storage")>();
+
+  if (process.env.SKIP_TESTCONTAINERS !== "true") {
+    return original;
+  }
+
+  interface MockDocument {
+    id: string;
+    codeNumber: string;
+    initialResult: string;
+    upstreamUuid?: string;
+    errorCode?: string;
+    errorMessage?: string;
+  }
+  interface MockSubmission {
+    id: string;
+    trackingId: string;
+    sessionId: string;
+    payloadHash: string;
+    status: string;
+    upstreamSubmissionUid?: string;
+    correlationId?: string;
+    documents: MockDocument[];
+    createdAt: Date;
+    updatedAt: Date;
+  }
+  const submissionStore = new Map<string, MockSubmission>();
+  let submissionCounter = 0;
+
+  return {
+    ...original,
+    createSubmission: vi.fn().mockImplementation(async (data: { trackingId: string; sessionId: string; payloadHash: string; documents: Array<{ codeNumber: string }> }) => {
+      submissionCounter++;
+      const submission: MockSubmission = {
+        id: `sub_mock_${submissionCounter}`,
+        trackingId: data.trackingId || `trk_mock_${submissionCounter}`,
+        sessionId: data.sessionId,
+        payloadHash: data.payloadHash || "mock-hash",
+        status: "PENDING",
+        documents: (data.documents || []).map((d, i) => ({
+          id: `doc_mock_${submissionCounter}_${i}`,
+          codeNumber: d.codeNumber,
+          initialResult: "PENDING",
+        })),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      submissionStore.set(submission.trackingId, submission);
+      return submission;
+    }),
+    findRecentByPayloadHash: vi.fn().mockResolvedValue(null),
+    updateWithUpstreamResult: vi.fn().mockImplementation(async (data: {
+      trackingId: string;
+      upstreamSubmissionUid: string;
+      correlationId?: string;
+      acceptedDocuments: Array<{ codeNumber: string; uuid: string }>;
+      rejectedDocuments: Array<{ codeNumber: string; errorCode?: string; errorMessage?: string }>;
+    }) => {
+      const existing = submissionStore.get(data.trackingId);
+      if (existing) {
+        const updatedDocs = existing.documents.map((doc) => {
+          const accepted = data.acceptedDocuments.find((a) => a.codeNumber === doc.codeNumber);
+          const rejected = data.rejectedDocuments.find((r) => r.codeNumber === doc.codeNumber);
+          if (accepted) return { ...doc, initialResult: "ACCEPTED", upstreamUuid: accepted.uuid };
+          if (rejected) return { ...doc, initialResult: "REJECTED", errorCode: rejected.errorCode, errorMessage: rejected.errorMessage };
+          return doc;
+        });
+        const updated: MockSubmission = {
+          ...existing,
+          upstreamSubmissionUid: data.upstreamSubmissionUid,
+          correlationId: data.correlationId,
+          documents: updatedDocs,
+          status: "SUBMITTED",
+          updatedAt: new Date(),
+        };
+        submissionStore.set(data.trackingId, updated);
+        return updated;
+      }
+      return null;
+    }),
+    markSubmissionError: vi.fn().mockImplementation(async (trackingId: string, error: string) => {
+      const existing = submissionStore.get(trackingId);
+      if (existing) {
+        const updated = { ...existing, status: "FAILED", errorMessage: error, updatedAt: new Date() };
+        submissionStore.set(trackingId, updated);
+        return updated;
+      }
+      return null;
+    }),
+    getByTrackingId: vi.fn().mockImplementation(async (trackingId: string) => {
+      return submissionStore.get(trackingId) || null;
+    }),
+    getByTrackingIdWithPolling: vi.fn().mockImplementation(async (trackingId: string) => {
+      return submissionStore.get(trackingId) || null;
+    }),
+    schedulePoll: vi.fn().mockResolvedValue({}),
+  };
+});
+
+// Mock poll queue to avoid Redis connection when no containers
+vi.mock("../../src/lib/pollQueue.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../src/lib/pollQueue.js")>();
+
+  if (process.env.SKIP_TESTCONTAINERS !== "true") {
+    return original;
+  }
+
+  return {
+    ...original,
+    POLL_QUEUE_NAME: "poll-submission",
+    MIN_POLL_INTERVAL_MS: 3000,
+    enqueuePoll: vi.fn().mockResolvedValue({ id: "mock-job-id" }),
+    enqueueImmediatePoll: vi.fn().mockResolvedValue({ id: "mock-job-id" }),
+    calculatePollDelay: vi.fn().mockReturnValue(3000),
+    closePollQueue: vi.fn().mockResolvedValue(undefined),
+    getPollQueueStats: vi.fn().mockResolvedValue({ waiting: 0, active: 0, completed: 0, failed: 0 }),
+  };
+});
 
 describe("signing integration", () => {
   let app: FastifyInstance;
@@ -38,7 +159,7 @@ describe("signing integration", () => {
 
       expect(response.statusCode).toBe(201);
       const body = response.json();
-      expect(body.documentVersion).toBe("1.0");
+      expect(body.documentVersion).toBe("1.1"); // Default is now v1.1
     });
 
     it("creates session with v1.0 when explicitly requested", async () => {

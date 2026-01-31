@@ -1,8 +1,7 @@
 /**
  * Issue an invoice to MyInvois
- * Usage: pnpm tsx scripts/issue-invoice.ts [amount] [buyer-nric] [buyer-name]
+ * Usage: pnpm tsx scripts/issue-invoice.ts [amount]
  * Default amount: RM 1.00
- * Default buyer NRIC: 000000000000 (general public)
  */
 
 import { config as dotenvConfig } from "dotenv";
@@ -26,10 +25,8 @@ const SUPPLIER_TIN = process.env.MYINVOIS_SUPPLIER_TIN!;
 const SUPPLIER_ID_TYPE = process.env.MYINVOIS_SUPPLIER_ID_TYPE || "BRN";
 const SUPPLIER_ID_VALUE = process.env.MYINVOIS_SUPPLIER_ID_VALUE!;
 
-// Parse CLI arguments
+// Parse amount from command line or default to 1.00
 const amount = parseFloat(process.argv[2] || "1.00");
-const buyerNric = process.argv[3] || "000000000000";
-const buyerName = process.argv[4] || "GENERAL PUBLIC";
 
 function createInvoice(invNum: string, invoiceAmount: number) {
   const today = new Date().toISOString().split("T")[0];
@@ -76,10 +73,10 @@ function createInvoice(invNum: string, invoiceAmount: number) {
           "PartyIdentification": [{
             "ID": [{ "_": "EI00000000010", "schemeID": "TIN" }]
           }, {
-            "ID": [{ "_": buyerNric, "schemeID": "NRIC" }]
+            "ID": [{ "_": "000000000000", "schemeID": "NRIC" }]
           }],
           "PartyLegalEntity": [{
-            "RegistrationName": [{ "_": buyerName }]
+            "RegistrationName": [{ "_": "GENERAL PUBLIC" }]
           }],
           "PostalAddress": [{
             "AddressLine": [{ "Line": [{ "_": "Customer Address" }] }],
@@ -216,8 +213,6 @@ async function main() {
   console.log(`  MyInvois Invoice Submission (${MYINVOIS_ENV})`);
   console.log("=".repeat(50));
   console.log(`  Amount: RM ${amount.toFixed(2)}`);
-  console.log(`  Buyer NRIC: ${buyerNric}`);
-  console.log(`  Buyer Name: ${buyerName}`);
   console.log(`  Environment: ${MYINVOIS_ENV}`);
   console.log(`  API: ${BASE_URL}`);
   console.log("");

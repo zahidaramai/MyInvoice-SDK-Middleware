@@ -11,7 +11,6 @@ import {
   createSigningNotConfiguredError,
   createSigningDisabledError,
   createInvalidDocumentVersionError,
-  type SigningErrorEnvelope,
   type SigningErrorContext,
 } from "../../src/errors/signing-errors.js";
 import {

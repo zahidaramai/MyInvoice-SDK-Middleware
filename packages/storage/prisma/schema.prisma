@@ -2,11 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -248,4 +249,268 @@ model TinValidateCache {
   @@unique([env, sessionId, tin, idType, idValueHash])
   @@index([env, sessionId, tin, idType, idValueHash])
   @@index([expiresAt])
+}
+
+// =============================================================================
+// HashLHDN Multi-Tenant Models (User, Role, Company Management)
+// =============================================================================
+
+/// User account for HashLHDN platform
+model User {
+  id            String        @id @default(uuid())
+
+  /// User email (unique, used for login)
+  email         String        @unique
+
+  /// Bcrypt hashed password
+  passwordHash  String
+
+  /// User display name
+  name          String
+
+  /// Foreign key to Role
+  roleId        String
+  role          Role          @relation(fields: [roleId], references: [id])
+
+  /// User-company associations (many-to-many)
+  companies     UserCompany[]
+
+  /// Refresh tokens for this user
+  refreshTokens RefreshToken[]
+
+  /// Whether the user account is active
+  isActive      Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([email])
+  @@index([roleId])
+}
+
+/// Role definition with permissions
+model Role {
+  id          String   @id @default(uuid())
+
+  /// Role name (unique, e.g., "admin", "operator", "viewer")
+  name        String   @unique
+
+  /// JSON array of permission strings
+  /// e.g., ["submit:invoice", "read:documents", "manage:users"]
+  permissions String   @default("[]")
+
+  /// Role description
+  description String?
+
+  /// Users assigned to this role
+  users       User[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+/// Company entity with MyInvois credentials
+model Company {
+  id                  String        @id @default(uuid())
+
+  /// Company display name
+  name                String
+
+  /// Tax Identification Number (TIN)
+  tin                 String
+
+  /// Registration/Identification value (BRN, NRIC, Passport, Army ID based on idType)
+  idValue             String
+
+  /// ID type for the company: BRN | NRIC | PASSPORT | ARMY
+  idType              String        @default("BRN")
+
+  /// Company address (street address, can be multiline)
+  address             String?
+
+  /// City name
+  city                String?
+
+  /// Malaysian state code (01-17)
+  state               String?
+
+  /// Postal code
+  postalCode          String?
+
+  /// Country code (default MYS)
+  country             String        @default("MYS")
+
+  /// Contact phone number
+  phone               String?
+
+  /// Contact email address
+  email               String?
+
+  /// SST Registration number
+  sstRegistration     String?
+
+  /// TTX Registration number
+  ttxRegistration     String?
+
+  /// MSIC Industry Classification Code
+  industryCode        String?
+
+  /// Industry description/name
+  industryName        String?
+
+  /// MyInvois Client ID (encrypted at application level)
+  myinvoisClientId    String?
+
+  /// MyInvois Client Secret (encrypted at application level)
+  myinvoisClientSecret String?
+
+  /// MyInvois environment for this company: SANDBOX | PROD
+  myinvoisEnv         String        @default("SANDBOX")
+
+  /// Whether the company is active
+  isActive            Boolean       @default(true)
+
+  /// User-company associations (many-to-many)
+  users               UserCompany[]
+
+  /// Invoices submitted by this company
+  invoices            Invoice[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@unique([tin, idValue])
+  @@index([tin])
+  @@index([idValue])
+}
+
+/// Junction table for User-Company many-to-many relationship
+model UserCompany {
+  userId    String
+  companyId String
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  /// When the user was linked to the company
+  createdAt DateTime @default(now())
+
+  @@id([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+/// Refresh token for JWT authentication
+model RefreshToken {
+  id          String   @id @default(uuid())
+
+  /// Foreign key to User
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Hashed refresh token (never store raw token)
+  tokenHash   String   @unique
+
+  /// When the token expires
+  expiresAt   DateTime
+
+  /// Whether the token has been revoked (logout)
+  revoked     Boolean  @default(false)
+
+  /// When the token was revoked
+  revokedAt   DateTime?
+
+  /// User agent or device info (optional)
+  userAgent   String?
+
+  /// IP address (optional)
+  ipAddress   String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+/// Invoice record for HashLHDN (local storage before/after submission)
+model Invoice {
+  id                   String    @id @default(uuid())
+
+  /// Foreign key to Company
+  companyId            String
+  company              Company   @relation(fields: [companyId], references: [id])
+
+  /// Invoice number (from HashLHDN request)
+  invoiceNumber        String
+
+  /// Short POS invoice ID for QR registration (e.g., "HM-12ys8Uy4")
+  posInvoiceId         String?   @unique
+
+  /// Invoice date
+  invoiceDate          DateTime
+
+  /// Invoice type: CONSOLIDATE | BUYER | PERSONAL
+  invoiceType          String
+
+  /// Submission status: DRAFT | PENDING | SUBMITTED | VALID | INVALID | CANCELLED
+  status               String    @default("DRAFT")
+
+  /// Optimistic locking version (incremented on each update)
+  version              Int       @default(1)
+
+  /// Raw HashLHDN JSON payload (stored for reference/retry)
+  rawPayload           String
+
+  /// Transformed UBL 2.1 JSON (stored after transformation)
+  ublPayload           String?
+
+  /// Gateway tracking ID (links to Submission table after submission)
+  trackingId           String?
+
+  /// MyInvois document UUID (after successful submission)
+  myinvoisUuid         String?
+
+  /// MyInvois long ID
+  myinvoisLongId       String?
+
+  /// Total amount (tax exclusive)
+  amount               String
+
+  /// Discount amount
+  discount             String    @default("0")
+
+  /// Rounding amount
+  rounding             String    @default("0")
+
+  /// Tax amount
+  taxAmount            String
+
+  /// Total payable amount
+  total                String
+
+  /// Buyer information (JSON)
+  buyerInfo            String?
+
+  /// Error message if submission failed
+  errorMessage         String?
+
+  /// Error code if submission failed
+  errorCode            String?
+
+  /// User who created the invoice
+  createdBy            String?
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([companyId, invoiceNumber])
+  @@index([companyId])
+  @@index([invoiceNumber])
+  @@index([posInvoiceId])
+  @@index([status])
+  @@index([trackingId])
+  @@index([myinvoisUuid])
 }

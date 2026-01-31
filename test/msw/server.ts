@@ -20,7 +20,19 @@ export const server = setupServer(...handlers);
  */
 export function startMockServer(): void {
   server.listen({
-    onUnhandledRequest: "warn",
+    onUnhandledRequest: (request, print) => {
+      // Only warn for requests to MyInvois API that we should be mocking
+      const url = new URL(request.url);
+      const myinvoisDomains = [
+        "preprod-api.myinvois.hasil.gov.my",
+        "api.myinvois.hasil.gov.my",
+      ];
+
+      if (myinvoisDomains.includes(url.hostname)) {
+        print.warning();
+      }
+      // Silently bypass other requests (localhost, test infrastructure, etc.)
+    },
   });
 }
 

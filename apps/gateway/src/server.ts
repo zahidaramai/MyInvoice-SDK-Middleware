@@ -3,6 +3,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { buildApp } from "./app.js";
 import { loadConfig } from "./config.js";
+import { stopAutoPoller } from "./polling/autoPoller.js";
+import { stopMonthlyConsolidator } from "./polling/monthlyConsolidator.js";
 
 // Load .env file from project root
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,6 +30,15 @@ async function main() {
   const shutdown = async (signal: string) => {
     app.log.info(`Received ${signal}, shutting down...`);
     try {
+      // Stop background jobs first (P0-06: graceful shutdown)
+      const logger = {
+        info: (msg: string) => app.log.info(msg),
+        warn: (msg: string) => app.log.warn(msg),
+        error: (obj: unknown, msg: string) => app.log.error(obj, msg),
+      };
+      stopAutoPoller(logger);
+      stopMonthlyConsolidator(logger);
+
       await app.close();
       process.exit(0);
     } catch (err) {
@@ -48,4 +59,8 @@ async function main() {
   }
 }
 
-main();
+// P0-08: Add error handler to prevent unhandled rejection on startup failure
+main().catch((err) => {
+  console.error("Fatal startup error:", err);
+  process.exit(1);
+});

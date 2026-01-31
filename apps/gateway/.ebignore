@@ -1,0 +1,47 @@
+# Source files (only dist needed)
+# IMPORTANT: Use /src/ (anchored) to only exclude top-level src/
+# NOT src/ which would exclude node_modules/*/build/src/ too!
+/src/
+*.ts
+!*.d.ts
+
+# Tests
+# IMPORTANT: Use /test/ (anchored) to only exclude top-level test/
+/test/
+*.test.ts
+*.spec.ts
+vitest.config.ts
+vitest.setup.ts
+/coverage/
+
+# Development
+.env.local
+.env.development
+.env.test
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+*.md
+!README.md
+CHANGELOG.md
+
+# TypeScript source maps (optional - keep for debugging)
+# *.js.map
+
+# Keep these
+!dist/
+!prisma/
+!package.json
+!Procfile
+!.ebextensions/
+!.npmrc

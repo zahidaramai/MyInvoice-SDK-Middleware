@@ -1,17 +1,24 @@
 import {
-  loadSigningConfig,
-  loadCertificate,
-  loadPrivateKey,
   loadPKCS12,
-  verifyKeyMatchesCertificate,
   SigningService,
-  PrivateKeyLoadError,
-  KeyCertificateMismatchError,
-  type SigningConfig,
+  SIGNING_ENV_VARS,
   type CertificateInfo,
   type DocumentVersion
 } from '@myinvois/signing';
 import type { KeyObject } from 'crypto';
+import { isS3Path, downloadFromS3 } from './s3-loader.js';
+import { createComponentLogger } from '../lib/appLogger.js';
+
+// P2-01: Structured logger for signing component
+const signingLogger = createComponentLogger('signing');
+
+/**
+ * Legacy environment variable names (for backwards compatibility)
+ */
+const LEGACY_ENV_VARS = {
+  PKCS12_PATH: 'P12_CERTIFICATE_PATH',
+  PKCS12_PASSPHRASE: 'P12_CERTIFICATE_PASSWORD'
+} as const;
 
 /**
  * Gateway signing state
@@ -35,47 +42,74 @@ export interface SigningState {
 let signingState: SigningState | null = null;
 
 /**
+ * Get PKCS#12 path from environment (supports legacy and standard env var names)
+ */
+function getPKCS12PathFromEnv(): string | undefined {
+  return process.env[SIGNING_ENV_VARS.PKCS12_PATH] ||
+    process.env[LEGACY_ENV_VARS.PKCS12_PATH];
+}
+
+/**
+ * Get PKCS#12 passphrase from environment (supports legacy and standard env var names)
+ */
+function getPKCS12PassphraseFromEnv(): string | undefined {
+  return process.env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE] ||
+    process.env[LEGACY_ENV_VARS.PKCS12_PASSPHRASE];
+}
+
+/**
+ * Check if signing should be enabled based on environment
+ */
+function shouldEnableSigning(): boolean {
+  // Explicit enable/disable takes precedence
+  const explicitEnabled = process.env[SIGNING_ENV_VARS.ENABLED];
+  if (explicitEnabled !== undefined) {
+    return explicitEnabled.toLowerCase() === 'true';
+  }
+
+  // Auto-enable if PKCS#12 path is configured
+  const pkcs12Path = getPKCS12PathFromEnv();
+  return Boolean(pkcs12Path);
+}
+
+/**
  * Initialize signing service from environment configuration
+ * Supports S3 paths and legacy environment variable names
  * @returns SigningState with service if successful, or error information
  */
-export function initializeSigning(logger?: {
+export async function initializeSigning(logger?: {
   info: (msg: string) => void;
   warn: (msg: string) => void;
   error: (obj: unknown, msg: string) => void;
-}): SigningState {
-  const log = logger || {
-    info: console.log,
-    warn: console.warn,
-    error: (obj: unknown, msg: string) => console.error(msg, obj)
-  };
+}): Promise<SigningState> {
+  // P2-01: Use structured logger as fallback
+  const log = logger || signingLogger;
 
-  // Load configuration
-  let config: SigningConfig;
-  try {
-    config = loadSigningConfig();
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown configuration error';
-    log.info(`Signing disabled: ${errorMessage}`);
+  // Check if signing should be enabled
+  const shouldEnable = shouldEnableSigning();
+  const pkcs12Path = getPKCS12PathFromEnv();
+  const pkcs12Passphrase = getPKCS12PassphraseFromEnv();
+  const defaultVersion = (process.env[SIGNING_ENV_VARS.DEFAULT_VERSION] as DocumentVersion) || '1.1';
 
+  if (!shouldEnable) {
+    log.info('Signing feature disabled via configuration');
     signingState = {
       enabled: false,
       service: null,
       certificateInfo: null,
-      defaultVersion: '1.0',
-      error: errorMessage
+      defaultVersion
     };
     return signingState;
   }
 
-  // Check if signing is enabled
-  if (!config.enabled) {
-    log.info('Signing feature disabled via configuration');
-
+  if (!pkcs12Path) {
+    log.info('Signing enabled but no PKCS#12 path configured');
     signingState = {
       enabled: false,
       service: null,
       certificateInfo: null,
-      defaultVersion: config.defaultVersion || '1.0'
+      defaultVersion,
+      error: 'No PKCS#12 path configured (set SIGNING_PKCS12_PATH or P12_CERTIFICATE_PATH)'
     };
     return signingState;
   }
@@ -86,68 +120,29 @@ export function initializeSigning(logger?: {
   let privateKey: KeyObject;
 
   try {
-    // Check for PKCS#12 source first (contains both cert and key)
-    if (config.pkcs12) {
-      log.info('Loading certificate and key from PKCS#12...');
+    log.info(`Loading certificate from: ${pkcs12Path}`);
 
-      const p12Source = config.pkcs12.path
-        ? { path: config.pkcs12.path, passphrase: config.pkcs12.passphrase }
-        : config.pkcs12.base64
-          ? { base64: config.pkcs12.base64, passphrase: config.pkcs12.passphrase }
-          : null;
-
-      if (!p12Source) {
-        throw new Error('Invalid PKCS#12 configuration');
-      }
-
-      const p12Result = loadPKCS12(p12Source);
-      certPem = p12Result.certPem;
-      certInfo = p12Result.certInfo;
-      privateKey = p12Result.privateKey;
-
-      log.info(`Certificate loaded from PKCS#12: ${certInfo.subject.commonName || certInfo.subject.raw}`);
-      log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
-      log.info('Private key extracted from PKCS#12');
-
-    } else {
-      // Fall back to separate certificate and key files
-      if (!config.certificate) {
-        throw new Error('No certificate configuration provided');
-      }
-      const certResult = loadCertificate(config.certificate);
-      certPem = certResult.pem;
-      certInfo = certResult.info;
-
-      log.info(`Certificate loaded: ${certInfo.subject.commonName || certInfo.subject.raw}`);
-      log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
-
-      // Load private key
-      if (!config.privateKey) {
-        throw new PrivateKeyLoadError('No private key configuration provided');
-      }
-
-      const keySource = config.privateKey.path
-        ? { path: config.privateKey.path, passphrase: config.privateKey.passphrase }
-        : config.privateKey.base64
-          ? { base64: config.privateKey.base64, passphrase: config.privateKey.passphrase }
-          : null;
-
-      if (!keySource) {
-        throw new PrivateKeyLoadError('No private key source configured');
-      }
-
-      privateKey = loadPrivateKey(keySource);
-
-      // Verify key matches certificate
-      if (!verifyKeyMatchesCertificate(privateKey, certPem)) {
-        throw new KeyCertificateMismatchError(
-          'Private key does not match certificate',
-          { certificateSubject: certInfo.subject.commonName || certInfo.subject.raw }
-        );
-      }
-
-      log.info('Private key loaded and verified');
+    // Resolve path (download from S3 if needed)
+    let localPath = pkcs12Path;
+    if (isS3Path(pkcs12Path)) {
+      log.info('Downloading certificate from S3...');
+      localPath = await downloadFromS3(pkcs12Path);
+      log.info(`Certificate downloaded to: ${localPath}`);
     }
+
+    // Load PKCS#12
+    const p12Result = loadPKCS12({
+      path: localPath,
+      passphrase: pkcs12Passphrase
+    });
+
+    certPem = p12Result.certPem;
+    certInfo = p12Result.certInfo;
+    privateKey = p12Result.privateKey;
+
+    log.info(`Certificate loaded from PKCS#12: ${certInfo.subject.commonName || certInfo.subject.raw}`);
+    log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
+    log.info('Private key extracted from PKCS#12');
 
     // Check for expiry warning
     let warning: string | undefined;
@@ -166,7 +161,7 @@ export function initializeSigning(logger?: {
       enabled: true,
       service,
       certificateInfo: certInfo,
-      defaultVersion: config.defaultVersion || '1.1',
+      defaultVersion,
       warning
     };
 
@@ -191,12 +186,19 @@ export function initializeSigning(logger?: {
 }
 
 /**
- * Get current signing state
- * Initializes if not already done
+ * Get current signing state (sync version)
+ * Returns null if not yet initialized - use initializeSigning() first at startup
  */
 export function getSigningState(): SigningState {
   if (!signingState) {
-    return initializeSigning();
+    // Return disabled state if not initialized
+    return {
+      enabled: false,
+      service: null,
+      certificateInfo: null,
+      defaultVersion: '1.0',
+      error: 'Signing not initialized - call initializeSigning() at startup'
+    };
   }
   return signingState;
 }

@@ -1,6 +1,43 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";
+
+// Mock storage and poll queue when no database available (SKIP_TESTCONTAINERS=true)
+vi.mock("@myinvois/storage", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@myinvois/storage")>();
+
+  if (process.env.SKIP_TESTCONTAINERS !== "true") {
+    return original;
+  }
+
+  return {
+    ...original,
+    getByTrackingId: vi.fn().mockResolvedValue(null),
+    getByTrackingIdWithPolling: vi.fn().mockResolvedValue(null),
+    schedulePoll: vi.fn().mockResolvedValue({}),
+    getTinValidateCache: vi.fn().mockResolvedValue(null),
+    setTinValidateCache: vi.fn().mockResolvedValue({}),
+  };
+});
+
+vi.mock("./lib/pollQueue.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("./lib/pollQueue.js")>();
+
+  if (process.env.SKIP_TESTCONTAINERS !== "true") {
+    return original;
+  }
+
+  return {
+    ...original,
+    POLL_QUEUE_NAME: "poll-submission",
+    MIN_POLL_INTERVAL_MS: 3000,
+    enqueuePoll: vi.fn().mockResolvedValue({ id: "mock-job-id" }),
+    enqueueImmediatePoll: vi.fn().mockResolvedValue({ id: "mock-job-id" }),
+    calculatePollDelay: vi.fn().mockReturnValue(3000),
+    closePollQueue: vi.fn().mockResolvedValue(undefined),
+    getPollQueueStats: vi.fn().mockResolvedValue({ waiting: 0, active: 0, completed: 0, failed: 0 }),
+  };
+});
 
 describe("Gateway App", () => {
   let app: FastifyInstance;

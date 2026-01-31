@@ -17,6 +17,7 @@ import type {
   UpstreamError,
 } from "./types.js";
 import { TokenManager } from "./tokenManager.js";
+import { extractUpstreamMeta } from "./utils/extractUpstreamMeta.js";
 
 const DEFAULT_RETRY_AFTER = 60;
 
@@ -79,27 +80,6 @@ function sleep(ms: number): Promise<void> {
  */
 function isRetriableError(status: number): boolean {
   return status === 0 || (status >= 500 && status < 600);
-}
-
-/**
- * Extract upstream metadata from response headers
- */
-function extractUpstreamMeta(headers: Headers): UpstreamMeta {
-  const meta: UpstreamMeta = {};
-
-  const correlationId = headers.get("correlationid") || headers.get("x-correlation-id");
-  if (correlationId) meta.correlationId = correlationId;
-
-  const limit = headers.get("x-rate-limit-limit");
-  if (limit) meta.rateLimitLimit = parseInt(limit, 10);
-
-  const remaining = headers.get("x-rate-limit-remaining");
-  if (remaining) meta.rateLimitRemaining = parseInt(remaining, 10);
-
-  const reset = headers.get("x-rate-limit-reset");
-  if (reset) meta.rateLimitReset = parseInt(reset, 10);
-
-  return meta;
 }
 
 /**
@@ -405,6 +385,7 @@ export class MyInvoisHttpClient {
   ): Promise<MyInvoisResponse<T>> {
     let message = `Request failed with status ${response.status}`;
     let code = "UPSTREAM_ERROR";
+    let details: Array<{ code?: string; message?: string; target?: string; propertyName?: string; propertyPath?: string }> | undefined;
 
     try {
       const errorBody = (await response.json()) as Record<string, unknown>;
@@ -415,6 +396,55 @@ export class MyInvoisHttpClient {
       }
       if (typeof errorBody.code === "string") {
         code = errorBody.code;
+      }
+
+      // MYI-13: Extract additional error details for debugging
+      details = [];
+
+      // Include base error info if it has property details
+      if (errorBody.propertyName || errorBody.propertyPath || errorBody.target) {
+        details.push({
+          code: typeof errorBody.code === "string" ? errorBody.code : undefined,
+          message: typeof errorBody.message === "string" ? errorBody.message : undefined,
+          target: typeof errorBody.target === "string" ? errorBody.target : undefined,
+          propertyName: typeof errorBody.propertyName === "string" ? errorBody.propertyName : undefined,
+          propertyPath: typeof errorBody.propertyPath === "string" ? errorBody.propertyPath : undefined,
+        });
+      }
+
+      // Include nested details array
+      if (Array.isArray(errorBody.details)) {
+        for (const detail of errorBody.details) {
+          if (detail && typeof detail === "object") {
+            details.push({
+              code: typeof detail.code === "string" ? detail.code : undefined,
+              message: typeof detail.message === "string" ? detail.message : undefined,
+              target: typeof detail.target === "string" ? detail.target : undefined,
+              propertyName: typeof detail.propertyName === "string" ? detail.propertyName : undefined,
+              propertyPath: typeof detail.propertyPath === "string" ? detail.propertyPath : undefined,
+            });
+          }
+        }
+      }
+
+      // Include innerError array
+      if (Array.isArray(errorBody.innerError)) {
+        for (const inner of errorBody.innerError) {
+          if (inner && typeof inner === "object") {
+            details.push({
+              code: typeof inner.code === "string" ? inner.code : undefined,
+              message: typeof inner.message === "string" ? inner.message : undefined,
+              target: typeof inner.target === "string" ? inner.target : undefined,
+              propertyName: typeof inner.propertyName === "string" ? inner.propertyName : undefined,
+              propertyPath: typeof inner.propertyPath === "string" ? inner.propertyPath : undefined,
+            });
+          }
+        }
+      }
+
+      // Only include details if we found any
+      if (details.length === 0) {
+        details = undefined;
       }
     } catch {
       // Ignore JSON parse errors
@@ -428,6 +458,7 @@ export class MyInvoisHttpClient {
         message,
         code,
         meta,
+        details,
       },
       meta,
     };

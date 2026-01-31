@@ -19,6 +19,7 @@ build/
 .env.*
 !.env.example
 !.env.sandbox.example
+!.env.production.template
 *.pem
 *.key
 *.p12
@@ -74,6 +75,7 @@ playwright-report/
 # Claude Code
 CLAUDE.md
 **/CLAUDE.md
+**/CLAUDE-*.md
 .claude/
 .claude_*
 
@@ -120,6 +122,12 @@ ralph/
 # Keep standard public files (README, CONTRIBUTING, etc. in root)
 
 # =============================================================================
+# API Testing Collections
+# =============================================================================
+postman/
+.postman/
+
+# =============================================================================
 # Temporary & Cache
 # =============================================================================
 *.local
@@ -154,3 +162,18 @@ load/results/
 # =============================================================================
 scripts/signed-invoice.json
 scripts/*.output.json
+
+# Deployment build artifacts
+.deploy/
+.elasticbeanstalk/
+**/.elasticbeanstalk/
+deploy-package.zip
+
+# Deployment issues log (internal reference)
+docs/DEPLOYMENT-ISSUES-LOG.md
+.mcp.json
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

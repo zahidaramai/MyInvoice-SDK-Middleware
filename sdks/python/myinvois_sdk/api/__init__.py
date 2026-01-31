@@ -1,9 +1,11 @@
 # flake8: noqa
 
 # import apis into api package
+from myinvois_sdk.api.authentication_api import AuthenticationApi
+from myinvois_sdk.api.companies_api import CompaniesApi
 from myinvois_sdk.api.documents_api import DocumentsApi
+from myinvois_sdk.api.hash_lhdn_submission_api import HashLHDNSubmissionApi
 from myinvois_sdk.api.health_api import HealthApi
-from myinvois_sdk.api.sessions_api import SessionsApi
-from myinvois_sdk.api.submissions_api import SubmissionsApi
-from myinvois_sdk.api.taxpayer_api import TaxpayerApi
+from myinvois_sdk.api.roles_api import RolesApi
+from myinvois_sdk.api.users_api import UsersApi
 

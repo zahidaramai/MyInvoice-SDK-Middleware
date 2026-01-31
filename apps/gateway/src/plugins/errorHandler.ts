@@ -19,12 +19,37 @@ import {
   transformSigningError,
   type SigningErrorEnvelope,
 } from "../errors/signing-errors.js";
+import { AuthenticationError, AuthorizationError } from "../auth/middleware.js";
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.setErrorHandler((error, request, reply) => {
     const correlationId = request.correlationId || request.id;
 
     let envelope: { error: ErrorEnvelope };
+
+    // Handle authentication errors
+    if (error instanceof AuthenticationError) {
+      request.log.warn({ correlationId, code: error.code }, "Auth error: %s", error.message);
+      reply.header("X-Correlation-Id", correlationId);
+      return reply.status(error.statusCode).send({
+        error: {
+          code: error.code,
+          message: error.message,
+        },
+      });
+    }
+
+    // Handle authorization errors
+    if (error instanceof AuthorizationError) {
+      request.log.warn({ correlationId, code: error.code }, "Auth error: %s", error.message);
+      reply.header("X-Correlation-Id", correlationId);
+      return reply.status(error.statusCode).send({
+        error: {
+          code: error.code,
+          message: error.message,
+        },
+      });
+    }
 
     if (error instanceof AppError) {
       // Use the AppError's built-in conversion

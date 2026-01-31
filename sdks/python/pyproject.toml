@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "myinvois_sdk"
 version = "0.1.0"
-description = "MyInvois Middleware Gateway"
-authors = ["GitHub Issues <team@openapitools.org>"]
-license = "MIT"
+description = "HashLHDN MyInvois Middleware API"
+authors = ["KLCUBE NETWORK Enterprise <hello@zahidaramai.com>"]
+license = "NoLicense"
 readme = "README.md"
 repository = "https://github.com/GIT_USER_ID/GIT_REPO_ID"
-keywords = ["OpenAPI", "OpenAPI-Generator", "MyInvois Middleware Gateway"]
+keywords = ["OpenAPI", "OpenAPI-Generator", "HashLHDN MyInvois Middleware API"]
 include = ["myinvois_sdk/py.typed"]
 
 [tool.poetry.dependencies]

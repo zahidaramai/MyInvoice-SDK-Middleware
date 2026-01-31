@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "openapi/openapi.yaml"
+      - "documentation/openapi.yaml"
       - "openapi-generator/*.json"
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/openapi/openapi.yaml \
+            -i /local/documentation/openapi.yaml \
             -g typescript-axios \
             -o /local/sdks/typescript \
             -c /local/openapi-generator/typescript-axios.config.json \
@@ -36,7 +36,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/openapi/openapi.yaml \
+            -i /local/documentation/openapi.yaml \
             -g python \
             -o /local/sdks/python \
             -c /local/openapi-generator/python.config.json \
@@ -47,7 +47,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/openapi/openapi.yaml \
+            -i /local/documentation/openapi.yaml \
             -g csharp \
             -o /local/sdks/dotnet \
             -c /local/openapi-generator/csharp.config.json \
@@ -58,7 +58,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/openapi/openapi.yaml \
+            -i /local/documentation/openapi.yaml \
             -g java \
             -o /local/sdks/java \
             -c /local/openapi-generator/java.config.json \
@@ -150,6 +150,8 @@ jobs:
 
       - name: Create Pull Request
         if: steps.changes.outputs.has_changes == 'true'
+        id: create-pr
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -166,7 +168,7 @@ jobs:
 
             ## Trigger
             Changes detected in:
-            - `openapi/openapi.yaml`
+            - `documentation/openapi.yaml`
             - `openapi-generator/*.json`
 
             ---
@@ -176,3 +178,16 @@ jobs:
           labels: |
             automated
             sdk
+
+      - name: PR Creation Status
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          if [ "${{ steps.create-pr.outcome }}" == "failure" ]; then
+            echo "::warning::PR creation failed. Branch 'chore/regenerate-sdks' was updated."
+            echo "::warning::Please create or merge the PR manually, or enable 'Allow GitHub Actions to create PRs' in repository settings."
+            echo ""
+            echo "Branch pushed successfully: chore/regenerate-sdks"
+            echo "To create PR manually: gh pr create --head chore/regenerate-sdks --title 'chore(sdks): Regenerate SDKs'"
+          else
+            echo "PR created/updated successfully: ${{ steps.create-pr.outputs.pull-request-url }}"
+          fi

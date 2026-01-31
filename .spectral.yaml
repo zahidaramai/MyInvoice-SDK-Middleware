@@ -51,7 +51,7 @@ rules:
     then:
       function: pattern
       functionOptions:
-        match: "^/(healthz|readyz|version|v1/.*)$"
+        match: "^/(healthz|readyz|version|api/v1/.*)$"
 
   # ErrorEnvelope must have error property
   error-envelope-structure:
