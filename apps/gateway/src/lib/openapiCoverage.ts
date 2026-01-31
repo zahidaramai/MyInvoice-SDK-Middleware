@@ -21,7 +21,7 @@ export function convertOpenAPIPathToFastify(path: string): string {
 }
 
 export function loadOpenAPIRoutes(specPath?: string): ExpectedRoute[] {
-  const defaultPath = join(__dirname, "../../../../documentation/openapi.yaml");
+  const defaultPath = join(__dirname, "../../../../openapi/openapi.yaml");
   const filePath = specPath || defaultPath;
 
   const content = readFileSync(filePath, "utf-8");

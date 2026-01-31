@@ -487,7 +487,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
           properties: {
             userId: {
               type: "string",
-              description: "User ID for the POS system (default: hashmato-pos)",
+              description: "User ID for the POS system (default: pos-terminal)",
             },
             permissions: {
               type: "array",
@@ -512,7 +512,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         });
       }
 
-      const { userId = "hashmato-pos", permissions = ["submit:invoice"] } = request.body || {};
+      const { userId = "pos-terminal", permissions = ["submit:invoice"] } = request.body || {};
 
       const { token, expiresAt } = createPosToken(userId, permissions);
 

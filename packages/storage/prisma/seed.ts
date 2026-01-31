@@ -77,12 +77,12 @@ async function main() {
   // 5. Create Admin User with Superadmin role
   const adminPasswordHash = await hashPassword("admin123");
   const adminUser = await prisma.user.upsert({
-    where: { email: "admin@hashlhdn.com" },
+    where: { email: "admin@klcubelhdn.com" },
     update: {
       roleId: superadminRole.id, // Upgrade existing admin to superadmin
     },
     create: {
-      email: "admin@hashlhdn.com",
+      email: "admin@klcubelhdn.com",
       passwordHash: adminPasswordHash,
       name: "System Administrator",
       roleId: superadminRole.id,
@@ -101,7 +101,7 @@ async function main() {
     },
     update: {},
     create: {
-      name: "Hashmato Sdn Bhd",
+      name: "Example Company Sdn Bhd",
       tin: "C12345678901",
       idValue: "202401234567",
       idType: "BRN",
@@ -140,7 +140,7 @@ async function main() {
   console.log("Database seed completed successfully!");
   console.log("========================================");
   console.log("\nAdmin User Credentials:");
-  console.log("  Email: admin@hashlhdn.com");
+  console.log("  Email: admin@klcubelhdn.com");
   console.log("  Password: admin123");
   console.log("\nIMPORTANT: Change the admin password after first login!");
   console.log("\nSample Company:");

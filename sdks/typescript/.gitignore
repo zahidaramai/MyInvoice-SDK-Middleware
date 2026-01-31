@@ -1,9 +1,0 @@
-# Build artifacts
-dist/
-node_modules/
-*.tgz
-
-# IDE
-.idea/
-.vscode/
-*.swp

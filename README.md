@@ -216,10 +216,10 @@ Authorization: Bearer <access_token>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/hashlhdn/submit-consolidate` | Consolidated B2C invoice (daily sales) |
-| POST | `/hashlhdn/submit-justsave` | Save invoice as draft (no LHDN submission) |
-| POST | `/hashlhdn/submit-buyer` | B2B invoice (with buyer TIN + BRN) |
-| POST | `/hashlhdn/submit-personal` | B2C invoice (with buyer NRIC) |
+| POST | `/klcubelhdn/submit-consolidate` | Consolidated B2C invoice (daily sales) |
+| POST | `/klcubelhdn/submit-justsave` | Save invoice as draft (no LHDN submission) |
+| POST | `/klcubelhdn/submit-buyer` | B2B invoice (with buyer TIN + BRN) |
+| POST | `/klcubelhdn/submit-personal` | B2C invoice (with buyer NRIC) |
 
 #### Legacy Unified Endpoint
 
@@ -230,7 +230,7 @@ Authorization: Bearer <access_token>
 #### Submission Request Format
 
 ```json
-POST /api/v1/hashlhdn/submit-buyer
+POST /api/v1/klcubelhdn/submit-buyer
 {
   "companyId": "uuid-of-company",
   "documentVersion": "1.1",
@@ -283,7 +283,7 @@ POST /api/v1/hashlhdn/submit-buyer
 | POST | `/documents/:trackingId/submit` | Submit a saved draft |
 | PUT | `/documents/:trackingId` | Update draft invoice data |
 | DELETE | `/documents/:trackingId` | Delete draft invoice |
-| GET | `/hashlhdn/invoices/:trackingId` | Get full invoice details |
+| GET | `/klcubelhdn/invoices/:trackingId` | Get full invoice details |
 
 #### List Documents
 
@@ -414,7 +414,7 @@ Role-based access control with **6 permissions**:
 
 | Permission | Description | Endpoints |
 |------------|-------------|-----------|
-| `submit:invoice` | Submit invoices to LHDN | `/hashlhdn/*`, `/documents/submit` |
+| `submit:invoice` | Submit invoices to LHDN | `/klcubelhdn/*`, `/documents/submit` |
 | `read:documents` | View documents and statuses | `/documents`, `/documents/:uuid/*` |
 | `cancel:documents` | Cancel submitted documents | `/documents/:uuid/cancel` |
 | `manage:users` | User CRUD operations | `/users/*` |
@@ -506,7 +506,7 @@ A comprehensive Postman collection is included with pre-built requests for all A
 ### Import
 
 ```
-documentation/HashLHDN-API-v1.1.2.postman_collection.json
+documentation/KLCubeLHDN-API-v1.1.2.postman_collection.json
 ```
 
 1. Open Postman > **Import** > Upload the collection file
@@ -567,7 +567,7 @@ MyInvoice-SDK-Middleware/
 ├── apps/
 │   ├── gateway/                 # REST API (Fastify)
 │   │   ├── src/
-│   │   │   ├── adapters/        # HashLHDN + POS adapters
+│   │   │   ├── adapters/        # KLCubeLHDN + POS adapters
 │   │   │   ├── auth/            # JWT authentication
 │   │   │   ├── management/      # User/Role/Company CRUD
 │   │   │   ├── polling/         # Auto status poller + consolidation
@@ -742,7 +742,7 @@ npx @stoplight/spectral-cli lint documentation/openapi.yaml
 ### Project Documentation
 
 - [OpenAPI Specification](documentation/openapi.yaml)
-- [Postman Collection](documentation/HashLHDN-API-v1.1.2.postman_collection.json)
+- [Postman Collection](documentation/KLCubeLHDN-API-v1.1.2.postman_collection.json)
 - [AWS EB Deployment Guide](documentation/AWS-EB-DEPLOYMENT-GUIDE.md)
 - [Docker Deployment Guide](documentation/DEPLOYMENT.md)
 - [Contributing Guide](CONTRIBUTING.md)

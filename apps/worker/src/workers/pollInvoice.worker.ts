@@ -1,7 +1,7 @@
 /**
  * Poll Invoice Worker
  *
- * Processes poll jobs for HashLHDN invoices, fetching status from MyInvois
+ * Processes poll jobs for KLCubeLHDN invoices, fetching status from MyInvois
  * and updating the local Invoice table.
  */
 

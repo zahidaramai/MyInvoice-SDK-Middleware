@@ -147,16 +147,16 @@ describe("TST-06: Share-link Endpoint", () => {
   describe("QR URL format", () => {
     it("should use posInvoiceId for QR registration URL", () => {
       const posInvoiceId = "TC-12345678";
-      const baseUrl = "https://www.duitlhdn.com";
+      const baseUrl = "https://localhost:3000";
 
       const qrUrl = `${baseUrl}/e/${posInvoiceId}`;
 
-      expect(qrUrl).toBe("https://www.duitlhdn.com/e/TC-12345678");
+      expect(qrUrl).toBe("https://localhost:3000/e/TC-12345678");
     });
 
     it("should generate scannable QR URL", () => {
       const posInvoiceId = "HM-abc123XY";
-      const qrUrl = `https://www.duitlhdn.com/e/${posInvoiceId}`;
+      const qrUrl = `https://localhost:3000/e/${posInvoiceId}`;
 
       // URL should be short enough for QR code
       expect(qrUrl.length).toBeLessThan(100);

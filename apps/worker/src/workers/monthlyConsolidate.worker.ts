@@ -147,7 +147,7 @@ export function consolidateItems(invoices: InvoiceWithCompany[]): ConsolidatedIt
       };
       // Handle both rawPayload formats:
       // 1. POS format: { items: [...] } - items at root level
-      // 2. hashlhdn/documents/submit format: { invoices: [{ items: [...] }] } - nested under invoices[0]
+      // 2. klcubelhdn/documents/submit format: { invoices: [{ items: [...] }] } - nested under invoices[0]
       items = payload.items || payload.invoices?.[0]?.items || [];
     } catch {
       // Skip invalid payload

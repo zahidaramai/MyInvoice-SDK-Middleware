@@ -17,10 +17,10 @@ WHERE NOT EXISTS (SELECT 1 FROM "Role" WHERE name = 'Superadmin');
 UPDATE "User" 
 SET "roleId" = (SELECT id FROM "Role" WHERE name = 'Superadmin' LIMIT 1),
     "updatedAt" = NOW()
-WHERE email = 'admin@hashlhdn.com';
+WHERE email = 'admin@klcubelhdn.com';
 
 -- Verify the changes
 SELECT u.email, u.name, r.name as role_name, r.permissions
 FROM "User" u
 JOIN "Role" r ON u."roleId" = r.id
-WHERE u.email = 'admin@hashlhdn.com';
+WHERE u.email = 'admin@klcubelhdn.com';

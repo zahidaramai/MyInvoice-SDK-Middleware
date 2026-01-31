@@ -39,7 +39,7 @@ vi.mock("../src/auth/jwt.js", () => ({
   verifyPosToken: vi.fn((token: string) => {
     if (token === "valid-pos-token") {
       return {
-        userId: "hashmato-pos",
+        userId: "pos-terminal",
         permissions: ["submit:invoice"],
         type: "pos",
       };

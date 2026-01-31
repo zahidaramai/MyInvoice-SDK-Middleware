@@ -195,7 +195,7 @@ async function main(): Promise<void> {
 export { enqueuePoll, enqueueImmediatePoll, getQueueStats } from "./queues/pollSubmission.queue.js";
 export { calculatePollDelay } from "./queues/pollSubmission.queue.js";
 
-// Export poll invoice queue functions for HashLHDN
+// Export poll invoice queue functions for KLCubeLHDN
 export {
   enqueueInvoicePoll,
   enqueueImmediateInvoicePoll,

@@ -6,7 +6,7 @@ export * from "./submissionsRepo.js";
 export * from "./documentsRepo.js";
 export * from "./tinRepo.js";
 
-// HashLHDN repositories
+// KLCubeLHDN repositories
 export * from "./usersRepo.js";
 export * from "./rolesRepo.js";
 export * from "./companiesRepo.js";

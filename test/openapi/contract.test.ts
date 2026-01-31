@@ -4,7 +4,7 @@
  * Validates gateway responses conform to the OpenAPI specification.
  *
  * NOTE: These tests are SKIPPED if openapi/openapi.yaml does not exist.
- * The OpenAPI spec is optional for the HashLHDN project as it uses custom endpoints.
+ * The OpenAPI spec is optional for the KLCubeLHDN project as it uses custom endpoints.
  */
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";

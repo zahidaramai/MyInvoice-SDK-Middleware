@@ -12,14 +12,14 @@ import { taxpayerRoutes } from "./routes/v1/taxpayer.js";
 import { v1StubRoutes } from "./routes/v1.stub.js";
 import { loadConfig } from "./config.js";
 import { initializeSigning } from "./config/signing.js";
-// HashLHDN imports
+// KLCubeLHDN imports
 import { authRoutes } from "./auth/routes.js";
 import { usersRoutes, rolesRoutes, companiesRoutes } from "./management/index.js";
 import {
-  hashlhdnRoutes,
-  documentRoutes as hashlhdnDocumentRoutes,
+  klcubelhdnRoutes,
+  documentRoutes as klcubelhdnDocumentRoutes,
   legacySubmitRoutes,
-} from "./adapters/hashlhdn/index.js";
+} from "./adapters/klcubelhdn/index.js";
 import { posRoutes } from "./adapters/pos/index.js";
 import { publicRoutes } from "./public/index.js";
 // Note: Auth error handling is now integrated into errorHandlerPlugin
@@ -117,19 +117,19 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await fastify.register(taxpayerRoutes);
   await fastify.register(v1StubRoutes);
 
-  // HashLHDN Authentication routes
+  // KLCubeLHDN Authentication routes
   await fastify.register(authRoutes, { prefix: "/api/v1/auth" });
 
-  // HashLHDN Management routes
+  // KLCubeLHDN Management routes
   await fastify.register(usersRoutes, { prefix: "/api/v1/users" });
   await fastify.register(rolesRoutes, { prefix: "/api/v1/roles" });
   await fastify.register(companiesRoutes, { prefix: "/api/v1/companies" });
 
-  // HashLHDN Submission routes
-  await fastify.register(hashlhdnRoutes, { prefix: "/api/v1/hashlhdn" });
+  // KLCubeLHDN Submission routes
+  await fastify.register(klcubelhdnRoutes, { prefix: "/api/v1/klcubelhdn" });
 
-  // HashLHDN Document routes
-  await fastify.register(hashlhdnDocumentRoutes, { prefix: "/api/v1/documents" });
+  // KLCubeLHDN Document routes
+  await fastify.register(klcubelhdnDocumentRoutes, { prefix: "/api/v1/documents" });
 
   // Legacy Submit routes (client's original Postman format)
   // POST /api/v1/documents/submit - unified endpoint with flags

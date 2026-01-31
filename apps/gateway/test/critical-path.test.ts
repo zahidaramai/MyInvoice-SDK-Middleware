@@ -10,14 +10,14 @@
 import { describe, it, expect } from "vitest";
 
 // Import transformer functions for UBL validation
-import { transformToUBL, type CompanyInfo } from "../src/adapters/hashlhdn/transformer.js";
-import type { Invoice, InvoiceItem } from "../src/adapters/hashlhdn/schemas.js";
+import { transformToUBL, type CompanyInfo } from "../src/adapters/klcubelhdn/transformer.js";
+import type { Invoice, InvoiceItem } from "../src/adapters/klcubelhdn/schemas.js";
 
 /**
  * Test company data
  */
 const testCompany: CompanyInfo = {
-  tin: "C24558460090",
+  tin: "C00000000000",
   idValue: "202401012345", // BRN
   idType: "BRN",
   name: "Test Company Sdn Bhd",

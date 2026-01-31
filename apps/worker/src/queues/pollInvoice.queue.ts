@@ -1,7 +1,7 @@
 /**
  * Poll Invoice Queue
  *
- * BullMQ queue for polling HashLHDN invoice status from MyInvois.
+ * BullMQ queue for polling KLCubeLHDN invoice status from MyInvois.
  */
 
 import { Queue, type JobsOptions } from "bullmq";

@@ -9,7 +9,7 @@ import {
   normalizeItem,
   normalizeInvoice,
   detectInvoiceType,
-} from "../src/adapters/hashlhdn/normalizer.js";
+} from "../src/adapters/klcubelhdn/normalizer.js";
 
 describe("TST-11: Normalizer Edge Cases", () => {
   describe("normalizeCustomerToBuyer", () => {

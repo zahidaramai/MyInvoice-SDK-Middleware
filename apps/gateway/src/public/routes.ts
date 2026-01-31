@@ -11,7 +11,7 @@ import {
   updateDraftInvoice,
   type InvoiceStatus,
 } from "@myinvois/storage";
-import { transformToUBL, type CompanyInfo } from "../adapters/hashlhdn/transformer.js";
+import { transformToUBL, type CompanyInfo } from "../adapters/klcubelhdn/transformer.js";
 import type {
   Invoice,
   InvoiceItem,
@@ -19,7 +19,7 @@ import type {
   TaxCode,
   StateCode,
   IdType,
-} from "../adapters/hashlhdn/schemas.js";
+} from "../adapters/klcubelhdn/schemas.js";
 import { submitDocuments, createTokenManager } from "@myinvois/myinvois-client";
 import type { Environment, Mode } from "@myinvois/core";
 import crypto from "crypto";

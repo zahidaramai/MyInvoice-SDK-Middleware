@@ -369,7 +369,7 @@ export interface TinValidateCacheRecord {
 }
 
 // =============================================================================
-// HashLHDN Multi-Tenant Types (User, Role, Company, Invoice)
+// KLCubeLHDN Multi-Tenant Types (User, Role, Company, Invoice)
 // =============================================================================
 
 import type { User, Role, Company, Invoice } from "@prisma/client";

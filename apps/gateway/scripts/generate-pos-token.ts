@@ -20,7 +20,7 @@
  *   pnpm --filter @myinvois/gateway tsx scripts/generate-pos-token.ts --permissions "submit:invoice,read:documents"
  *
  *   # With custom userId
- *   pnpm --filter @myinvois/gateway tsx scripts/generate-pos-token.ts --full-access pos-hashmato
+ *   pnpm --filter @myinvois/gateway tsx scripts/generate-pos-token.ts --full-access pos-example
  *
  * Environment variables required:
  *   JWT_SECRET - The JWT secret used for signing tokens
@@ -116,9 +116,9 @@ async function main() {
   console.log(token);
   console.log("\n=== Usage ===\n");
   console.log("1. Add this token to your POS system's .env file:");
-  console.log(`   DUITLHDN_API_TOKEN=${token}`);
+  console.log(`   MYINVOIS_API_TOKEN=${token}`);
   console.log("\n2. Use it in API requests:");
-  console.log('   curl -X POST "https://api.duitlhdn.com/api/v1/pos/invoice" \\');
+  console.log('   curl -X POST "https://localhost:3000/api/v1/pos/invoice" \\');
   console.log(`        -H "Authorization: Bearer ${token.substring(0, 50)}..." \\`);
   console.log('        -H "Content-Type: application/json" \\');
   console.log("        -d '{...}'");

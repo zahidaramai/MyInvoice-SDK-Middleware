@@ -337,7 +337,7 @@ describe("consolidateItems", () => {
     expect(result[0].discount).toBe(3); // 2 + 1
   });
 
-  it("should handle hashlhdn/documents/submit rawPayload format (nested invoices[0].items)", () => {
+  it("should handle klcubelhdn/documents/submit rawPayload format (nested invoices[0].items)", () => {
     // This format is used by /documents/submit with SaveInvoice: true
     // The rawPayload is stored as the entire request body: { CompanyId, invoices: [{ items: [...] }] }
     const nestedFormatInvoice: InvoiceWithCompany = {

@@ -1,5 +1,5 @@
 /**
- * Invoices repository - handles persistence of HashLHDN invoices
+ * Invoices repository - handles persistence of KLCubeLHDN invoices
  */
 
 import { getPrismaClient } from "../prisma.js";

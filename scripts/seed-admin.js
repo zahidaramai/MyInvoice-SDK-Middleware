@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * HashLHDN Admin Seeder Script
+ * KLCubeLHDN Admin Seeder Script
  *
  * Creates the initial admin user and roles after deployment.
  * This script can be run directly with Node.js (no tsx required).
@@ -23,7 +23,7 @@ const prisma = new PrismaClient();
 const SALT_ROUNDS = 12;
 
 // Default admin credentials - CHANGE IMMEDIATELY AFTER FIRST LOGIN
-const DEFAULT_ADMIN_EMAIL = "admin@hashlhdn.com";
+const DEFAULT_ADMIN_EMAIL = "admin@klcubelhdn.com";
 const DEFAULT_ADMIN_PASSWORD = "CHANGE_ME_IMMEDIATELY";
 
 async function hashPassword(password) {
@@ -33,7 +33,7 @@ async function hashPassword(password) {
 async function seedAdmin() {
   console.log("");
   console.log("========================================");
-  console.log("  HashLHDN Admin Seeder");
+  console.log("  KLCubeLHDN Admin Seeder");
   console.log("========================================");
   console.log("");
 

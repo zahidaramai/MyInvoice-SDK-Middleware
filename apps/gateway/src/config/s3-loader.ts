@@ -36,7 +36,7 @@ export function isS3Path(filePath: string): boolean {
 export async function downloadFromS3(s3Uri: string, region = "ap-southeast-2"): Promise<string> {
   const { bucket, key } = parseS3Uri(s3Uri);
   const fileName = path.basename(key);
-  const localPath = path.join(os.tmpdir(), `hashlhdn-${Date.now()}-${fileName}`);
+  const localPath = path.join(os.tmpdir(), `klcubelhdn-${Date.now()}-${fileName}`);
 
   // Create S3 client (uses IAM role credentials on EC2/EB)
   const s3Client = new S3Client({ region });

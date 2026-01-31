@@ -2,7 +2,7 @@
  * Normalizer Unit Tests
  *
  * Tests for the request normalizer that converts client's original Postman format
- * to the internal HashLHDN format.
+ * to the internal KLCubeLHDN format.
  */
 
 import { describe, it, expect } from "vitest";
@@ -17,7 +17,7 @@ import {
   type OriginalItem,
   type OriginalInvoice,
   type OriginalRequest,
-} from "../../src/adapters/hashlhdn/normalizer.js";
+} from "../../src/adapters/klcubelhdn/normalizer.js";
 
 describe("normalizer", () => {
   describe("normalizeCustomerToBuyer", () => {

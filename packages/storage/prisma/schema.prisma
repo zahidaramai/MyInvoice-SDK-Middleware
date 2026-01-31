@@ -252,10 +252,10 @@ model TinValidateCache {
 }
 
 // =============================================================================
-// HashLHDN Multi-Tenant Models (User, Role, Company Management)
+// KLCubeLHDN Multi-Tenant Models (User, Role, Company Management)
 // =============================================================================
 
-/// User account for HashLHDN platform
+/// User account for KLCubeLHDN platform
 model User {
   id            String        @id @default(uuid())
 
@@ -435,7 +435,7 @@ model RefreshToken {
   @@index([expiresAt])
 }
 
-/// Invoice record for HashLHDN (local storage before/after submission)
+/// Invoice record for KLCubeLHDN (local storage before/after submission)
 model Invoice {
   id                   String    @id @default(uuid())
 
@@ -443,7 +443,7 @@ model Invoice {
   companyId            String
   company              Company   @relation(fields: [companyId], references: [id])
 
-  /// Invoice number (from HashLHDN request)
+  /// Invoice number (from KLCubeLHDN request)
   invoiceNumber        String
 
   /// Short POS invoice ID for QR registration (e.g., "HM-12ys8Uy4")
@@ -461,7 +461,7 @@ model Invoice {
   /// Optimistic locking version (incremented on each update)
   version              Int       @default(1)
 
-  /// Raw HashLHDN JSON payload (stored for reference/retry)
+  /// Raw KLCubeLHDN JSON payload (stored for reference/retry)
   rawPayload           String
 
   /// Transformed UBL 2.1 JSON (stored after transformation)

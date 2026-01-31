@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Fetch Endpoint Full Invoice Data** - Both fetch endpoints now return complete invoice details:
-  - `GET /api/v1/hashlhdn/invoices/:trackingId` - Returns `buyer` object and `links` for valid documents
+  - `GET /api/v1/klcubelhdn/invoices/:trackingId` - Returns `buyer` object and `links` for valid documents
   - `POST /api/v1/documents/fetch` - Returns `items` array and `buyer` object
   - Parsed from stored `rawPayload` and `buyerInfo` JSON fields
   - Links include share, verify, qr, view URLs for VALID documents
@@ -140,7 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Expandable Line Items in Invoice Detail View** - Click on any item to expand and see details:
   - Shows Qty, Unit Price, Tax Rate, and Total
   - Accordion-style toggle with chevron rotation animation
-  - Matches reference design from hashlhdn.com
+  - Matches reference design from klcubelhdn.com
 
 ---
 
@@ -154,7 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Close button to return to invoice list
 
 ### Changed
-- **GET `/api/v1/hashlhdn/invoices/:trackingId`** - Now includes parsed `items` array from stored `rawPayload` for displaying invoice line items in detail view
+- **GET `/api/v1/klcubelhdn/invoices/:trackingId`** - Now includes parsed `items` array from stored `rawPayload` for displaying invoice line items in detail view
 
 ---
 
@@ -207,7 +207,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.1] - 2026-01-22
 
 ### Added
-- Production URL documentation (`https://d18hdb19anlge7.cloudfront.net/api/v1`)
+- Production URL documentation
 - AWS EB deployment changelog in README
 - Developer contact information and expertise section
 - Comprehensive AWS EB CLI deployment guide (`documentation/AWS-EB-DEPLOYMENT-GUIDE.md`)
@@ -278,15 +278,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2026-01-19
 
 ### Added
-- **HashLHDN Adapter Layer** (`apps/gateway/src/adapters/hashlhdn/`)
+- **KLCubeLHDN Adapter Layer** (`apps/gateway/src/adapters/klcubelhdn/`)
   - Request normalizer for client's original format
   - UBL 2.1 transformer for MyInvois submission
   - Support for PascalCase and mixed-case field names
 - **4 Submission Endpoints**:
-  - `POST /api/v1/hashlhdn/submit-consolidate` - B2C daily sales
-  - `POST /api/v1/hashlhdn/submit-justsave` - Save without LHDN submission
-  - `POST /api/v1/hashlhdn/submit-buyer` - B2B with buyer TIN + BRN
-  - `POST /api/v1/hashlhdn/submit-personal` - B2C with buyer NRIC
+  - `POST /api/v1/klcubelhdn/submit-consolidate` - B2C daily sales
+  - `POST /api/v1/klcubelhdn/submit-justsave` - Save without LHDN submission
+  - `POST /api/v1/klcubelhdn/submit-buyer` - B2B with buyer TIN + BRN
+  - `POST /api/v1/klcubelhdn/submit-personal` - B2C with buyer NRIC
 - **Legacy Unified Endpoint** - `POST /api/v1/documents/submit` with flags
 - **Management APIs**:
   - Users CRUD (`/api/v1/users`)
@@ -306,7 +306,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Postman collection and environment files
 
 ### Changed
-- README simplified for HashLHDN private repository
+- README simplified for KLCubeLHDN private repository
 - OpenAPI folder renamed to documentation
 - Tech stack badges added to README
 
@@ -434,13 +434,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.3.10]: https://github.com/shmoulana/duitlhdn/releases/tag/v1.3.10
-[1.2.1]: https://github.com/shmoulana/duitlhdn/releases/tag/v1.2.1
-[1.2.0]: https://github.com/shmoulana/duitlhdn/releases/tag/v1.2.0
-[1.1.1]: https://github.com/shmoulana/duitlhdn/releases/tag/v1.1.1
-[1.1.0]: https://github.com/shmoulana/duitlhdn/releases/tag/v1.1.0
-[0.3.0]: https://github.com/shmoulana/duitlhdn/releases/tag/v0.3.0
-[0.2.1]: https://github.com/shmoulana/duitlhdn/releases/tag/v0.2.1
-[0.2.0]: https://github.com/shmoulana/duitlhdn/compare/v0.1.0...v0.2.0
-[0.1.1]: https://github.com/shmoulana/duitlhdn/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/shmoulana/duitlhdn/releases/tag/v0.1.0
+[1.3.10]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v1.3.10
+[1.2.1]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v1.2.1
+[1.2.0]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v1.2.0
+[1.1.1]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v1.1.1
+[1.1.0]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v1.1.0
+[0.3.0]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v0.3.0
+[0.2.1]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v0.2.1
+[0.2.0]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/compare/v0.1.0...v0.2.0
+[0.1.1]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/zahidaramai/MyInvoice-SDK-Middleware/releases/tag/v0.1.0

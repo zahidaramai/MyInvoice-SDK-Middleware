@@ -1,4 +1,4 @@
-# HashLHDN MyInvois Gateway - Production Dockerfile
+# KLCubeLHDN MyInvois Gateway - Production Dockerfile
 # Multi-stage build for optimized production image
 
 # ===== Stage 1: Builder =====

@@ -36,7 +36,7 @@ function generatePosInvoiceId(companyName: string): string {
  * Get QR URL for a POS invoice ID
  */
 function getQrUrl(posInvoiceId: string): string {
-  const baseUrl = process.env.PUBLIC_URL || "https://www.duitlhdn.com";
+  const baseUrl = process.env.PUBLIC_URL || "https://localhost:3000";
   return `${baseUrl}/e/${posInvoiceId}`;
 }
 
@@ -88,7 +88,7 @@ export async function posRoutes(fastify: FastifyInstance): Promise<void> {
    * {
    *   "success": true,
    *   "invoiceId": "HM-12ys8Uy4",
-   *   "qrUrl": "https://www.duitlhdn.com/e/HM-12ys8Uy4",
+   *   "qrUrl": "https://localhost:3000/e/HM-12ys8Uy4",
    *   "expiresAt": "2026-01-27T12:47:15.000Z"
    * }
    */
