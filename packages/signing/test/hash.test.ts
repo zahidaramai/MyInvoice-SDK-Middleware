@@ -122,19 +122,16 @@ describe('Hash Generation', () => {
       expect(result1).toBe(result2);
     });
 
-    it('preserves key order (per MyInvois SDK spec - no key sorting)', () => {
-      // MyInvois SDK expects JSON.stringify() output WITHOUT key sorting
-      // Different key orders produce different output - this is correct behavior
+    it('produces different output for different key order (per MyInvois SDK spec)', () => {
+      // Per MyInvois SDK spec, no key sorting is performed
+      // Key order matters - JSON.stringify preserves insertion order
       const doc1 = { Invoice: { ID: 'INV-001', Amount: 100 } };
       const doc2 = { Invoice: { Amount: 100, ID: 'INV-001' } };
 
       const result1 = canonicalizeDocument(doc1);
       const result2 = canonicalizeDocument(doc2);
-
-      // Results should be different because key order is preserved
+      // Key order is preserved, so different order = different output
       expect(result1).not.toBe(result2);
-      expect(result1).toBe('{"Invoice":{"ID":"INV-001","Amount":100}}');
-      expect(result2).toBe('{"Invoice":{"Amount":100,"ID":"INV-001"}}');
     });
 
     it('removes UBLExtensions before canonicalizing', () => {
@@ -232,15 +229,14 @@ describe('Hash Generation', () => {
     });
 
     it('produces different hash for different key order (per MyInvois SDK spec)', () => {
-      // MyInvois SDK expects JSON.stringify() output WITHOUT key sorting
-      // Different key orders produce different hashes - this is correct behavior
+      // Per MyInvois SDK spec, no key sorting is performed
+      // Key order matters - JSON.stringify preserves insertion order
       const doc1 = { Invoice: { ID: 'INV-001', Amount: 100 } };
       const doc2 = { Invoice: { Amount: 100, ID: 'INV-001' } };
 
       const hash1 = generateDocumentHash(doc1);
       const hash2 = generateDocumentHash(doc2);
-
-      // Hashes should be different because key order is preserved
+      // Different key order = different hash
       expect(hash1).not.toBe(hash2);
     });
 

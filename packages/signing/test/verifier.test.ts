@@ -8,7 +8,7 @@ import {
   extractSignature,
   recalculateHash
 } from '../src/verifier.js';
-import { sign, SigningService } from '../src/signer.js';
+import { SigningService } from '../src/signer.js';
 import { parsePrivateKey } from '../src/private-key-loader.js';
 import { parseCertificate } from '../src/certificate-loader.js';
 import type { CertificateInfo } from '../src/types.js';

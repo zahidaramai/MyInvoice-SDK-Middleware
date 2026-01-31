@@ -1,0 +1,12 @@
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+
+[dn]
+C=MY
+ST=Selangor
+L=Kuala Lumpur
+O=Expired Org
+CN=Expired Certificate

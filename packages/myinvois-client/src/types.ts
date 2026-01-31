@@ -46,13 +46,27 @@ export interface UpstreamMeta {
 }
 
 /**
+ * MYI-13: Error detail from upstream response
+ */
+export interface UpstreamErrorDetail {
+  code?: string;
+  message?: string;
+  target?: string;
+  propertyName?: string;
+  propertyPath?: string;
+}
+
+/**
  * Upstream error details
+ * MYI-13: Added details array for richer error information
  */
 export interface UpstreamError {
   status: number;
   message: string;
   code?: string;
   meta?: UpstreamMeta;
+  /** MYI-13: Additional error details from upstream (propertyName, propertyPath, target, etc.) */
+  details?: UpstreamErrorDetail[];
 }
 
 /**

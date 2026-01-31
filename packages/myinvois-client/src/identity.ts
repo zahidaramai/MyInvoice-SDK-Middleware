@@ -12,33 +12,12 @@ import type {
   TokenResponse,
   CachedToken,
   LoginResult,
-  UpstreamMeta,
 } from "./types.js";
 import { RATE_LIMITS } from "./rateLimits.js";
+import { extractUpstreamMeta } from "./utils/extractUpstreamMeta.js";
 
 const LOGIN_PATH = "/connect/token";
 const DEFAULT_SCOPE = "InvoicingAPI";
-
-/**
- * Extract upstream metadata from response headers
- */
-function extractUpstreamMeta(headers: Headers): UpstreamMeta {
-  const meta: UpstreamMeta = {};
-
-  const correlationId = headers.get("correlationid") || headers.get("x-correlation-id");
-  if (correlationId) meta.correlationId = correlationId;
-
-  const limit = headers.get("x-rate-limit-limit");
-  if (limit) meta.rateLimitLimit = parseInt(limit, 10);
-
-  const remaining = headers.get("x-rate-limit-remaining");
-  if (remaining) meta.rateLimitRemaining = parseInt(remaining, 10);
-
-  const reset = headers.get("x-rate-limit-reset");
-  if (reset) meta.rateLimitReset = parseInt(reset, 10);
-
-  return meta;
-}
 
 /**
  * Build form-urlencoded body for login
@@ -107,11 +86,17 @@ export async function login(
   const body = buildLoginBody(session);
   const headers = buildLoginHeaders(session);
 
+  // P1-10: Add 10-second timeout to prevent hung identity service blocking gateway
+  const IDENTITY_TIMEOUT_MS = 10_000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), IDENTITY_TIMEOUT_MS);
+
   try {
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
+      signal: controller.signal,
     });
 
     const meta = extractUpstreamMeta(response.headers);
@@ -157,6 +142,18 @@ export async function login(
 
     return { ok: true, token, meta };
   } catch (error) {
+    // P1-10: Handle timeout abort specifically
+    if (error instanceof Error && error.name === "AbortError") {
+      return {
+        ok: false,
+        error: {
+          status: 0,
+          message: `Identity service timeout after ${IDENTITY_TIMEOUT_MS}ms`,
+          code: "IDENTITY_TIMEOUT",
+        },
+      };
+    }
+
     const message = error instanceof Error ? error.message : "Network error";
     return {
       ok: false,
@@ -166,5 +163,8 @@ export async function login(
         code: "NETWORK_ERROR",
       },
     };
+  } finally {
+    // P1-10: Always clear the timeout
+    clearTimeout(timeoutId);
   }
 }

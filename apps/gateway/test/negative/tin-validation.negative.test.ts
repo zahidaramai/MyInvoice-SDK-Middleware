@@ -4,7 +4,7 @@
  * Tests error handling for TIN validation endpoint.
  */
 
-import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, vi } from "vitest";
 import { buildApp } from "../../src/app.js";
 import type { FastifyInstance } from "fastify";
 import {
@@ -15,9 +15,43 @@ import {
   negativeHandlers,
 } from "../../../../test/msw/server.js";
 import { createTaxpayerSession } from "../../../../test/fixtures/sessions.js";
-import { ErrorCodes } from "@myinvois/core";
+import type { ErrorCodes as _ErrorCodes } from "@myinvois/core";
 import { resetInstances } from "../../src/lib/myinvois.js";
 import { sessionStore } from "../../src/lib/sessionStore.js";
+
+// Mock storage functions when no database available (SKIP_TESTCONTAINERS=true)
+vi.mock("@myinvois/storage", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@myinvois/storage")>();
+
+  // If database is available, use original functions
+  if (process.env.SKIP_TESTCONTAINERS !== "true") {
+    return original;
+  }
+
+  // In-memory TIN cache mock
+  const mockTinCache = new Map<string, { valid: boolean; name: string | null; expiresAt: Date }>();
+
+  return {
+    ...original,
+    getTinValidateCache: vi.fn().mockImplementation(async (input) => {
+      const key = `${input.env}:${input.sessionId}:${input.tin}:${input.idType}:${input.idValueHash}`;
+      const cached = mockTinCache.get(key);
+      if (cached && cached.expiresAt > new Date()) {
+        return cached;
+      }
+      return null;
+    }),
+    setTinValidateCache: vi.fn().mockImplementation(async (input) => {
+      const key = `${input.env}:${input.sessionId}:${input.tin}:${input.idType}:${input.idValueHash}`;
+      mockTinCache.set(key, {
+        valid: input.valid,
+        name: input.name,
+        expiresAt: new Date(Date.now() + 86400000),
+      });
+      return input;
+    }),
+  };
+});
 
 describe("Negative Tests: TIN Validation", () => {
   let app: FastifyInstance;

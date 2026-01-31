@@ -109,6 +109,8 @@ export interface NormalizedRejectedDocument {
   codeNumber: string;
   errorCode?: string;
   errorMessage?: string;
+  /** Detailed error information from MyInvois validation */
+  errorDetails?: DocumentError[];
 }
 
 /**

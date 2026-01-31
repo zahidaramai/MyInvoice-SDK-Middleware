@@ -23,8 +23,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 config({ path: resolve(__dirname, "../../.env") });
 
-// Skip if credentials not configured
+// Skip unless explicitly enabled - integration tests hit live MyInvois API
+// Run with: RUN_INTEGRATION_TESTS=true pnpm vitest run test/integration/
 const SKIP_REAL_TESTS =
+  process.env.RUN_INTEGRATION_TESTS !== "true" ||
   !process.env.MYINVOIS_CLIENT_ID ||
   process.env.MYINVOIS_CLIENT_ID === "your-client-id-here";
 
@@ -33,9 +35,14 @@ const SUPPLIER_ID_TYPE = process.env.MYINVOIS_SUPPLIER_ID_TYPE || "BRN";
 const SUPPLIER_ID_VALUE = process.env.MYINVOIS_SUPPLIER_ID_VALUE || "NA";
 const SKIP_INVOICE_TEST = SKIP_REAL_TESTS || !SUPPLIER_TIN;
 
-// MyInvois Sandbox URLs
-const IDENTITY_URL = "https://preprod-identity.myinvois.hasil.gov.my";
-const SYSTEM_URL = "https://preprod-api.myinvois.hasil.gov.my";
+// MyInvois URLs - use PROD or SANDBOX based on env
+const IS_PROD = process.env.MYINVOIS_ENV === "PROD" || process.env.ERP_MYINVOIS_ENV === "PROD";
+const IDENTITY_URL = IS_PROD
+  ? "https://identity.myinvois.hasil.gov.my"
+  : "https://preprod-identity.myinvois.hasil.gov.my";
+const SYSTEM_URL = IS_PROD
+  ? "https://api.myinvois.hasil.gov.my"
+  : "https://preprod-api.myinvois.hasil.gov.my";
 
 // ============================================================================
 // VALID GENERIC TINs for MyInvois Sandbox Testing
@@ -536,7 +543,7 @@ async function waitForDocumentStatus(
               }
             }
           }
-        } catch (e) {
+        } catch {
           // Ignore errors fetching details
         }
       }

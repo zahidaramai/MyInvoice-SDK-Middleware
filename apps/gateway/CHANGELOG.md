@@ -1,34 +1,5 @@
 # @myinvois/gateway
 
-## 0.3.3
-
-### Patch Changes
-
-- 375323c: docs: add postman collection section and v1.0/v1.1 validation status to README
-
-## 0.3.2
-
-### Patch Changes
-
-- feat(scripts): add comprehensive document issuing script
-
-  Add issue-document.ts script supporting all 9 MyInvois document types:
-  - Invoice (01) and Consolidated Invoice
-  - Credit Note (02), Debit Note (03), Refund Note (04)
-  - Self-billed Invoice (11), Credit (12), Debit (13), Refund (14) Notes
-
-  Features:
-  - Support for both v1.0 (unsigned) and v1.1 (signed) documents
-  - Automatic BillingReference for adjustment documents
-  - CLI options for all document parameters
-
-## 0.3.1
-
-### Patch Changes
-
-- Updated dependencies
-  - @myinvois/signing@0.2.2
-
 ## 0.3.0
 
 ### Minor Changes

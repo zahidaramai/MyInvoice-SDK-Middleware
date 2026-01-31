@@ -5,31 +5,24 @@ import type { CertificateInfo, DistinguishedName } from './types.js';
 import { CertificateLoadError, CertificateExpiredError, CertificateNotYetValidError } from './errors.js';
 
 /**
- * Normalize a Distinguished Name from X.500 order to RFC2253 order
- *
- * Node.js X509Certificate.issuer returns DN in X.500 order: C, O, OU, CN
- * LHDN MyInvois expects RFC2253 format: CN, OU, O, C
- *
- * This function reverses the component order.
- */
-function normalizeDistinguishedName(dn: string): string {
-  // Split by newline (Node.js format) and filter empty parts
-  const parts = dn.split('\n').filter(p => p.trim());
-  // Reverse to convert from X.500 (C first) to RFC2253 (CN first)
-  const reversedParts = parts.reverse();
-  // Join with ", " for RFC2253 format
-  return reversedParts.join(', ');
-}
-
-/**
  * Parse a distinguished name string into structured components
  * Handles both comma-separated (RFC 2253) and newline-separated (Node.js X509) formats
+ * Normalizes the raw value to RFC2253 format (CN first) for compatibility with MyInvois
  *
- * The `raw` field contains the normalized RFC2253 format for use with LHDN MyInvois
+ * IMPORTANT: MyInvois expects RFC2253 format where components are ordered from most
+ * specific (CN) to least specific (C), with comma-space separators.
+ * Node.js X509Certificate returns X.500 order (C first), so we must reverse it.
  */
 function parseDistinguishedName(dn: string): DistinguishedName {
-  // Normalize to RFC2253 format (CN first, C last)
-  const normalizedDn = normalizeDistinguishedName(dn);
+  // Convert newline-separated DN to RFC2253 format
+  // Node.js X509Certificate returns newline-separated format in X.500 order (C first)
+  // MyInvois expects RFC2253 format (CN first, comma-space separated)
+  //
+  // Node.js: "C=MY\nO=LHDNM\nOU=...\nCN=..."
+  // RFC2253: "CN=..., OU=..., O=LHDNM, C=MY"
+  const parts = dn.split('\n').filter(p => p.trim());
+  const reversedParts = parts.reverse();
+  const normalizedDn = reversedParts.join(', ');
   const result: DistinguishedName = { raw: normalizedDn };
 
   // Parse common DN components - stop at comma OR newline
@@ -176,9 +169,10 @@ export function parseCertificate(pemContent: string): CertificateInfo {
       .match(/.{2}/g)
       ?.join(':') ?? '';
 
-    // Convert serial number from hex to decimal format
-    // Node.js returns hex (e.g., "01:23:45:67"), MyInvois expects decimal
-    const hexSerial = cert.serialNumber.replace(/:/g, '');
+    // Convert serial number from hex to decimal
+    // Node.js X509Certificate.serialNumber returns hex format (e.g., "012BA689")
+    // MyInvois expects decimal format (e.g., "19637897")
+    const hexSerial = cert.serialNumber.replace(/:/g, ''); // Remove any colons
     const decimalSerial = BigInt('0x' + hexSerial).toString();
 
     return {

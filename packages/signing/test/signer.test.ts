@@ -77,7 +77,7 @@ describe('Document Signer', () => {
       expect(block.signatureValue).toBe(signatureValue);
       expect(block.digestMethod).toBe(SIGNATURE_URIS.DIGEST_METHOD);
       expect(block.digestValue).toBe(digestValue);
-      // Per MyInvois SDK, SigningTime format is without milliseconds
+      // SigningTime format is without milliseconds per MyInvois SDK spec
       expect(block.signingTime).toBe('2026-01-13T12:00:00Z');
     });
 
@@ -101,7 +101,6 @@ describe('Document Signer', () => {
     it('includes raw UBL structure', () => {
       const certDigestBase64 = computeCertDigest(certPem);
       const signingTime = new Date('2026-01-13T12:00:00Z');
-      const timestamp = signingTime.getTime().toString();
 
       const block = createSignatureBlock(
         'digest',
@@ -114,7 +113,7 @@ describe('Document Signer', () => {
       );
 
       expect(block._raw).toBeDefined();
-      // Per official LHDN sample, use static ID 'signature'
+      // Per official LHDN sample, Id is fixed as 'signature'
       expect(block._raw.Id).toBe('signature');
       expect(block._raw.SignedInfo).toBeDefined();
       expect(block._raw.SignatureValue).toBeDefined();
@@ -343,7 +342,7 @@ describe('Document Signer', () => {
       const result = sign(doc, privateKey, certPem, certInfo, signingTime);
 
       expect(result.signedAt).toEqual(signingTime);
-      // Per MyInvois SDK, SigningTime format is without milliseconds
+      // SigningTime format is without milliseconds per MyInvois SDK spec
       expect(result.signatureBlock.signingTime).toBe('2026-01-13T15:30:00Z');
     });
 

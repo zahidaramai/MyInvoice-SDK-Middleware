@@ -14,6 +14,17 @@ import {
 import { closeRedisConnection, isRedisConnected } from "./lib/redis.js";
 import { closePollQueue, getQueueStats } from "./queues/pollSubmission.queue.js";
 import { startPollWorker, stopPollWorker } from "./workers/pollSubmission.worker.js";
+import { closePollInvoiceQueue, getInvoicePollQueueStats } from "./queues/pollInvoice.queue.js";
+import { startPollInvoiceWorker, stopPollInvoiceWorker } from "./workers/pollInvoice.worker.js";
+import {
+  initMonthlyConsolidateCron,
+  closeMonthlyConsolidateQueue,
+  getMonthlyConsolidateQueueStats,
+} from "./queues/monthlyConsolidate.queue.js";
+import {
+  startMonthlyConsolidateWorker,
+  stopMonthlyConsolidateWorker,
+} from "./workers/monthlyConsolidate.worker.js";
 
 export const WORKER_NAME = "@myinvois/worker";
 export const WORKER_VERSION = "0.1.0";
@@ -50,13 +61,25 @@ async function shutdown(signal: string): Promise<void> {
   logger.info({ signal }, "Received signal, shutting down gracefully...");
 
   try {
-    // Stop the worker first (finishes current jobs)
+    // Stop the workers first (finishes current jobs)
     await stopPollWorker();
-    logger.info("Poll worker stopped");
+    logger.info("Poll submission worker stopped");
 
-    // Close the queue
+    await stopPollInvoiceWorker();
+    logger.info("Poll invoice worker stopped");
+
+    await stopMonthlyConsolidateWorker();
+    logger.info("Monthly consolidation worker stopped");
+
+    // Close the queues
     await closePollQueue();
-    logger.info("Poll queue closed");
+    logger.info("Poll submission queue closed");
+
+    await closePollInvoiceQueue();
+    logger.info("Poll invoice queue closed");
+
+    await closeMonthlyConsolidateQueue();
+    logger.info("Monthly consolidation queue closed");
 
     // Stop metrics server
     await stopMetricsServer();
@@ -111,13 +134,30 @@ async function main(): Promise<void> {
   }
   logger.info("Redis connected");
 
-  // Start the poll worker
-  const worker = startPollWorker();
-  logger.info({ concurrency: 10 }, "Poll worker started");
+  // Start the poll workers
+  const submissionWorker = startPollWorker();
+  logger.info({ concurrency: 10 }, "Poll submission worker started");
+
+  const invoiceWorker = startPollInvoiceWorker();
+  logger.info({ concurrency: 5 }, "Poll invoice worker started");
+
+  // Initialize monthly consolidation cron job
+  await initMonthlyConsolidateCron();
+  logger.info("Monthly consolidation cron initialized (28th @ 2:00 AM MYT)");
+
+  // Start the monthly consolidation worker
+  const consolidateWorker = startMonthlyConsolidateWorker();
+  logger.info({ concurrency: 1 }, "Monthly consolidation worker started");
 
   // Log initial queue stats
-  const stats = await getQueueStats();
-  logger.info(stats, "Queue stats");
+  const submissionStats = await getQueueStats();
+  logger.info(submissionStats, "Poll submission queue stats");
+
+  const invoiceStats = await getInvoicePollQueueStats();
+  logger.info(invoiceStats, "Poll invoice queue stats");
+
+  const consolidateStats = await getMonthlyConsolidateQueueStats();
+  logger.info(consolidateStats, "Monthly consolidation queue stats");
 
   // Register shutdown handlers
   process.on("SIGTERM", () => shutdown("SIGTERM"));
@@ -129,19 +169,43 @@ async function main(): Promise<void> {
   // Log stats periodically
   setInterval(async () => {
     if (!isShuttingDown) {
-      const stats = await getQueueStats();
-      logger.debug(stats, "Queue stats");
+      const submissionStats = await getQueueStats();
+      logger.debug(submissionStats, "Poll submission queue stats");
+
+      const invoiceStats = await getInvoicePollQueueStats();
+      logger.debug(invoiceStats, "Poll invoice queue stats");
+
+      const consolidateStats = await getMonthlyConsolidateQueueStats();
+      logger.debug(consolidateStats, "Monthly consolidation queue stats");
     }
   }, 60000); // Every minute
 
-  // Wait for worker to be ready
-  await worker.waitUntilReady();
-  logger.info("Worker is ready to process jobs");
+  // Wait for workers to be ready
+  await Promise.all([
+    submissionWorker.waitUntilReady(),
+    invoiceWorker.waitUntilReady(),
+    consolidateWorker.waitUntilReady(),
+  ]);
+  logger.info("All workers are ready to process jobs");
 }
 
 // Export queue functions for gateway to use
 export { enqueuePoll, enqueueImmediatePoll, getQueueStats } from "./queues/pollSubmission.queue.js";
 export { calculatePollDelay } from "./queues/pollSubmission.queue.js";
+
+// Export poll invoice queue functions for HashLHDN
+export {
+  enqueueInvoicePoll,
+  enqueueImmediateInvoicePoll,
+  getInvoicePollQueueStats,
+  calculateInvoicePollDelay,
+} from "./queues/pollInvoice.queue.js";
+
+// Export monthly consolidation queue functions for admin API
+export {
+  triggerManualConsolidation,
+  getMonthlyConsolidateQueueStats,
+} from "./queues/monthlyConsolidate.queue.js";
 
 // Run main if this is the entry point
 main().catch((error) => {

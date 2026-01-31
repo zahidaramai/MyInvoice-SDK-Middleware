@@ -447,9 +447,18 @@ export const submissionsRoutes: FastifyPluginAsync = async (fastify) => {
         nextPollAt,
       });
 
-      // Enqueue poll job (fire and forget, don't block response)
-      enqueuePoll(trackingId, pollDelay).catch((err) => {
-        request.log.warn({ trackingId, error: err }, "Failed to enqueue poll job");
+      // P0-09: Enqueue poll job with retry and proper error logging
+      // Fire-and-forget but with single retry and error-level logging
+      // Auto-poller (5min interval) will catch documents if enqueue fails
+      enqueuePoll(trackingId, pollDelay).catch(async (firstErr) => {
+        // Retry once after 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        enqueuePoll(trackingId, pollDelay).catch((retryErr) => {
+          request.log.error(
+            { trackingId, firstError: firstErr?.message, retryError: retryErr?.message },
+            "Poll job enqueue failed after retry - auto-poller will catch this document"
+          );
+        });
       });
 
       // Build response

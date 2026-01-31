@@ -375,3 +375,311 @@ export interface TinValidateCacheRecord {
   expiresAt: Date;
   correlationId: string | null;
 }
+
+// =============================================================================
+// HashLHDN Multi-Tenant Types (User, Role, Company, Invoice)
+// =============================================================================
+
+import type { User, Role, Company, Invoice } from "@prisma/client";
+
+// Re-export Prisma types for external use
+export type { User, Role, Company, Invoice };
+
+/**
+ * Generic paginated result
+ */
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// === User Types ===
+
+/**
+ * User with role relation
+ */
+export interface UserWithRole extends User {
+  role: Role;
+}
+
+/**
+ * User with role and companies
+ */
+export interface UserWithRoleAndCompanies extends User {
+  role: Role;
+  companies: Array<{
+    company: Company;
+  }>;
+}
+
+/**
+ * Input for creating a user
+ */
+export interface CreateUserInput {
+  email: string;
+  passwordHash: string;
+  name: string;
+  roleId: string;
+  isActive?: boolean;
+}
+
+/**
+ * Input for updating a user
+ */
+export interface UpdateUserInput {
+  email?: string;
+  passwordHash?: string;
+  name?: string;
+  roleId?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Options for listing users
+ */
+export interface ListUsersOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  roleId?: string;
+  isActive?: boolean;
+}
+
+// === Role Types ===
+
+/**
+ * Role with user count
+ */
+export interface RoleWithUserCount extends Role {
+  userCount: number;
+}
+
+/**
+ * Input for creating a role
+ */
+export interface CreateRoleInput {
+  name: string;
+  permissions: string[];
+  description?: string;
+}
+
+/**
+ * Input for updating a role
+ */
+export interface UpdateRoleInput {
+  name?: string;
+  permissions?: string[];
+  description?: string;
+}
+
+/**
+ * Options for listing roles
+ */
+export interface ListRolesOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+// === Company Types ===
+
+/**
+ * Company ID type
+ */
+export type CompanyIdType = "BRN" | "NRIC" | "PASSPORT" | "ARMY";
+
+/**
+ * Company with users relation
+ */
+export interface CompanyWithUsers extends Company {
+  users: Array<{
+    user: UserWithRole;
+  }>;
+}
+
+/**
+ * Input for creating a company
+ */
+export interface CreateCompanyInput {
+  name: string;
+  tin: string;
+  idValue: string;
+  idType?: CompanyIdType;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  sstRegistration?: string;
+  ttxRegistration?: string;
+  industryCode?: string;
+  industryName?: string;
+  myinvoisClientId?: string;
+  myinvoisClientSecret?: string;
+  myinvoisEnv?: StorageEnvironment;
+  isActive?: boolean;
+}
+
+/**
+ * Input for updating a company
+ */
+export interface UpdateCompanyInput {
+  name?: string;
+  tin?: string;
+  idValue?: string;
+  idType?: CompanyIdType;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  sstRegistration?: string;
+  ttxRegistration?: string;
+  industryCode?: string;
+  industryName?: string;
+  myinvoisEnv?: StorageEnvironment;
+  isActive?: boolean;
+}
+
+/**
+ * Input for updating company credentials
+ */
+export interface UpdateCompanyCredentialsInput {
+  myinvoisClientId: string;
+  myinvoisClientSecret: string;
+  myinvoisEnv?: StorageEnvironment;
+}
+
+/**
+ * Options for listing companies
+ */
+export interface ListCompaniesOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
+// === Refresh Token Types ===
+
+/**
+ * Input for creating a refresh token
+ */
+export interface CreateRefreshTokenInput {
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  userAgent?: string;
+  ipAddress?: string;
+}
+
+// === Invoice Types ===
+
+/**
+ * Invoice status
+ */
+export type InvoiceStatus =
+  | "DRAFT"
+  | "PENDING"
+  | "SUBMITTING"  // Async: Invoice saved, MyInvois submission in progress
+  | "SUBMITTED"
+  | "VALID"
+  | "INVALID"
+  | "CANCELLED";
+
+/**
+ * Invoice type
+ */
+export type InvoiceType = "CONSOLIDATE" | "BUYER" | "PERSONAL" | "JUSTSAVE";
+
+/**
+ * Invoice with company relation
+ */
+export interface InvoiceWithCompany extends Invoice {
+  company: Company;
+}
+
+/**
+ * Input for creating an invoice
+ */
+export interface CreateInvoiceInput {
+  companyId: string;
+  invoiceNumber: string;
+  invoiceDate: Date;
+  invoiceType: InvoiceType;
+  status?: InvoiceStatus;
+  rawPayload: string;
+  ublPayload?: string;
+  trackingId?: string;
+  posInvoiceId?: string;
+  amount: string;
+  discount?: string;
+  rounding?: string;
+  taxAmount: string;
+  total: string;
+  buyerInfo?: string;
+  createdBy?: string;
+}
+
+/**
+ * Input for updating an invoice
+ */
+export interface UpdateInvoiceInput {
+  status?: InvoiceStatus;
+  ublPayload?: string;
+  trackingId?: string;
+  myinvoisUuid?: string;
+  myinvoisLongId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+/**
+ * Input for updating invoice status
+ */
+export interface UpdateInvoiceStatusInput {
+  status: InvoiceStatus;
+  trackingId?: string;
+  myinvoisUuid?: string;
+  myinvoisLongId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+/**
+ * Input for updating draft invoice data (full update)
+ * Used when editing a DRAFT invoice before submission
+ */
+export interface UpdateDraftInvoiceInput {
+  invoiceDate?: Date;
+  rawPayload?: string;
+  amount?: string;
+  discount?: string;
+  rounding?: string;
+  taxAmount?: string;
+  total?: string;
+  buyerInfo?: string;
+  invoiceType?: string; // PERSONAL, BUYER, or CONSOLIDATE
+}
+
+/**
+ * Options for listing invoices
+ */
+export interface ListInvoicesOptions {
+  page?: number;
+  limit?: number;
+  companyId?: string;
+  status?: InvoiceStatus;
+  statusNot?: InvoiceStatus;
+  invoiceType?: InvoiceType;
+  search?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+}

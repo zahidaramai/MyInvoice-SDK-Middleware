@@ -5,7 +5,15 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "**/*.js", "**/*.cjs"],
+    ignores: [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/*.js",
+      "**/*.cjs",
+      ".deploy/**",
+      "sdks/**",
+      "scripts/**",
+    ],
   },
   {
     files: ["**/*.ts"],

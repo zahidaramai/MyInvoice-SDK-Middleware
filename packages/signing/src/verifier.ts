@@ -200,30 +200,25 @@ export function extractSignature(document: Record<string, unknown>): {
   }
 
   // Extract digest value from SignedInfo
-  // Per LHDN v1.1, References are ordered: 1) SignedProperties, 2) Document
-  // Document reference has empty URI and Type
   let digestValue: string | null = null;
   if (signedInfo) {
     const referenceRaw = signedInfo.Reference;
-    // Handle array of references (new format)
+    // Handle array of references (new format per official LHDN sample)
+    // Reference[0] = SignedProperties digest (Type = http://uri.etsi.org/01903/v1.3.2#SignedProperties)
+    // Reference[1] = Document digest (Type = "" or missing, URI = "")
     if (Array.isArray(referenceRaw) && referenceRaw.length > 0) {
-      // Find the document reference (empty URI or no Type starting with http://uri.etsi.org)
-      let documentReference: Record<string, unknown> | null = null;
-      for (const ref of referenceRaw) {
-        const refObj = ref as Record<string, unknown>;
-        const refType = refObj.Type as string || '';
-        const refUri = refObj.URI as string || '';
-        // Document reference has empty Type or empty URI (not SignedProperties type)
-        if (!refType.includes('SignedProperties') && !refUri.includes('#id-xades-signed-props')) {
-          documentReference = refObj;
-          break;
+      // Find the document reference (Type is empty string or missing, URI is empty)
+      let reference = referenceRaw[0] as Record<string, unknown>;
+
+      // If first reference is SignedProperties, use the second one for document digest
+      if (referenceRaw.length > 1) {
+        const firstType = (reference.Type as string) || '';
+        if (firstType.includes('SignedProperties')) {
+          reference = referenceRaw[1] as Record<string, unknown>;
         }
       }
-      // Fallback to last reference if no document reference found
-      if (!documentReference) {
-        documentReference = referenceRaw[referenceRaw.length - 1] as Record<string, unknown>;
-      }
-      const digestValRaw = documentReference.DigestValue;
+
+      const digestValRaw = reference.DigestValue;
       if (Array.isArray(digestValRaw) && digestValRaw.length > 0) {
         const digestObj = digestValRaw[0] as Record<string, unknown>;
         digestValue = digestObj._ as string || null;

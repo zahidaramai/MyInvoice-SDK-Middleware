@@ -1,0 +1,116 @@
+# HashLHDN MyInvois Gateway - Production Docker Compose
+# For AWS EC2/VPS deployment
+
+version: "3.8"
+
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: hashlhdn-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
+
+      # Redis
+      REDIS_URL: ${REDIS_URL}
+
+      # JWT Authentication
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_EXPIRY: ${JWT_ACCESS_EXPIRY:-15m}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-7d}
+
+      # MyInvois API (fallback - companies have their own credentials)
+      MYINVOIS_CLIENT_ID: ${MYINVOIS_CLIENT_ID:-}
+      MYINVOIS_CLIENT_SECRET_1: ${MYINVOIS_CLIENT_SECRET_1:-}
+      MYINVOIS_ENV: ${MYINVOIS_ENV:-PROD}
+
+      # Document Signing (v1.1)
+      SIGNING_ENABLED: ${SIGNING_ENABLED:-true}
+      SIGNING_DEFAULT_VERSION: ${SIGNING_DEFAULT_VERSION:-1.1}
+      SIGNING_PKCS12_PATH: /app/certs/signing.p12
+      SIGNING_PKCS12_PASSPHRASE: ${SIGNING_PKCS12_PASSPHRASE}
+
+      # Server
+      NODE_ENV: production
+      PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - ./certs:/app/certs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hashlhdn-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: hashlhdn-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hashlhdn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-hashlhdn}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hashlhdn-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hashlhdn}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hashlhdn-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - hashlhdn-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: Nginx reverse proxy with SSL
+  nginx:
+    image: nginx:alpine
+    container_name: hashlhdn-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - gateway
+    networks:
+      - hashlhdn-network
+    profiles:
+      - with-nginx
+
+networks:
+  hashlhdn-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -12,7 +12,7 @@
  *   pnpm vitest run test/integration/real-sandbox.integration.test.ts
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { config } from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -22,15 +22,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 config({ path: resolve(__dirname, "../../.env") });
 
-// Skip if credentials not configured
-const SKIP_REAL_TESTS = !process.env.MYINVOIS_CLIENT_ID ||
+// Skip unless explicitly enabled - integration tests hit live MyInvois API
+// Run with: RUN_INTEGRATION_TESTS=true pnpm vitest run test/integration/
+const SKIP_REAL_TESTS =
+  process.env.RUN_INTEGRATION_TESTS !== "true" ||
+  !process.env.MYINVOIS_CLIENT_ID ||
   process.env.MYINVOIS_CLIENT_ID === "your-client-id-here" ||
   !process.env.MYINVOIS_CLIENT_SECRET_1 ||
   process.env.MYINVOIS_CLIENT_SECRET_1 === "your-primary-client-secret-here";
 
-// MyInvois Sandbox URLs
-const IDENTITY_URL = "https://preprod-identity.myinvois.hasil.gov.my";
-const SYSTEM_URL = "https://preprod-api.myinvois.hasil.gov.my";
+// MyInvois URLs - use PROD or SANDBOX based on env
+const IS_PROD = process.env.MYINVOIS_ENV === "PROD" || process.env.ERP_MYINVOIS_ENV === "PROD";
+const IDENTITY_URL = IS_PROD
+  ? "https://identity.myinvois.hasil.gov.my"
+  : "https://preprod-identity.myinvois.hasil.gov.my";
+const SYSTEM_URL = IS_PROD
+  ? "https://api.myinvois.hasil.gov.my"
+  : "https://preprod-api.myinvois.hasil.gov.my";
 
 describe.skipIf(SKIP_REAL_TESTS)("Real Sandbox Integration", () => {
   let accessToken: string;
@@ -260,7 +268,7 @@ describe.skipIf(SKIP_REAL_TESTS)("Gateway with Real Upstream", () => {
   // These tests use the gateway but connect to real MyInvois
   // Requires the gateway to NOT have MSW mocking enabled
 
-  let sessionId: string;
+  let _sessionId: string;
 
   /**
    * Note: To run these tests, start the gateway without MSW:

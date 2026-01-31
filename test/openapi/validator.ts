@@ -5,7 +5,7 @@
  * Uses openapi-response-validator for schema validation.
  */
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import yaml from "js-yaml";
@@ -16,6 +16,13 @@ const __dirname = dirname(__filename);
 
 // Canonical OpenAPI spec path
 const OPENAPI_SPEC_PATH = resolve(__dirname, "../../openapi/openapi.yaml");
+
+/**
+ * Check if the OpenAPI spec file exists
+ */
+export function specExists(): boolean {
+  return existsSync(OPENAPI_SPEC_PATH);
+}
 
 /**
  * Parsed OpenAPI specification

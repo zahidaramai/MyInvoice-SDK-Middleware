@@ -13,15 +13,23 @@ interface WindowState {
 }
 
 const WINDOW_SIZE_MS = 60_000; // 1 minute
+// P2-13: Cleanup settings to prevent memory leak
+const CLEANUP_INTERVAL_MS = 5 * 60_000; // 5 minutes
+const MAX_ENTRIES = 10_000; // Max entries before forced cleanup
 
 /**
  * In-memory rate limiter using fixed window per minute
  */
 export class InMemoryRateLimiter implements RateLimiter {
   private windows: Map<string, WindowState> = new Map();
+  private lastCleanup: number = nowMs();
 
   consume(key: string, limitPerMinute: number): RateLimitResult {
     const now = nowMs();
+
+    // P2-13: Periodic cleanup to prevent memory leak
+    this.maybeCleanup(now);
+
     let state = this.windows.get(key);
 
     // Reset window if expired or doesn't exist
@@ -86,6 +94,37 @@ export class InMemoryRateLimiter implements RateLimiter {
    */
   clear(): void {
     this.windows.clear();
+  }
+
+  /**
+   * P2-13: Cleanup expired entries to prevent memory leak
+   * Called periodically during consume() or can be called manually
+   */
+  private maybeCleanup(now: number): void {
+    // Skip if recently cleaned and under max entries
+    if (
+      now - this.lastCleanup < CLEANUP_INTERVAL_MS &&
+      this.windows.size < MAX_ENTRIES
+    ) {
+      return;
+    }
+
+    this.lastCleanup = now;
+    const expireThreshold = now - WINDOW_SIZE_MS;
+
+    // Delete all expired entries
+    for (const [key, state] of this.windows) {
+      if (state.windowStart < expireThreshold) {
+        this.windows.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Get current number of tracked keys (for monitoring)
+   */
+  size(): number {
+    return this.windows.size;
   }
 }
 
