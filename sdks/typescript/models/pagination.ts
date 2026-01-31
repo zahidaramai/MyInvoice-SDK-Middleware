@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * HashLHDN MyInvois Middleware API
- * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ``` 
+ * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ```
  *
  * The version of the OpenAPI document: 1.1.1
  * Contact: hello@zahidaramai.com
@@ -12,37 +12,34 @@
  * Do not edit the class manually.
  */
 
-
-
 /**
- * 
+ *
  * @export
  * @interface Pagination
  */
 export interface Pagination {
-    /**
-     * 
-     * @type {number}
-     * @memberof Pagination
-     */
-    'total'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Pagination
-     */
-    'page'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Pagination
-     */
-    'limit'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Pagination
-     */
-    'totalPages'?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Pagination
+   */
+  total?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Pagination
+   */
+  page?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Pagination
+   */
+  limit?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Pagination
+   */
+  totalPages?: number;
 }
-

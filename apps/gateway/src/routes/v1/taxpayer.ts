@@ -9,10 +9,7 @@ import { sessionStore } from "../../lib/sessionStore.js";
 import { getTokenManager, getRateLimiter } from "../../lib/myinvois.js";
 import { isValidSessionId } from "../../lib/validation.js";
 import { loadConfig } from "../../config.js";
-import {
-  validateTaxpayerTin,
-  type IdType,
-} from "@myinvois/myinvois-client";
+import { validateTaxpayerTin, type IdType } from "@myinvois/myinvois-client";
 import {
   getTinValidateCache,
   setTinValidateCache,
@@ -34,7 +31,9 @@ function isValidIdType(idType: string): idType is IdType {
  * Hash ID value for privacy-safe storage
  */
 function hashIdValue(idValue: string, salt: string): string {
-  return createHash("sha256").update(idValue + salt).digest("hex");
+  return createHash("sha256")
+    .update(idValue + salt)
+    .digest("hex");
 }
 
 /**
@@ -93,9 +92,14 @@ export const taxpayerRoutes: FastifyPluginAsync = async (fastify) => {
 
     // Validate idType
     if (!idType || !isValidIdType(idType.toUpperCase())) {
-      throw new AppError(400, "Invalid idType. Must be NRIC, PASSPORT, BRN, or ARMY", "INVALID_ID_TYPE", {
-        propertyPath: "idType",
-      });
+      throw new AppError(
+        400,
+        "Invalid idType. Must be NRIC, PASSPORT, BRN, or ARMY",
+        "INVALID_ID_TYPE",
+        {
+          propertyPath: "idType",
+        }
+      );
     }
 
     // Validate idValue
@@ -177,7 +181,11 @@ export const taxpayerRoutes: FastifyPluginAsync = async (fastify) => {
 
     if (!result.ok) {
       // Handle rate limit
-      if (result.error.status === 429 || result.error.code === "UPSTREAM_RATE_LIMIT" || result.error.code === "RATE_LIMIT_EXCEEDED") {
+      if (
+        result.error.status === 429 ||
+        result.error.code === "UPSTREAM_RATE_LIMIT" ||
+        result.error.code === "RATE_LIMIT_EXCEEDED"
+      ) {
         const retryAfter = result.error.meta?.rateLimitReset
           ? result.error.meta.rateLimitReset - Math.floor(Date.now() / 1000)
           : 60;

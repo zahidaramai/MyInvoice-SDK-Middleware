@@ -6,9 +6,13 @@
  * 2. Session requests v1.1 document format
  */
 
-import type { DocumentVersion, SigningResult } from '@myinvois/signing';
-import { getSigningService, isSigningAvailable, getDefaultDocumentVersion } from '../config/signing.js';
-import { AppError } from '../lib/errors.js';
+import type { DocumentVersion, SigningResult } from "@myinvois/signing";
+import {
+  getSigningService,
+  isSigningAvailable,
+  getDefaultDocumentVersion,
+} from "../config/signing.js";
+import { AppError } from "../lib/errors.js";
 
 /**
  * Document to be signed
@@ -19,7 +23,7 @@ export interface SignableDocument {
   /** Document code number */
   codeNumber: string;
   /** Original format */
-  format: 'JSON' | 'XML';
+  format: "JSON" | "XML";
 }
 
 /**
@@ -31,7 +35,7 @@ export interface SignedDocument {
   /** Document code number */
   codeNumber: string;
   /** Original format */
-  format: 'JSON' | 'XML';
+  format: "JSON" | "XML";
   /** Whether document was signed */
   signed: boolean;
   /** Document hash (from signing) */
@@ -60,7 +64,7 @@ export interface SigningOptions {
  * Check if signing should be applied for the given version
  */
 export function shouldSign(documentVersion: DocumentVersion): boolean {
-  return documentVersion === '1.1' && isSigningAvailable();
+  return documentVersion === "1.1" && isSigningAvailable();
 }
 
 /**
@@ -88,10 +92,7 @@ export function getEffectiveDocumentVersion(
  * @returns Signed document result
  * @throws AppError if signing fails
  */
-export function signDocument(
-  document: SignableDocument,
-  options: SigningOptions
-): SignedDocument {
+export function signDocument(document: SignableDocument, options: SigningOptions): SignedDocument {
   const { documentVersion, correlationId, logger } = options;
 
   // Check if we should sign
@@ -110,20 +111,17 @@ export function signDocument(
   if (!signingService) {
     throw new AppError(
       503,
-      'Signing service unavailable but v1.1 documents requested',
-      'SIGNING_NOT_CONFIGURED',
+      "Signing service unavailable but v1.1 documents requested",
+      "SIGNING_NOT_CONFIGURED",
       { correlationId }
     );
   }
 
   // Check certificate validity
   if (!signingService.isCertificateValid()) {
-    throw new AppError(
-      503,
-      'Signing certificate has expired',
-      'CERTIFICATE_EXPIRED',
-      { correlationId }
-    );
+    throw new AppError(503, "Signing certificate has expired", "CERTIFICATE_EXPIRED", {
+      correlationId,
+    });
   }
 
   // Sign the document
@@ -131,15 +129,15 @@ export function signDocument(
   try {
     result = signingService.sign(document.content);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown signing error';
+    const message = error instanceof Error ? error.message : "Unknown signing error";
     logger?.error(
       { correlationId, codeNumber: document.codeNumber, error: message },
-      'Document signing failed'
+      "Document signing failed"
     );
     throw new AppError(
       500,
       `Failed to sign document ${document.codeNumber}: ${message}`,
-      'SIGNING_FAILED',
+      "SIGNING_FAILED",
       { correlationId }
     );
   }
@@ -151,7 +149,7 @@ export function signDocument(
       documentHash: result.documentHash,
       signedAt: result.signedAt.toISOString(),
     },
-    'Document signed successfully'
+    "Document signed successfully"
   );
 
   return {
@@ -190,7 +188,7 @@ export function signDocuments(
 
   logger?.info(
     { correlationId, documentCount: documents.length, documentVersion },
-    'Signing documents for v1.1 submission'
+    "Signing documents for v1.1 submission"
   );
 
   // Sign each document
@@ -202,7 +200,7 @@ export function signDocuments(
 
   logger?.info(
     { correlationId, signedCount: signedDocuments.length },
-    'All documents signed successfully'
+    "All documents signed successfully"
   );
 
   return signedDocuments;
@@ -219,7 +217,7 @@ export function getSigningStatus(documentVersion: DocumentVersion): {
   canProceed: boolean;
   reason?: string;
 } {
-  const signingRequired = documentVersion === '1.1';
+  const signingRequired = documentVersion === "1.1";
   const signingAvailable = isSigningAvailable();
 
   if (!signingRequired) {
@@ -238,7 +236,7 @@ export function getSigningStatus(documentVersion: DocumentVersion): {
         signingRequired: true,
         signingAvailable: true,
         canProceed: false,
-        reason: 'Certificate has expired',
+        reason: "Certificate has expired",
       };
     }
 
@@ -253,6 +251,6 @@ export function getSigningStatus(documentVersion: DocumentVersion): {
     signingRequired: true,
     signingAvailable: false,
     canProceed: false,
-    reason: 'Signing is required for v1.1 but not configured',
+    reason: "Signing is required for v1.1 but not configured",
   };
 }

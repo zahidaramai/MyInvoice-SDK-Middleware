@@ -25,25 +25,25 @@ info:
   title: HashLHDN MyInvois Middleware API
   version: 1.1.1
 servers:
-- description: Local Development
-  url: http://localhost:3000
-- description: Production
-  url: https://api.hashlhdn.com
+  - description: Local Development
+    url: http://localhost:3000
+  - description: Production
+    url: https://api.hashlhdn.com
 tags:
-- description: Health and readiness checks
-  name: Health
-- description: JWT authentication endpoints
-  name: Authentication
-- description: Invoice submission endpoints
-  name: HashLHDN Submission
-- description: Document operations
-  name: Documents
-- description: User management
-  name: Users
-- description: Role management
-  name: Roles
-- description: Company management
-  name: Companies
+  - description: Health and readiness checks
+    name: Health
+  - description: JWT authentication endpoints
+    name: Authentication
+  - description: Invoice submission endpoints
+    name: HashLHDN Submission
+  - description: Document operations
+    name: Documents
+  - description: User management
+    name: Users
+  - description: Role management
+    name: Roles
+  - description: Company management
+    name: Companies
 paths:
   /healthz:
     get:
@@ -54,13 +54,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/healthCheck_200_response'
+                $ref: "#/components/schemas/healthCheck_200_response"
           description: Gateway is healthy
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -71,7 +71,7 @@ paths:
               style: simple
       summary: Health check
       tags:
-      - Health
+        - Health
   /readyz:
     get:
       description: "Returns OK if all dependencies (DB, Redis) are connected"
@@ -81,13 +81,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReadinessResponse'
+                $ref: "#/components/schemas/ReadinessResponse"
           description: Gateway is ready
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -98,7 +98,7 @@ paths:
               style: simple
       summary: Readiness check
       tags:
-      - Health
+        - Health
   /version:
     get:
       description: Returns the current API version and build information
@@ -108,13 +108,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionResponse'
+                $ref: "#/components/schemas/VersionResponse"
           description: Version information
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -125,7 +125,7 @@ paths:
               style: simple
       summary: Version information
       tags:
-      - Health
+        - Health
   /api/v1/auth/login:
     post:
       description: "Authenticate with email/password, returns access and refresh tokens"
@@ -134,26 +134,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: "#/components/schemas/LoginRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                $ref: "#/components/schemas/LoginResponse"
           description: Login successful
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -164,7 +164,7 @@ paths:
               style: simple
       summary: Login
       tags:
-      - Authentication
+        - Authentication
   /api/v1/auth/logout:
     post:
       description: Invalidate current tokens
@@ -173,20 +173,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogoutRequest'
+              $ref: "#/components/schemas/LogoutRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/logout_200_response'
+                $ref: "#/components/schemas/logout_200_response"
           description: Logout successful
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -196,10 +196,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Logout
       tags:
-      - Authentication
+        - Authentication
   /api/v1/auth/refresh:
     post:
       description: Exchange refresh token for new access token
@@ -208,26 +208,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RefreshRequest'
+              $ref: "#/components/schemas/RefreshRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefreshResponse'
+                $ref: "#/components/schemas/RefreshResponse"
           description: Token refreshed
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -238,7 +238,7 @@ paths:
               style: simple
       summary: Refresh access token
       tags:
-      - Authentication
+        - Authentication
   /api/v1/auth/me:
     get:
       description: Returns details of the authenticated user
@@ -248,19 +248,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CurrentUserResponse'
+                $ref: "#/components/schemas/CurrentUserResponse"
           description: Current user details
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -270,10 +270,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Get current user
       tags:
-      - Authentication
+        - Authentication
   /api/v1/auth/switch-company:
     post:
       description: Switch to a different company context
@@ -282,20 +282,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/switchCompany_request'
+              $ref: "#/components/schemas/switchCompany_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                $ref: "#/components/schemas/LoginResponse"
           description: Company switched
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -305,10 +305,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Switch active company
       tags:
-      - Authentication
+        - Authentication
   /api/v1/hashlhdn/submit-consolidate:
     post:
       description: |
@@ -319,38 +319,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubmitConsolidateRequest'
+              $ref: "#/components/schemas/SubmitConsolidateRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubmissionResponse'
+                $ref: "#/components/schemas/SubmissionResponse"
           description: Submission accepted
         "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Invalid request
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Insufficient permissions
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -360,10 +360,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Submit consolidated invoice
       tags:
-      - HashLHDN Submission
+        - HashLHDN Submission
   /api/v1/hashlhdn/submit-justsave:
     post:
       description: Save invoice to database without submitting to LHDN
@@ -372,32 +372,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubmitJustSaveRequest'
+              $ref: "#/components/schemas/SubmitJustSaveRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubmissionResponse'
+                $ref: "#/components/schemas/SubmissionResponse"
           description: Invoice saved
         "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Invalid request
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -407,10 +407,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Save invoice locally
       tags:
-      - HashLHDN Submission
+        - HashLHDN Submission
   /api/v1/hashlhdn/submit-buyer:
     post:
       description: Submit invoice with buyer TIN + BRN (Business Registration Number)
@@ -419,32 +419,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubmitBuyerRequest'
+              $ref: "#/components/schemas/SubmitBuyerRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubmissionResponse'
+                $ref: "#/components/schemas/SubmissionResponse"
           description: Submission accepted
         "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Invalid request
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -454,10 +454,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Submit B2B invoice
       tags:
-      - HashLHDN Submission
+        - HashLHDN Submission
   /api/v1/hashlhdn/submit-personal:
     post:
       description: Submit invoice with buyer NRIC (personal identification)
@@ -466,32 +466,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubmitPersonalRequest'
+              $ref: "#/components/schemas/SubmitPersonalRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubmissionResponse'
+                $ref: "#/components/schemas/SubmissionResponse"
           description: Submission accepted
         "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Invalid request
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Authentication required
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -501,41 +501,41 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Submit B2C invoice
       tags:
-      - HashLHDN Submission
+        - HashLHDN Submission
   /api/v1/hashlhdn/invoices/{trackingId}:
     get:
       description: "Retrieve invoice details including status, MyInvois UUID, and\
         \ submission history"
       operationId: getInvoiceByTrackingId
       parameters:
-      - explode: false
-        in: path
-        name: trackingId
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: trackingId
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvoiceDetails'
+                $ref: "#/components/schemas/InvoiceDetails"
           description: Invoice details
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Resource not found
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -545,94 +545,94 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Get invoice by tracking ID
       tags:
-      - HashLHDN Submission
+        - HashLHDN Submission
   /api/v1/documents:
     get:
       description: List documents with optional filters
       operationId: listDocuments
       parameters:
-      - explode: true
-        in: query
-        name: companyId
-        required: false
-        schema:
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: status
-        required: false
-        schema:
-          enum:
-          - DRAFT
-          - SUBMITTED
-          - VALID
-          - INVALID
-          - CANCELLED
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: invoiceType
-        required: false
-        schema:
-          enum:
-          - CONSOLIDATE
-          - JUSTSAVE
-          - BUYER
-          - PERSONAL
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: fromDate
-        required: false
-        schema:
-          format: date
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: toDate
-        required: false
-        schema:
-          format: date
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: page
-        required: false
-        schema:
-          default: 1
-          minimum: 1
-          type: integer
-        style: form
-      - explode: true
-        in: query
-        name: limit
-        required: false
-        schema:
-          default: 20
-          maximum: 100
-          minimum: 1
-          type: integer
-        style: form
+        - explode: true
+          in: query
+          name: companyId
+          required: false
+          schema:
+            type: string
+          style: form
+        - explode: true
+          in: query
+          name: status
+          required: false
+          schema:
+            enum:
+              - DRAFT
+              - SUBMITTED
+              - VALID
+              - INVALID
+              - CANCELLED
+            type: string
+          style: form
+        - explode: true
+          in: query
+          name: invoiceType
+          required: false
+          schema:
+            enum:
+              - CONSOLIDATE
+              - JUSTSAVE
+              - BUYER
+              - PERSONAL
+            type: string
+          style: form
+        - explode: true
+          in: query
+          name: fromDate
+          required: false
+          schema:
+            format: date
+            type: string
+          style: form
+        - explode: true
+          in: query
+          name: toDate
+          required: false
+          schema:
+            format: date
+            type: string
+          style: form
+        - explode: true
+          in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            minimum: 1
+            type: integer
+          style: form
+        - explode: true
+          in: query
+          name: limit
+          required: false
+          schema:
+            default: 20
+            maximum: 100
+            minimum: 1
+            type: integer
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentListResponse'
+                $ref: "#/components/schemas/DocumentListResponse"
           description: Document list
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -642,42 +642,42 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List documents
       tags:
-      - Documents
+        - Documents
   /api/v1/documents/{uuid}/status:
     get:
       description: Get the current validation status of a submitted document from
         MyInvois
       operationId: getDocumentStatus
       parameters:
-      - explode: false
-        in: path
-        name: uuid
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: uuid
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentStatusResponse'
+                $ref: "#/components/schemas/DocumentStatusResponse"
           description: Document status
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Resource not found
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -687,41 +687,41 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Get document status
       tags:
-      - Documents
+        - Documents
   /api/v1/documents/{uuid}/pdf:
     get:
       description: Download the PDF representation of a validated document from MyInvois
       operationId: getDocumentPdf
       parameters:
-      - explode: false
-        in: path
-        name: uuid
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: uuid
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentPdfResponse'
+                $ref: "#/components/schemas/DocumentPdfResponse"
           description: Document data
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Resource not found
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -731,53 +731,53 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Download document PDF
       tags:
-      - Documents
+        - Documents
   /api/v1/documents/{uuid}/cancel:
     post:
       description: Cancel a submitted document (within 72 hours)
       operationId: cancelDocument
       parameters:
-      - explode: false
-        in: path
-        name: uuid
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: uuid
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/cancelDocument_request'
+              $ref: "#/components/schemas/cancelDocument_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/cancelDocument_200_response'
+                $ref: "#/components/schemas/cancelDocument_200_response"
           description: Document cancelled
         "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Invalid request
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Resource not found
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -787,50 +787,50 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Cancel document
       tags:
-      - Documents
+        - Documents
   /api/v1/users:
     get:
       description: List all users with pagination and optional search filter
       operationId: listUsers
       parameters:
-      - explode: true
-        in: query
-        name: page
-        required: false
-        schema:
-          default: 1
-          type: integer
-        style: form
-      - explode: true
-        in: query
-        name: limit
-        required: false
-        schema:
-          default: 20
-          type: integer
-        style: form
-      - explode: true
-        in: query
-        name: search
-        required: false
-        schema:
-          type: string
-        style: form
+        - explode: true
+          in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            type: integer
+          style: form
+        - explode: true
+          in: query
+          name: limit
+          required: false
+          schema:
+            default: 20
+            type: integer
+          style: form
+        - explode: true
+          in: query
+          name: search
+          required: false
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserListResponse'
+                $ref: "#/components/schemas/UserListResponse"
           description: User list
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -840,10 +840,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List users
       tags:
-      - Users
+        - Users
     post:
       description: "Create a new user with email, name, and role assignment"
       operationId: createUser
@@ -851,26 +851,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+              $ref: "#/components/schemas/CreateUserRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
           description: User created
         "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Invalid request
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -880,34 +880,34 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Create user
       tags:
-      - Users
+        - Users
   /api/v1/users/{id}:
     delete:
       description: Permanently delete a user from the system
       operationId: deleteUser
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/deleteUser_200_response'
+                $ref: "#/components/schemas/deleteUser_200_response"
           description: User deleted
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -917,39 +917,39 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Delete user
       tags:
-      - Users
+        - Users
     get:
       description: Retrieve user details including role and company assignments
       operationId: getUser
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
           description: User details
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Resource not found
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -959,39 +959,39 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Get user by ID
       tags:
-      - Users
+        - Users
     put:
       description: "Update user details such as name, email, or active status"
       operationId: updateUser
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
+              $ref: "#/components/schemas/UpdateUserRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
           description: User updated
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1001,40 +1001,40 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Update user
       tags:
-      - Users
+        - Users
   /api/v1/users/{id}/role:
     put:
       description: Assign a different role to a user
       operationId: updateUserRole
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/updateUserRole_request'
+              $ref: "#/components/schemas/updateUserRole_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
           description: Role updated
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1044,10 +1044,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Update user role
       tags:
-      - Users
+        - Users
   /api/v1/roles:
     get:
       description: List all roles with pagination
@@ -1057,13 +1057,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoleListResponse'
+                $ref: "#/components/schemas/RoleListResponse"
           description: Role list
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1073,10 +1073,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List roles
       tags:
-      - Roles
+        - Roles
     post:
       description: Create a new role with specified permissions
       operationId: createRole
@@ -1084,20 +1084,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRoleRequest'
+              $ref: "#/components/schemas/CreateRoleRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
           description: Role created
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1107,10 +1107,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Create role
       tags:
-      - Roles
+        - Roles
   /api/v1/roles/all:
     get:
       description: Returns all roles without pagination for dropdowns and selectors
@@ -1120,13 +1120,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/listAllRoles_200_response'
+                $ref: "#/components/schemas/listAllRoles_200_response"
           description: All roles
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1136,10 +1136,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List all roles (no pagination)
       tags:
-      - Roles
+        - Roles
   /api/v1/roles/permissions:
     get:
       description: Returns all available permission strings that can be assigned to
@@ -1150,13 +1150,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/listPermissions_200_response'
+                $ref: "#/components/schemas/listPermissions_200_response"
           description: Available permissions
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1166,22 +1166,22 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List available permissions
       tags:
-      - Roles
+        - Roles
   /api/v1/roles/{id}:
     delete:
       description: Permanently delete a role (fails if users are assigned)
       operationId: deleteRole
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           description: Role deleted
@@ -1189,7 +1189,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1199,33 +1199,33 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Delete role
       tags:
-      - Roles
+        - Roles
     get:
       description: Retrieve role details including assigned permissions
       operationId: getRole
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
           description: Role details
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1235,39 +1235,39 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Get role by ID
       tags:
-      - Roles
+        - Roles
     put:
       description: "Update role name, description, or permissions"
       operationId: updateRole
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateRoleRequest'
+              $ref: "#/components/schemas/UpdateRoleRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
           description: Role updated
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1277,40 +1277,40 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Update role
       tags:
-      - Roles
+        - Roles
   /api/v1/roles/{id}/permissions:
     put:
       description: Replace the permissions assigned to a role
       operationId: updateRolePermissions
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/updateRolePermissions_request'
+              $ref: "#/components/schemas/updateRolePermissions_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
           description: Permissions updated
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1320,10 +1320,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Update role permissions
       tags:
-      - Roles
+        - Roles
   /api/v1/companies:
     get:
       description: List all companies with pagination
@@ -1333,13 +1333,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompanyListResponse'
+                $ref: "#/components/schemas/CompanyListResponse"
           description: Company list
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1349,10 +1349,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List companies
       tags:
-      - Companies
+        - Companies
     post:
       description: Create a new company with TIN and business registration details
       operationId: createCompany
@@ -1360,20 +1360,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCompanyRequest'
+              $ref: "#/components/schemas/CreateCompanyRequest"
         required: true
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
+                $ref: "#/components/schemas/Company"
           description: Company created
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1383,10 +1383,10 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Create company
       tags:
-      - Companies
+        - Companies
   /api/v1/companies/all:
     get:
       description: Returns all companies without pagination for dropdowns and selectors
@@ -1396,13 +1396,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/listAllCompanies_200_response'
+                $ref: "#/components/schemas/listAllCompanies_200_response"
           description: All companies
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1412,22 +1412,22 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: List all companies (no pagination)
       tags:
-      - Companies
+        - Companies
   /api/v1/companies/{id}:
     delete:
       description: Permanently delete a company and all associated data
       operationId: deleteCompany
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           description: Company deleted
@@ -1435,7 +1435,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1445,33 +1445,33 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Delete company
       tags:
-      - Companies
+        - Companies
     get:
       description: Retrieve company details including TIN and MyInvois configuration
       operationId: getCompany
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
+                $ref: "#/components/schemas/Company"
           description: Company details
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1481,39 +1481,39 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Get company by ID
       tags:
-      - Companies
+        - Companies
     put:
       description: "Update company details such as name, address, or contact information"
       operationId: updateCompany
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateCompanyRequest'
+              $ref: "#/components/schemas/UpdateCompanyRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
+                $ref: "#/components/schemas/Company"
           description: Company updated
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1523,40 +1523,40 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Update company
       tags:
-      - Companies
+        - Companies
   /api/v1/companies/{id}/credentials:
     put:
       description: Configure the company's MyInvois API credentials
       operationId: updateCompanyCredentials
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateCredentialsRequest'
+              $ref: "#/components/schemas/UpdateCredentialsRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
+                $ref: "#/components/schemas/Company"
           description: Credentials updated
         "429":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1566,29 +1566,29 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Set MyInvois credentials
       tags:
-      - Companies
+        - Companies
   /api/v1/companies/{id}/users/{userId}:
     delete:
       description: Revoke a user's access to a company
       operationId: removeUserFromCompany
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - explode: false
-        in: path
-        name: userId
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - explode: false
+          in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           description: User removed from company
@@ -1596,7 +1596,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1606,28 +1606,28 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Remove user from company
       tags:
-      - Companies
+        - Companies
     post:
       description: Grant a user access to a company
       operationId: addUserToCompany
       parameters:
-      - explode: false
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - explode: false
-        in: path
-        name: userId
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - explode: false
+          in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           description: User added to company
@@ -1635,7 +1635,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Rate limit exceeded
           headers:
             Retry-After:
@@ -1645,41 +1645,41 @@ paths:
                 type: integer
               style: simple
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       summary: Add user to company
       tags:
-      - Companies
+        - Companies
 components:
   responses:
     BadRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
       description: Invalid request
     Unauthorized:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
       description: Authentication required
     Forbidden:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
       description: Insufficient permissions
     NotFound:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
       description: Resource not found
     TooManyRequests:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
       description: Rate limit exceeded
       headers:
         Retry-After:
@@ -1694,14 +1694,14 @@ components:
         error:
           code: code
           details:
-          - "{}"
-          - "{}"
+            - "{}"
+            - "{}"
           message: message
       properties:
         error:
-          $ref: '#/components/schemas/ErrorResponse_error'
+          $ref: "#/components/schemas/ErrorResponse_error"
       required:
-      - error
+        - error
       type: object
     Pagination:
       example:
@@ -1732,13 +1732,13 @@ components:
       properties:
         status:
           enum:
-          - ok
-          - degraded
+            - ok
+            - degraded
           type: string
         checks:
-          $ref: '#/components/schemas/ReadinessResponse_checks'
+          $ref: "#/components/schemas/ReadinessResponse_checks"
         signing:
-          $ref: '#/components/schemas/ReadinessResponse_signing'
+          $ref: "#/components/schemas/ReadinessResponse_signing"
       type: object
     VersionResponse:
       example:
@@ -1768,8 +1768,8 @@ components:
           format: password
           type: string
       required:
-      - email
-      - password
+        - email
+        - password
       type: object
     LoginResponse:
       example:
@@ -1778,44 +1778,44 @@ components:
         user:
           createdAt: createdAt
           companies:
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
-            name: name
-            tin: tin
-            id: id
-            state: state
-            email: email
-            updatedAt: updatedAt
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
-            name: name
-            tin: tin
-            id: id
-            state: state
-            email: email
-            updatedAt: updatedAt
+            - idType: idType
+              address: address
+              city: city
+              postalCode: postalCode
+              idValue: idValue
+              isActive: true
+              hasCredentials: true
+              createdAt: createdAt
+              phone: phone
+              myinvoisEnv: SANDBOX
+              name: name
+              tin: tin
+              id: id
+              state: state
+              email: email
+              updatedAt: updatedAt
+            - idType: idType
+              address: address
+              city: city
+              postalCode: postalCode
+              idValue: idValue
+              isActive: true
+              hasCredentials: true
+              createdAt: createdAt
+              phone: phone
+              myinvoisEnv: SANDBOX
+              name: name
+              tin: tin
+              id: id
+              state: state
+              email: email
+              updatedAt: updatedAt
           role:
             isSystem: true
             createdAt: createdAt
             permissions:
-            - permissions
-            - permissions
+              - permissions
+              - permissions
             name: name
             description: description
             id: id
@@ -1835,7 +1835,7 @@ components:
           description: Access token expiry in seconds
           type: integer
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
       type: object
     LogoutRequest:
       example:
@@ -1844,7 +1844,7 @@ components:
         refreshToken:
           type: string
       required:
-      - refreshToken
+        - refreshToken
       type: object
     RefreshRequest:
       example:
@@ -1853,7 +1853,7 @@ components:
         refreshToken:
           type: string
       required:
-      - refreshToken
+        - refreshToken
       type: object
     RefreshResponse:
       example:
@@ -1868,79 +1868,79 @@ components:
     CurrentUserResponse:
       example:
         companies:
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
         user:
           createdAt: createdAt
           companies:
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
-            name: name
-            tin: tin
-            id: id
-            state: state
-            email: email
-            updatedAt: updatedAt
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
-            name: name
-            tin: tin
-            id: id
-            state: state
-            email: email
-            updatedAt: updatedAt
+            - idType: idType
+              address: address
+              city: city
+              postalCode: postalCode
+              idValue: idValue
+              isActive: true
+              hasCredentials: true
+              createdAt: createdAt
+              phone: phone
+              myinvoisEnv: SANDBOX
+              name: name
+              tin: tin
+              id: id
+              state: state
+              email: email
+              updatedAt: updatedAt
+            - idType: idType
+              address: address
+              city: city
+              postalCode: postalCode
+              idValue: idValue
+              isActive: true
+              hasCredentials: true
+              createdAt: createdAt
+              phone: phone
+              myinvoisEnv: SANDBOX
+              name: name
+              tin: tin
+              id: id
+              state: state
+              email: email
+              updatedAt: updatedAt
           role:
             isSystem: true
             createdAt: createdAt
             permissions:
-            - permissions
-            - permissions
+              - permissions
+              - permissions
             name: name
             description: description
             id: id
@@ -1952,10 +1952,10 @@ components:
           updatedAt: updatedAt
       properties:
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         companies:
           items:
-            $ref: '#/components/schemas/Company'
+            $ref: "#/components/schemas/Company"
           type: array
       type: object
     InvoiceItem:
@@ -1988,13 +1988,13 @@ components:
         total:
           type: number
       required:
-      - description
-      - quantity
-      - taxAmount
-      - taxCode
-      - taxRate
-      - total
-      - unitPrice
+        - description
+        - quantity
+        - taxAmount
+        - taxCode
+        - taxRate
+        - total
+        - unitPrice
       type: object
     BuyerInfo:
       example:
@@ -2016,10 +2016,10 @@ components:
           type: string
         idType:
           enum:
-          - NRIC
-          - PASSPORT
-          - BRN
-          - ARMY
+            - NRIC
+            - PASSPORT
+            - BRN
+            - ARMY
           type: string
         idValue:
           type: string
@@ -2037,13 +2037,13 @@ components:
         email:
           type: string
       required:
-      - address
-      - city
-      - idType
-      - idValue
-      - name
-      - postalCode
-      - state
+        - address
+        - city
+        - idType
+        - idValue
+        - name
+        - postalCode
+        - state
       type: object
     Invoice:
       example:
@@ -2055,22 +2055,22 @@ components:
         invoiceDate: 2000-01-23T04:56:07.000+00:00
         taxAmount: 5.962133916683182
         items:
-        - unitPrice: 7.061401241503109
-          taxRate: 3.616076749251911
-          total: 4.145608029883936
-          quantity: 2.3021358869347655
-          description: description
-          discount: 9.301444243932576
-          taxCode: taxCode
-          taxAmount: 2.027123023002322
-        - unitPrice: 7.061401241503109
-          taxRate: 3.616076749251911
-          total: 4.145608029883936
-          quantity: 2.3021358869347655
-          description: description
-          discount: 9.301444243932576
-          taxCode: taxCode
-          taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
         buyer:
           idType: NRIC
           address: address
@@ -2099,95 +2099,95 @@ components:
         total:
           type: number
         buyer:
-          $ref: '#/components/schemas/BuyerInfo'
+          $ref: "#/components/schemas/BuyerInfo"
         items:
           items:
-            $ref: '#/components/schemas/InvoiceItem'
+            $ref: "#/components/schemas/InvoiceItem"
           type: array
       required:
-      - amount
-      - discount
-      - invoiceDate
-      - invoiceNumber
-      - items
-      - rounding
-      - taxAmount
-      - total
+        - amount
+        - discount
+        - invoiceDate
+        - invoiceNumber
+        - items
+        - rounding
+        - taxAmount
+        - total
       type: object
     SubmitConsolidateRequest:
       example:
         companyId: companyId
         invoices:
-        - amount: 0.8008281904610115
-          total: 5.637376656633329
-          invoiceNumber: invoiceNumber
-          discount: 6.027456183070403
-          rounding: 1.4658129805029452
-          invoiceDate: 2000-01-23T04:56:07.000+00:00
-          taxAmount: 5.962133916683182
-          items:
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          buyer:
-            idType: NRIC
-            address: address
-            city: city
-            phone: phone
-            postalCode: postalCode
-            tin: tin
-            name: name
-            idValue: idValue
-            state: state
-            email: email
-        - amount: 0.8008281904610115
-          total: 5.637376656633329
-          invoiceNumber: invoiceNumber
-          discount: 6.027456183070403
-          rounding: 1.4658129805029452
-          invoiceDate: 2000-01-23T04:56:07.000+00:00
-          taxAmount: 5.962133916683182
-          items:
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          buyer:
-            idType: NRIC
-            address: address
-            city: city
-            phone: phone
-            postalCode: postalCode
-            tin: tin
-            name: name
-            idValue: idValue
-            state: state
-            email: email
+          - amount: 0.8008281904610115
+            total: 5.637376656633329
+            invoiceNumber: invoiceNumber
+            discount: 6.027456183070403
+            rounding: 1.4658129805029452
+            invoiceDate: 2000-01-23T04:56:07.000+00:00
+            taxAmount: 5.962133916683182
+            items:
+              - unitPrice: 7.061401241503109
+                taxRate: 3.616076749251911
+                total: 4.145608029883936
+                quantity: 2.3021358869347655
+                description: description
+                discount: 9.301444243932576
+                taxCode: taxCode
+                taxAmount: 2.027123023002322
+              - unitPrice: 7.061401241503109
+                taxRate: 3.616076749251911
+                total: 4.145608029883936
+                quantity: 2.3021358869347655
+                description: description
+                discount: 9.301444243932576
+                taxCode: taxCode
+                taxAmount: 2.027123023002322
+            buyer:
+              idType: NRIC
+              address: address
+              city: city
+              phone: phone
+              postalCode: postalCode
+              tin: tin
+              name: name
+              idValue: idValue
+              state: state
+              email: email
+          - amount: 0.8008281904610115
+            total: 5.637376656633329
+            invoiceNumber: invoiceNumber
+            discount: 6.027456183070403
+            rounding: 1.4658129805029452
+            invoiceDate: 2000-01-23T04:56:07.000+00:00
+            taxAmount: 5.962133916683182
+            items:
+              - unitPrice: 7.061401241503109
+                taxRate: 3.616076749251911
+                total: 4.145608029883936
+                quantity: 2.3021358869347655
+                description: description
+                discount: 9.301444243932576
+                taxCode: taxCode
+                taxAmount: 2.027123023002322
+              - unitPrice: 7.061401241503109
+                taxRate: 3.616076749251911
+                total: 4.145608029883936
+                quantity: 2.3021358869347655
+                description: description
+                discount: 9.301444243932576
+                taxCode: taxCode
+                taxAmount: 2.027123023002322
+            buyer:
+              idType: NRIC
+              address: address
+              city: city
+              phone: phone
+              postalCode: postalCode
+              tin: tin
+              name: name
+              idValue: idValue
+              state: state
+              email: email
         buyerEmail: buyerEmail
         documentVersion: "1.0"
       properties:
@@ -2196,20 +2196,20 @@ components:
         documentVersion:
           default: "1.0"
           enum:
-          - "1.0"
-          - "1.1"
+            - "1.0"
+            - "1.1"
           type: string
         buyerEmail:
           format: email
           type: string
         invoices:
           items:
-            $ref: '#/components/schemas/Invoice'
+            $ref: "#/components/schemas/Invoice"
           minItems: 1
           type: array
       required:
-      - companyId
-      - invoices
+        - companyId
+        - invoices
       type: object
     SubmitJustSaveRequest:
       example:
@@ -2223,22 +2223,22 @@ components:
           invoiceDate: 2000-01-23T04:56:07.000+00:00
           taxAmount: 5.962133916683182
           items:
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
+            - unitPrice: 7.061401241503109
+              taxRate: 3.616076749251911
+              total: 4.145608029883936
+              quantity: 2.3021358869347655
+              description: description
+              discount: 9.301444243932576
+              taxCode: taxCode
+              taxAmount: 2.027123023002322
+            - unitPrice: 7.061401241503109
+              taxRate: 3.616076749251911
+              total: 4.145608029883936
+              quantity: 2.3021358869347655
+              description: description
+              discount: 9.301444243932576
+              taxCode: taxCode
+              taxAmount: 2.027123023002322
           buyer:
             idType: NRIC
             address: address
@@ -2254,10 +2254,10 @@ components:
         companyId:
           type: string
         invoice:
-          $ref: '#/components/schemas/Invoice'
+          $ref: "#/components/schemas/Invoice"
       required:
-      - companyId
-      - invoice
+        - companyId
+        - invoice
       type: object
     SubmitBuyerRequest:
       example:
@@ -2271,22 +2271,22 @@ components:
           invoiceDate: 2000-01-23T04:56:07.000+00:00
           taxAmount: 5.962133916683182
           items:
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
+            - unitPrice: 7.061401241503109
+              taxRate: 3.616076749251911
+              total: 4.145608029883936
+              quantity: 2.3021358869347655
+              description: description
+              discount: 9.301444243932576
+              taxCode: taxCode
+              taxAmount: 2.027123023002322
+            - unitPrice: 7.061401241503109
+              taxRate: 3.616076749251911
+              total: 4.145608029883936
+              quantity: 2.3021358869347655
+              description: description
+              discount: 9.301444243932576
+              taxCode: taxCode
+              taxAmount: 2.027123023002322
           buyer:
             idType: NRIC
             address: address
@@ -2305,14 +2305,14 @@ components:
         documentVersion:
           default: "1.0"
           enum:
-          - "1.0"
-          - "1.1"
+            - "1.0"
+            - "1.1"
           type: string
         invoice:
-          $ref: '#/components/schemas/SubmitBuyerRequest_invoice'
+          $ref: "#/components/schemas/SubmitBuyerRequest_invoice"
       required:
-      - companyId
-      - invoice
+        - companyId
+        - invoice
       type: object
     SubmitPersonalRequest:
       example:
@@ -2326,22 +2326,22 @@ components:
           invoiceDate: 2000-01-23T04:56:07.000+00:00
           taxAmount: 5.962133916683182
           items:
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
-          - unitPrice: 7.061401241503109
-            taxRate: 3.616076749251911
-            total: 4.145608029883936
-            quantity: 2.3021358869347655
-            description: description
-            discount: 9.301444243932576
-            taxCode: taxCode
-            taxAmount: 2.027123023002322
+            - unitPrice: 7.061401241503109
+              taxRate: 3.616076749251911
+              total: 4.145608029883936
+              quantity: 2.3021358869347655
+              description: description
+              discount: 9.301444243932576
+              taxCode: taxCode
+              taxAmount: 2.027123023002322
+            - unitPrice: 7.061401241503109
+              taxRate: 3.616076749251911
+              total: 4.145608029883936
+              quantity: 2.3021358869347655
+              description: description
+              discount: 9.301444243932576
+              taxCode: taxCode
+              taxAmount: 2.027123023002322
           buyer:
             idType: NRIC
             address: address
@@ -2360,14 +2360,14 @@ components:
         documentVersion:
           default: "1.0"
           enum:
-          - "1.0"
-          - "1.1"
+            - "1.0"
+            - "1.1"
           type: string
         invoice:
-          $ref: '#/components/schemas/SubmitBuyerRequest_invoice'
+          $ref: "#/components/schemas/SubmitBuyerRequest_invoice"
       required:
-      - companyId
-      - invoice
+        - companyId
+        - invoice
       type: object
     SubmissionResponse:
       example:
@@ -2383,11 +2383,11 @@ components:
           type: string
         status:
           enum:
-          - DRAFT
-          - SUBMITTED
-          - VALID
-          - INVALID
-          - CANCELLED
+            - DRAFT
+            - SUBMITTED
+            - VALID
+            - INVALID
+            - CANCELLED
           type: string
         message:
           type: string
@@ -2455,29 +2455,29 @@ components:
           totalPages: 5
           page: 6
         data:
-        - createdAt: createdAt
-          total: total
-          myinvoisUuid: myinvoisUuid
-          invoiceNumber: invoiceNumber
-          invoiceType: invoiceType
-          invoiceDate: invoiceDate
-          trackingId: trackingId
-          status: status
-        - createdAt: createdAt
-          total: total
-          myinvoisUuid: myinvoisUuid
-          invoiceNumber: invoiceNumber
-          invoiceType: invoiceType
-          invoiceDate: invoiceDate
-          trackingId: trackingId
-          status: status
+          - createdAt: createdAt
+            total: total
+            myinvoisUuid: myinvoisUuid
+            invoiceNumber: invoiceNumber
+            invoiceType: invoiceType
+            invoiceDate: invoiceDate
+            trackingId: trackingId
+            status: status
+          - createdAt: createdAt
+            total: total
+            myinvoisUuid: myinvoisUuid
+            invoiceNumber: invoiceNumber
+            invoiceType: invoiceType
+            invoiceDate: invoiceDate
+            trackingId: trackingId
+            status: status
       properties:
         data:
           items:
-            $ref: '#/components/schemas/DocumentListResponse_data_inner'
+            $ref: "#/components/schemas/DocumentListResponse_data_inner"
           type: array
         pagination:
-          $ref: '#/components/schemas/Pagination'
+          $ref: "#/components/schemas/Pagination"
       type: object
     DocumentStatusResponse:
       example:
@@ -2533,44 +2533,44 @@ components:
       example:
         createdAt: createdAt
         companies:
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
         role:
           isSystem: true
           createdAt: createdAt
           permissions:
-          - permissions
-          - permissions
+            - permissions
+            - permissions
           name: name
           description: description
           id: id
@@ -2590,10 +2590,10 @@ components:
         isActive:
           type: boolean
         role:
-          $ref: '#/components/schemas/Role'
+          $ref: "#/components/schemas/Role"
         companies:
           items:
-            $ref: '#/components/schemas/Company'
+            $ref: "#/components/schemas/Company"
           type: array
         createdAt:
           type: string
@@ -2604,8 +2604,8 @@ components:
       example:
         password: password
         companyIds:
-        - companyIds
-        - companyIds
+          - companyIds
+          - companyIds
         roleId: roleId
         name: name
         email: email
@@ -2625,10 +2625,10 @@ components:
             type: string
           type: array
       required:
-      - email
-      - name
-      - password
-      - roleId
+        - email
+        - name
+        - password
+        - roleId
       type: object
     UpdateUserRequest:
       example:
@@ -2656,119 +2656,119 @@ components:
           totalPages: 5
           page: 6
         data:
-        - createdAt: createdAt
-          companies:
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
+          - createdAt: createdAt
+            companies:
+              - idType: idType
+                address: address
+                city: city
+                postalCode: postalCode
+                idValue: idValue
+                isActive: true
+                hasCredentials: true
+                createdAt: createdAt
+                phone: phone
+                myinvoisEnv: SANDBOX
+                name: name
+                tin: tin
+                id: id
+                state: state
+                email: email
+                updatedAt: updatedAt
+              - idType: idType
+                address: address
+                city: city
+                postalCode: postalCode
+                idValue: idValue
+                isActive: true
+                hasCredentials: true
+                createdAt: createdAt
+                phone: phone
+                myinvoisEnv: SANDBOX
+                name: name
+                tin: tin
+                id: id
+                state: state
+                email: email
+                updatedAt: updatedAt
+            role:
+              isSystem: true
+              createdAt: createdAt
+              permissions:
+                - permissions
+                - permissions
+              name: name
+              description: description
+              id: id
+              updatedAt: updatedAt
             name: name
-            tin: tin
             id: id
-            state: state
+            isActive: true
             email: email
             updatedAt: updatedAt
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
+          - createdAt: createdAt
+            companies:
+              - idType: idType
+                address: address
+                city: city
+                postalCode: postalCode
+                idValue: idValue
+                isActive: true
+                hasCredentials: true
+                createdAt: createdAt
+                phone: phone
+                myinvoisEnv: SANDBOX
+                name: name
+                tin: tin
+                id: id
+                state: state
+                email: email
+                updatedAt: updatedAt
+              - idType: idType
+                address: address
+                city: city
+                postalCode: postalCode
+                idValue: idValue
+                isActive: true
+                hasCredentials: true
+                createdAt: createdAt
+                phone: phone
+                myinvoisEnv: SANDBOX
+                name: name
+                tin: tin
+                id: id
+                state: state
+                email: email
+                updatedAt: updatedAt
+            role:
+              isSystem: true
+              createdAt: createdAt
+              permissions:
+                - permissions
+                - permissions
+              name: name
+              description: description
+              id: id
+              updatedAt: updatedAt
             name: name
-            tin: tin
             id: id
-            state: state
+            isActive: true
             email: email
             updatedAt: updatedAt
-          role:
-            isSystem: true
-            createdAt: createdAt
-            permissions:
-            - permissions
-            - permissions
-            name: name
-            description: description
-            id: id
-            updatedAt: updatedAt
-          name: name
-          id: id
-          isActive: true
-          email: email
-          updatedAt: updatedAt
-        - createdAt: createdAt
-          companies:
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
-            name: name
-            tin: tin
-            id: id
-            state: state
-            email: email
-            updatedAt: updatedAt
-          - idType: idType
-            address: address
-            city: city
-            postalCode: postalCode
-            idValue: idValue
-            isActive: true
-            hasCredentials: true
-            createdAt: createdAt
-            phone: phone
-            myinvoisEnv: SANDBOX
-            name: name
-            tin: tin
-            id: id
-            state: state
-            email: email
-            updatedAt: updatedAt
-          role:
-            isSystem: true
-            createdAt: createdAt
-            permissions:
-            - permissions
-            - permissions
-            name: name
-            description: description
-            id: id
-            updatedAt: updatedAt
-          name: name
-          id: id
-          isActive: true
-          email: email
-          updatedAt: updatedAt
       properties:
         data:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
           type: array
         pagination:
-          $ref: '#/components/schemas/Pagination'
+          $ref: "#/components/schemas/Pagination"
       type: object
     Role:
       example:
         isSystem: true
         createdAt: createdAt
         permissions:
-        - permissions
-        - permissions
+          - permissions
+          - permissions
         name: name
         description: description
         id: id
@@ -2794,8 +2794,8 @@ components:
     CreateRoleRequest:
       example:
         permissions:
-        - permissions
-        - permissions
+          - permissions
+          - permissions
         name: name
         description: description
       properties:
@@ -2808,14 +2808,14 @@ components:
             type: string
           type: array
       required:
-      - name
-      - permissions
+        - name
+        - permissions
       type: object
     UpdateRoleRequest:
       example:
         permissions:
-        - permissions
-        - permissions
+          - permissions
+          - permissions
         name: name
         description: description
       properties:
@@ -2836,31 +2836,31 @@ components:
           totalPages: 5
           page: 6
         data:
-        - isSystem: true
-          createdAt: createdAt
-          permissions:
-          - permissions
-          - permissions
-          name: name
-          description: description
-          id: id
-          updatedAt: updatedAt
-        - isSystem: true
-          createdAt: createdAt
-          permissions:
-          - permissions
-          - permissions
-          name: name
-          description: description
-          id: id
-          updatedAt: updatedAt
+          - isSystem: true
+            createdAt: createdAt
+            permissions:
+              - permissions
+              - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
+          - isSystem: true
+            createdAt: createdAt
+            permissions:
+              - permissions
+              - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
       properties:
         data:
           items:
-            $ref: '#/components/schemas/Role'
+            $ref: "#/components/schemas/Role"
           type: array
         pagination:
-          $ref: '#/components/schemas/Pagination'
+          $ref: "#/components/schemas/Pagination"
       type: object
     Company:
       example:
@@ -2907,8 +2907,8 @@ components:
           type: boolean
         myinvoisEnv:
           enum:
-          - SANDBOX
-          - PROD
+            - SANDBOX
+            - PROD
           type: string
         hasCredentials:
           type: boolean
@@ -2937,10 +2937,10 @@ components:
           type: string
         idType:
           enum:
-          - BRN
-          - NRIC
-          - PASSPORT
-          - ARMY
+            - BRN
+            - NRIC
+            - PASSPORT
+            - ARMY
           type: string
         idValue:
           type: string
@@ -2959,14 +2959,14 @@ components:
         myinvoisEnv:
           default: SANDBOX
           enum:
-          - SANDBOX
-          - PROD
+            - SANDBOX
+            - PROD
           type: string
       required:
-      - idType
-      - idValue
-      - name
-      - tin
+        - idType
+        - idValue
+        - name
+        - tin
       type: object
     UpdateCompanyRequest:
       example:
@@ -2998,8 +2998,8 @@ components:
           type: boolean
         myinvoisEnv:
           enum:
-          - SANDBOX
-          - PROD
+            - SANDBOX
+            - PROD
           type: string
       type: object
     UpdateCredentialsRequest:
@@ -3012,8 +3012,8 @@ components:
         myinvoisClientSecret:
           type: string
       required:
-      - myinvoisClientId
-      - myinvoisClientSecret
+        - myinvoisClientId
+        - myinvoisClientSecret
       type: object
     CompanyListResponse:
       example:
@@ -3023,45 +3023,45 @@ components:
           totalPages: 5
           page: 6
         data:
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
       properties:
         data:
           items:
-            $ref: '#/components/schemas/Company'
+            $ref: "#/components/schemas/Company"
           type: array
         pagination:
-          $ref: '#/components/schemas/Pagination'
+          $ref: "#/components/schemas/Pagination"
       type: object
     healthCheck_200_response:
       example:
@@ -3084,7 +3084,7 @@ components:
         companyId:
           type: string
       required:
-      - companyId
+        - companyId
       type: object
     cancelDocument_request:
       properties:
@@ -3093,7 +3093,7 @@ components:
           minLength: 1
           type: string
       required:
-      - reason
+        - reason
       type: object
     cancelDocument_200_response:
       example:
@@ -3121,53 +3121,53 @@ components:
         roleId:
           type: string
       required:
-      - roleId
+        - roleId
       type: object
     listAllRoles_200_response:
       example:
         data:
-        - isSystem: true
-          createdAt: createdAt
-          permissions:
-          - permissions
-          - permissions
-          name: name
-          description: description
-          id: id
-          updatedAt: updatedAt
-        - isSystem: true
-          createdAt: createdAt
-          permissions:
-          - permissions
-          - permissions
-          name: name
-          description: description
-          id: id
-          updatedAt: updatedAt
+          - isSystem: true
+            createdAt: createdAt
+            permissions:
+              - permissions
+              - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
+          - isSystem: true
+            createdAt: createdAt
+            permissions:
+              - permissions
+              - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
       properties:
         data:
           items:
-            $ref: '#/components/schemas/Role'
+            $ref: "#/components/schemas/Role"
           type: array
       type: object
     listPermissions_200_response:
       example:
         permissions:
-        - submit:invoice
-        - read:documents
-        - cancel:documents
-        - manage:users
-        - manage:roles
-        - manage:companies
-      properties:
-        permissions:
-          example:
           - submit:invoice
           - read:documents
           - cancel:documents
           - manage:users
           - manage:roles
           - manage:companies
+      properties:
+        permissions:
+          example:
+            - submit:invoice
+            - read:documents
+            - cancel:documents
+            - manage:users
+            - manage:roles
+            - manage:companies
           items:
             type: string
           type: array
@@ -3179,55 +3179,55 @@ components:
             type: string
           type: array
       required:
-      - permissions
+        - permissions
       type: object
     listAllCompanies_200_response:
       example:
         data:
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
-        - idType: idType
-          address: address
-          city: city
-          postalCode: postalCode
-          idValue: idValue
-          isActive: true
-          hasCredentials: true
-          createdAt: createdAt
-          phone: phone
-          myinvoisEnv: SANDBOX
-          name: name
-          tin: tin
-          id: id
-          state: state
-          email: email
-          updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
       properties:
         data:
           items:
-            $ref: '#/components/schemas/Company'
+            $ref: "#/components/schemas/Company"
           type: array
       type: object
     ErrorResponse_error:
       example:
         code: code
         details:
-        - "{}"
-        - "{}"
+          - "{}"
+          - "{}"
         message: message
       properties:
         code:
@@ -3239,8 +3239,8 @@ components:
             type: object
           type: array
       required:
-      - code
-      - message
+        - code
+        - message
       type: object
     ReadinessResponse_checks:
       example:
@@ -3249,13 +3249,13 @@ components:
       properties:
         database:
           enum:
-          - ok
-          - error
+            - ok
+            - error
           type: string
         redis:
           enum:
-          - ok
-          - error
+            - ok
+            - error
           type: string
       type: object
     ReadinessResponse_signing:
@@ -3273,10 +3273,10 @@ components:
       type: object
     SubmitBuyerRequest_invoice:
       allOf:
-      - $ref: '#/components/schemas/Invoice'
-      - required:
-        - buyer
-        type: object
+        - $ref: "#/components/schemas/Invoice"
+        - required:
+            - buyer
+          type: object
       example:
         amount: 0.8008281904610115
         total: 5.637376656633329
@@ -3286,22 +3286,22 @@ components:
         invoiceDate: 2000-01-23T04:56:07.000+00:00
         taxAmount: 5.962133916683182
         items:
-        - unitPrice: 7.061401241503109
-          taxRate: 3.616076749251911
-          total: 4.145608029883936
-          quantity: 2.3021358869347655
-          description: description
-          discount: 9.301444243932576
-          taxCode: taxCode
-          taxAmount: 2.027123023002322
-        - unitPrice: 7.061401241503109
-          taxRate: 3.616076749251911
-          total: 4.145608029883936
-          quantity: 2.3021358869347655
-          description: description
-          discount: 9.301444243932576
-          taxCode: taxCode
-          taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
         buyer:
           idType: NRIC
           address: address
@@ -3346,4 +3346,3 @@ components:
       bearerFormat: JWT
       scheme: bearer
       type: http
-

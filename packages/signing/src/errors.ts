@@ -7,25 +7,25 @@
  */
 export enum SigningErrorCode {
   /** Signing is disabled but was requested */
-  SIGNING_DISABLED = 'SIGNING_DISABLED',
+  SIGNING_DISABLED = "SIGNING_DISABLED",
   /** Failed to load certificate */
-  CERTIFICATE_LOAD_FAILED = 'CERTIFICATE_LOAD_FAILED',
+  CERTIFICATE_LOAD_FAILED = "CERTIFICATE_LOAD_FAILED",
   /** Failed to load private key */
-  PRIVATE_KEY_LOAD_FAILED = 'PRIVATE_KEY_LOAD_FAILED',
+  PRIVATE_KEY_LOAD_FAILED = "PRIVATE_KEY_LOAD_FAILED",
   /** Certificate has expired */
-  CERTIFICATE_EXPIRED = 'CERTIFICATE_EXPIRED',
+  CERTIFICATE_EXPIRED = "CERTIFICATE_EXPIRED",
   /** Certificate is not yet valid */
-  CERTIFICATE_NOT_YET_VALID = 'CERTIFICATE_NOT_YET_VALID',
+  CERTIFICATE_NOT_YET_VALID = "CERTIFICATE_NOT_YET_VALID",
   /** Private key does not match certificate */
-  KEY_CERTIFICATE_MISMATCH = 'KEY_CERTIFICATE_MISMATCH',
+  KEY_CERTIFICATE_MISMATCH = "KEY_CERTIFICATE_MISMATCH",
   /** Signing operation failed */
-  SIGNING_FAILED = 'SIGNING_FAILED',
+  SIGNING_FAILED = "SIGNING_FAILED",
   /** Signature verification failed */
-  SIGNATURE_VERIFICATION_FAILED = 'SIGNATURE_VERIFICATION_FAILED',
+  SIGNATURE_VERIFICATION_FAILED = "SIGNATURE_VERIFICATION_FAILED",
   /** Invalid document version */
-  INVALID_DOCUMENT_VERSION = 'INVALID_DOCUMENT_VERSION',
+  INVALID_DOCUMENT_VERSION = "INVALID_DOCUMENT_VERSION",
   /** Signing is enabled but not properly configured */
-  SIGNING_NOT_CONFIGURED = 'SIGNING_NOT_CONFIGURED'
+  SIGNING_NOT_CONFIGURED = "SIGNING_NOT_CONFIGURED",
 }
 
 /**
@@ -52,7 +52,7 @@ export class SigningError extends Error {
     }
   ) {
     super(message, { cause: options?.cause });
-    this.name = 'SigningError';
+    this.name = "SigningError";
     this.code = code;
     this.httpStatus = options?.httpStatus ?? 500;
     this.retryable = options?.retryable ?? false;
@@ -74,7 +74,7 @@ export class SigningError extends Error {
       message: this.message,
       httpStatus: this.httpStatus,
       retryable: this.retryable,
-      context: this.context
+      context: this.context,
     };
   }
 }
@@ -86,7 +86,7 @@ export class CertificateLoadError extends SigningError {
   constructor(
     message: string,
     options?: {
-      source?: 'file' | 'env' | 'base64';
+      source?: "file" | "env" | "base64";
       path?: string;
       cause?: Error;
     }
@@ -96,11 +96,11 @@ export class CertificateLoadError extends SigningError {
       retryable: false,
       context: {
         source: options?.source,
-        path: options?.path
+        path: options?.path,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'CertificateLoadError';
+    this.name = "CertificateLoadError";
   }
 }
 
@@ -111,7 +111,7 @@ export class PrivateKeyLoadError extends SigningError {
   constructor(
     message: string,
     options?: {
-      source?: 'file' | 'env' | 'base64';
+      source?: "file" | "env" | "base64";
       path?: string;
       encrypted?: boolean;
       cause?: Error;
@@ -123,11 +123,11 @@ export class PrivateKeyLoadError extends SigningError {
       context: {
         source: options?.source,
         path: options?.path,
-        encrypted: options?.encrypted
+        encrypted: options?.encrypted,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'PrivateKeyLoadError';
+    this.name = "PrivateKeyLoadError";
   }
 }
 
@@ -153,11 +153,11 @@ export class CertificateExpiredError extends SigningError {
       retryable: false,
       context: {
         expiredAt: expiredAt.toISOString(),
-        subject: options?.subject
+        subject: options?.subject,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'CertificateExpiredError';
+    this.name = "CertificateExpiredError";
     this.expiredAt = expiredAt;
     this.subject = options?.subject;
   }
@@ -185,11 +185,11 @@ export class CertificateNotYetValidError extends SigningError {
       retryable: false,
       context: {
         validFrom: validFrom.toISOString(),
-        subject: options?.subject
+        subject: options?.subject,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'CertificateNotYetValidError';
+    this.name = "CertificateNotYetValidError";
     this.validFrom = validFrom;
     this.subject = options?.subject;
   }
@@ -210,11 +210,11 @@ export class KeyCertificateMismatchError extends SigningError {
       httpStatus: 500,
       retryable: false,
       context: {
-        certificateSubject: options?.certificateSubject
+        certificateSubject: options?.certificateSubject,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'KeyCertificateMismatchError';
+    this.name = "KeyCertificateMismatchError";
   }
 }
 
@@ -235,11 +235,11 @@ export class SignatureGenerationError extends SigningError {
       retryable: true,
       context: {
         algorithm: options?.algorithm,
-        documentId: options?.documentId
+        documentId: options?.documentId,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'SignatureGenerationError';
+    this.name = "SignatureGenerationError";
   }
 }
 
@@ -248,11 +248,21 @@ export class SignatureGenerationError extends SigningError {
  */
 export class SignatureVerificationError extends SigningError {
   /** Type of verification failure */
-  readonly failureType: 'hash_mismatch' | 'invalid_signature' | 'certificate_issue' | 'missing_signature' | 'malformed';
+  readonly failureType:
+    | "hash_mismatch"
+    | "invalid_signature"
+    | "certificate_issue"
+    | "missing_signature"
+    | "malformed";
 
   constructor(
     message: string,
-    failureType: 'hash_mismatch' | 'invalid_signature' | 'certificate_issue' | 'missing_signature' | 'malformed',
+    failureType:
+      | "hash_mismatch"
+      | "invalid_signature"
+      | "certificate_issue"
+      | "missing_signature"
+      | "malformed",
     options?: {
       expectedHash?: string;
       actualHash?: string;
@@ -265,11 +275,11 @@ export class SignatureVerificationError extends SigningError {
       context: {
         failureType,
         expectedHash: options?.expectedHash,
-        actualHash: options?.actualHash
+        actualHash: options?.actualHash,
       },
-      cause: options?.cause
+      cause: options?.cause,
     });
-    this.name = 'SignatureVerificationError';
+    this.name = "SignatureVerificationError";
     this.failureType = failureType;
   }
 }
@@ -278,12 +288,12 @@ export class SignatureVerificationError extends SigningError {
  * Error thrown when signing is disabled but required
  */
 export class SigningDisabledError extends SigningError {
-  constructor(message: string = 'Signing is disabled but v1.1 document was requested') {
+  constructor(message: string = "Signing is disabled but v1.1 document was requested") {
     super(SigningErrorCode.SIGNING_DISABLED, message, {
       httpStatus: 400,
-      retryable: false
+      retryable: false,
     });
-    this.name = 'SigningDisabledError';
+    this.name = "SigningDisabledError";
   }
 }
 
@@ -291,12 +301,14 @@ export class SigningDisabledError extends SigningError {
  * Error thrown when signing is enabled but not properly configured
  */
 export class SigningNotConfiguredError extends SigningError {
-  constructor(message: string = 'Signing is enabled but certificate or private key is not configured') {
+  constructor(
+    message: string = "Signing is enabled but certificate or private key is not configured"
+  ) {
     super(SigningErrorCode.SIGNING_NOT_CONFIGURED, message, {
       httpStatus: 500,
-      retryable: false
+      retryable: false,
     });
-    this.name = 'SigningNotConfiguredError';
+    this.name = "SigningNotConfiguredError";
   }
 }
 
@@ -314,10 +326,10 @@ export class InvalidDocumentVersionError extends SigningError {
       {
         httpStatus: 400,
         retryable: false,
-        context: { providedVersion }
+        context: { providedVersion },
       }
     );
-    this.name = 'InvalidDocumentVersionError';
+    this.name = "InvalidDocumentVersionError";
     this.providedVersion = providedVersion;
   }
 }

@@ -2,17 +2,8 @@
  * MyInvois Identity Service - OAuth2 login
  */
 
-import {
-  resolveIdentityBaseUrl,
-  expiresAtFromExpiresIn,
-  type RateLimiter,
-} from "@myinvois/core";
-import type {
-  SessionCredentials,
-  TokenResponse,
-  CachedToken,
-  LoginResult,
-} from "./types.js";
+import { resolveIdentityBaseUrl, expiresAtFromExpiresIn, type RateLimiter } from "@myinvois/core";
+import type { SessionCredentials, TokenResponse, CachedToken, LoginResult } from "./types.js";
 import { RATE_LIMITS } from "./rateLimits.js";
 import { extractUpstreamMeta } from "./utils/extractUpstreamMeta.js";
 

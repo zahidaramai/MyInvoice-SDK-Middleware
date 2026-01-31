@@ -241,11 +241,7 @@ async function main() {
       const longIdDisplay = inv.myinvoisLongId
         ? inv.myinvoisLongId.substring(0, 25) + "..."
         : "(none)";
-      console.log(
-        inv.invoiceNumber.padEnd(40) +
-        inv.status.padEnd(12) +
-        longIdDisplay
-      );
+      console.log(inv.invoiceNumber.padEnd(40) + inv.status.padEnd(12) + longIdDisplay);
     }
   } catch (err) {
     console.error("Fatal error:", err);

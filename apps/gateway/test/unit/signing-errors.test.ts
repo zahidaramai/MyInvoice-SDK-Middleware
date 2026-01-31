@@ -80,10 +80,9 @@ describe("signing-errors", () => {
     });
 
     it("transforms KeyCertificateMismatchError correctly", () => {
-      const error = new KeyCertificateMismatchError(
-        "Key does not match certificate",
-        { certificateSubject: "CN=Test" }
-      );
+      const error = new KeyCertificateMismatchError("Key does not match certificate", {
+        certificateSubject: "CN=Test",
+      });
       const result = transformSigningError(error);
 
       expect(result.code).toBe(ErrorCodes.KEY_CERTIFICATE_MISMATCH);
@@ -175,7 +174,9 @@ describe("signing-errors", () => {
     });
 
     it("returns true for SignatureVerificationError", () => {
-      expect(isSigningError(new SignatureVerificationError("test", "invalid_signature"))).toBe(true);
+      expect(isSigningError(new SignatureVerificationError("test", "invalid_signature"))).toBe(
+        true
+      );
     });
 
     it("returns false for generic Error", () => {
@@ -235,12 +236,16 @@ describe("signing-errors", () => {
   describe("SigningErrorEnvelope structure", () => {
     it("includes all required fields", () => {
       const error = new SigningError(SigningErrorCode.SIGNING_FAILED, "Test");
-      const result = transformSigningError(error, {
-        phase: "signing",
-        certificateSubject: "CN=Test",
-        documentVersion: "1.1",
-        documentCodeNumber: "INV-001",
-      }, "test-correlation");
+      const result = transformSigningError(
+        error,
+        {
+          phase: "signing",
+          certificateSubject: "CN=Test",
+          documentVersion: "1.1",
+          documentCodeNumber: "INV-001",
+        },
+        "test-correlation"
+      );
 
       // ErrorEnvelope base fields
       expect(result).toHaveProperty("code");

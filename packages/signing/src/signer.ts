@@ -1,33 +1,37 @@
-import * as crypto from 'crypto';
-import type { KeyObject } from 'crypto';
-import type { CertificateInfo, SignatureBlock, SigningResult } from './types.js';
-import { generateDocumentHash, canonicalizeDocument } from './hash.js';
-import { SignatureGenerationError } from './errors.js';
+import * as crypto from "crypto";
+import type { KeyObject } from "crypto";
+import type { CertificateInfo, SignatureBlock, SigningResult } from "./types.js";
+import { generateDocumentHash, canonicalizeDocument } from "./hash.js";
+import { SignatureGenerationError } from "./errors.js";
 
 /**
  * Format a date as ISO string without milliseconds
  * Official LHDN format: "2025-04-15T01:58:17Z" (no milliseconds)
  */
 function formatSigningTime(date: Date): string {
-  return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 
 /**
  * UBL Signature URIs
  */
 export const SIGNATURE_URIS = {
-  EXTENSION_URI: 'urn:oasis:names:specification:ubl:dsig:enveloped:xades',
-  SIGNATURE_ID: 'urn:oasis:names:specification:ubl:signature:1',
-  REFERENCED_SIGNATURE_ID: 'urn:oasis:names:specification:ubl:signature:Invoice',
-  SIGNATURE_METHOD: 'urn:oasis:names:specification:ubl:dsig:enveloped:xades',
-  DIGEST_METHOD: 'http://www.w3.org/2001/04/xmlenc#sha256',
-  TRANSFORM: 'urn:oasis:names:specification:ubl:dsig:enveloped'
+  EXTENSION_URI: "urn:oasis:names:specification:ubl:dsig:enveloped:xades",
+  SIGNATURE_ID: "urn:oasis:names:specification:ubl:signature:1",
+  REFERENCED_SIGNATURE_ID: "urn:oasis:names:specification:ubl:signature:Invoice",
+  SIGNATURE_METHOD: "urn:oasis:names:specification:ubl:dsig:enveloped:xades",
+  DIGEST_METHOD: "http://www.w3.org/2001/04/xmlenc#sha256",
+  TRANSFORM: "urn:oasis:names:specification:ubl:dsig:enveloped",
 } as const;
 
 /**
  * Create the SignedInfo structure in MyInvois UBL JSON array format
  */
-function createSignedInfoUBL(digestValue: string, propsDigest: string, _timestamp: string): unknown[] {
+function createSignedInfoUBL(
+  digestValue: string,
+  propsDigest: string,
+  _timestamp: string
+): unknown[] {
   // Match official LHDN sample structure:
   // - SignedProperties reference FIRST, document reference SECOND
   // - No Id fields in references
@@ -36,37 +40,37 @@ function createSignedInfoUBL(digestValue: string, propsDigest: string, _timestam
     {
       SignatureMethod: [
         {
-          _: '',
-          Algorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
-        }
+          _: "",
+          Algorithm: "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+        },
       ],
       Reference: [
         // First reference: SignedProperties (per official sample)
         {
-          Type: 'http://uri.etsi.org/01903/v1.3.2#SignedProperties',
-          URI: '#id-xades-signed-props',
+          Type: "http://uri.etsi.org/01903/v1.3.2#SignedProperties",
+          URI: "#id-xades-signed-props",
           DigestMethod: [
             {
-              _: '',
-              Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
-            }
+              _: "",
+              Algorithm: "http://www.w3.org/2001/04/xmlenc#sha256",
+            },
           ],
-          DigestValue: [{ _: propsDigest }]
+          DigestValue: [{ _: propsDigest }],
         },
         // Second reference: Document (per official sample)
         {
-          Type: '',
-          URI: '',
+          Type: "",
+          URI: "",
           DigestMethod: [
             {
-              _: '',
-              Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
-            }
+              _: "",
+              Algorithm: "http://www.w3.org/2001/04/xmlenc#sha256",
+            },
           ],
-          DigestValue: [{ _: digestValue }]
-        }
-      ]
-    }
+          DigestValue: [{ _: digestValue }],
+        },
+      ],
+    },
   ];
 }
 
@@ -75,29 +79,25 @@ function createSignedInfoUBL(digestValue: string, propsDigest: string, _timestam
  */
 function signData(data: string, privateKey: KeyObject): string {
   try {
-    const sign = crypto.createSign('RSA-SHA256');
-    sign.update(data, 'utf8');
-    return sign.sign(privateKey, 'base64');
+    const sign = crypto.createSign("RSA-SHA256");
+    sign.update(data, "utf8");
+    return sign.sign(privateKey, "base64");
   } catch (error) {
-    throw new SignatureGenerationError(
-      'Failed to generate RSA-SHA256 signature',
-      { cause: error as Error }
-    );
+    throw new SignatureGenerationError("Failed to generate RSA-SHA256 signature", {
+      cause: error as Error,
+    });
   }
 }
 
 /**
  * Create the KeyInfo structure in MyInvois UBL JSON array format
  */
-function createKeyInfoUBL(
-  certPem: string,
-  certInfo: CertificateInfo
-): unknown[] {
+function createKeyInfoUBL(certPem: string, certInfo: CertificateInfo): unknown[] {
   // Extract certificate content without headers
   const certContent = certPem
-    .replace(/-----BEGIN CERTIFICATE-----/g, '')
-    .replace(/-----END CERTIFICATE-----/g, '')
-    .replace(/\s/g, '');
+    .replace(/-----BEGIN CERTIFICATE-----/g, "")
+    .replace(/-----END CERTIFICATE-----/g, "")
+    .replace(/\s/g, "");
 
   return [
     {
@@ -108,12 +108,12 @@ function createKeyInfoUBL(
           X509IssuerSerial: [
             {
               X509IssuerName: [{ _: certInfo.issuer.raw }],
-              X509SerialNumber: [{ _: certInfo.serialNumber }]
-            }
-          ]
-        }
-      ]
-    }
+              X509SerialNumber: [{ _: certInfo.serialNumber }],
+            },
+          ],
+        },
+      ],
+    },
   ];
 }
 
@@ -129,10 +129,10 @@ function createQualifyingPropertiesUBL(
 ): unknown[] {
   return [
     {
-      Target: 'signature',
+      Target: "signature",
       SignedProperties: [
         {
-          Id: 'id-xades-signed-props',
+          Id: "id-xades-signed-props",
           SignedSignatureProperties: [
             {
               SigningTime: [{ _: formatSigningTime(signingTime) }],
@@ -144,28 +144,28 @@ function createQualifyingPropertiesUBL(
                         {
                           DigestMethod: [
                             {
-                              _: '',
-                              Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
-                            }
+                              _: "",
+                              Algorithm: "http://www.w3.org/2001/04/xmlenc#sha256",
+                            },
                           ],
-                          DigestValue: [{ _: certDigestBase64 }]
-                        }
+                          DigestValue: [{ _: certDigestBase64 }],
+                        },
                       ],
                       IssuerSerial: [
                         {
                           X509IssuerName: [{ _: certInfo.issuer.raw }],
-                          X509SerialNumber: [{ _: certInfo.serialNumber }]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
+                          X509SerialNumber: [{ _: certInfo.serialNumber }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
   ];
 }
 
@@ -183,10 +183,10 @@ function createQualifyingPropertiesForHashing(
   // the full QualifyingProperties structure (Target + SignedProperties),
   // NOT just the SignedProperties alone
   return {
-    Target: 'signature',
+    Target: "signature",
     SignedProperties: [
       {
-        Id: 'id-xades-signed-props',
+        Id: "id-xades-signed-props",
         SignedSignatureProperties: [
           {
             SigningTime: [{ _: formatSigningTime(signingTime) }],
@@ -198,27 +198,27 @@ function createQualifyingPropertiesForHashing(
                       {
                         DigestMethod: [
                           {
-                            _: '',
-                            Algorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
-                          }
+                            _: "",
+                            Algorithm: "http://www.w3.org/2001/04/xmlenc#sha256",
+                          },
                         ],
-                        DigestValue: [{ _: certDigestBase64 }]
-                      }
+                        DigestValue: [{ _: certDigestBase64 }],
+                      },
                     ],
                     IssuerSerial: [
                       {
                         X509IssuerName: [{ _: certInfo.issuer.raw }],
-                        X509SerialNumber: [{ _: certInfo.serialNumber }]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
+                        X509SerialNumber: [{ _: certInfo.serialNumber }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   };
 }
 
@@ -238,30 +238,35 @@ export function createSignatureBlock(
 
   const signedInfoUBL = createSignedInfoUBL(digestValue, propsDigest, timestamp);
   const keyInfoUBL = createKeyInfoUBL(certPem, certInfo);
-  const qualifyingPropsUBL = createQualifyingPropertiesUBL(signingTime, certDigestBase64, certInfo, timestamp);
+  const qualifyingPropsUBL = createQualifyingPropertiesUBL(
+    signingTime,
+    certDigestBase64,
+    certInfo,
+    timestamp
+  );
 
   return {
-    signatureMethod: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
+    signatureMethod: "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
     signatureValue,
-    digestMethod: 'http://www.w3.org/2001/04/xmlenc#sha256',
+    digestMethod: "http://www.w3.org/2001/04/xmlenc#sha256",
     digestValue,
     certificateInfo: {
       issuer: certInfo.issuer.raw,
       serialNumber: certInfo.serialNumber,
-      subject: certInfo.subject.raw
+      subject: certInfo.subject.raw,
     },
     signingTime: formatSigningTime(signingTime),
     _raw: {
-      Id: 'signature',
+      Id: "signature",
       Object: [
         {
-          QualifyingProperties: qualifyingPropsUBL
-        }
+          QualifyingProperties: qualifyingPropsUBL,
+        },
       ],
       KeyInfo: keyInfoUBL,
       SignatureValue: [{ _: signatureValue }],
-      SignedInfo: signedInfoUBL
-    }
+      SignedInfo: signedInfoUBL,
+    },
   };
 }
 
@@ -282,15 +287,15 @@ export function createUBLExtensions(signatureBlock: SignatureBlock): Record<stri
                   {
                     ID: [{ _: SIGNATURE_URIS.SIGNATURE_ID }],
                     ReferencedSignatureID: [{ _: SIGNATURE_URIS.REFERENCED_SIGNATURE_ID }],
-                    Signature: [signatureBlock._raw]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
+                    Signature: [signatureBlock._raw],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   };
 }
 
@@ -305,7 +310,7 @@ export function createUBLExtensions(signatureBlock: SignatureBlock): Record<stri
 function createSignatureReferenceBlock(): Record<string, unknown> {
   return {
     ID: [{ _: SIGNATURE_URIS.REFERENCED_SIGNATURE_ID }],
-    SignatureMethod: [{ _: SIGNATURE_URIS.SIGNATURE_METHOD }]
+    SignatureMethod: [{ _: SIGNATURE_URIS.SIGNATURE_METHOD }],
   };
 }
 
@@ -330,28 +335,25 @@ export function injectSignature(
 
   // Helper to inject extensions and signature reference into a document element
   // Per MyInvois v1.1 spec, UBLExtensions and Signature must be at the END of the document
-  const injectIntoElement = (
-    element: unknown,
-    _docType: string
-  ): unknown => {
+  const injectIntoElement = (element: unknown, _docType: string): unknown => {
     // Handle array-wrapped documents (MyInvois format: Invoice: [{...}])
     if (Array.isArray(element) && element.length > 0) {
       const firstElement = element[0] as Record<string, unknown>;
       // Place UBLExtensions and Signature at end (after all document content)
       const signedElement = {
         ...firstElement,
-        UBLExtensions: [extensions],  // MyInvois expects UBLExtensions as array
-        Signature: [signatureRef]     // MyInvois v1.1 requires Signature reference block
+        UBLExtensions: [extensions], // MyInvois expects UBLExtensions as array
+        Signature: [signatureRef], // MyInvois v1.1 requires Signature reference block
       };
       return [signedElement, ...element.slice(1)];
     }
 
     // Handle object-wrapped documents (simple format: Invoice: {...})
-    if (typeof element === 'object' && element !== null) {
+    if (typeof element === "object" && element !== null) {
       return {
         ...(element as Record<string, unknown>),
-        UBLExtensions: [extensions],  // MyInvois expects UBLExtensions as array
-        Signature: [signatureRef]     // MyInvois v1.1 requires Signature reference block
+        UBLExtensions: [extensions], // MyInvois expects UBLExtensions as array
+        Signature: [signatureRef], // MyInvois v1.1 requires Signature reference block
       };
     }
 
@@ -367,11 +369,11 @@ export function injectSignature(
   if (document._B) result._B = document._B;
 
   // Process document type and copy other properties
-  const documentTypes = ['Invoice', 'CreditNote', 'DebitNote'];
+  const documentTypes = ["Invoice", "CreditNote", "DebitNote"];
   let documentTypeFound = false;
 
   for (const [key, value] of Object.entries(document)) {
-    if (key === '_D' || key === '_A' || key === '_B') {
+    if (key === "_D" || key === "_A" || key === "_B") {
       // Already handled above
       continue;
     }
@@ -389,7 +391,7 @@ export function injectSignature(
   if (!documentTypeFound) {
     return {
       ...result,
-      UBLExtensions: [extensions]
+      UBLExtensions: [extensions],
     };
   }
 
@@ -402,14 +404,14 @@ export function injectSignature(
 function calculateCertificateDigest(certPem: string): string {
   // Extract certificate content without headers
   const certContent = certPem
-    .replace(/-----BEGIN CERTIFICATE-----/g, '')
-    .replace(/-----END CERTIFICATE-----/g, '')
-    .replace(/\s/g, '');
+    .replace(/-----BEGIN CERTIFICATE-----/g, "")
+    .replace(/-----END CERTIFICATE-----/g, "")
+    .replace(/\s/g, "");
 
   // Decode base64 to get DER bytes, then hash
-  const derBuffer = Buffer.from(certContent, 'base64');
-  const hash = crypto.createHash('sha256').update(derBuffer).digest();
-  return hash.toString('base64');
+  const derBuffer = Buffer.from(certContent, "base64");
+  const hash = crypto.createHash("sha256").update(derBuffer).digest();
+  return hash.toString("base64");
 }
 
 /**
@@ -439,9 +441,17 @@ export function sign(
 
   // Step 3: Create QualifyingProperties and calculate its digest
   // Per LHDN SDK: Hash the full QualifyingProperties (Target + SignedProperties)
-  const qualifyingProps = createQualifyingPropertiesForHashing(signingTime, certDigestBase64, certInfo, timestamp);
+  const qualifyingProps = createQualifyingPropertiesForHashing(
+    signingTime,
+    certDigestBase64,
+    certInfo,
+    timestamp
+  );
   const qualifyingPropsJson = JSON.stringify(qualifyingProps);
-  const propsDigest = crypto.createHash('sha256').update(qualifyingPropsJson, 'utf8').digest('base64');
+  const propsDigest = crypto
+    .createHash("sha256")
+    .update(qualifyingPropsJson, "utf8")
+    .digest("base64");
 
   // Step 4: Sign the canonicalized document
   // Per MyInvois SDK, the signature is created by signing the document bytes
@@ -467,7 +477,7 @@ export function sign(
     signedDocument,
     signatureBlock,
     documentHash: digestValue,
-    signedAt: signingTime
+    signedAt: signingTime,
   };
 }
 
@@ -479,11 +489,7 @@ export class SigningService {
   private certPem: string;
   private certInfo: CertificateInfo;
 
-  constructor(
-    privateKey: KeyObject,
-    certPem: string,
-    certInfo: CertificateInfo
-  ) {
+  constructor(privateKey: KeyObject, certPem: string, certInfo: CertificateInfo) {
     this.privateKey = privateKey;
     this.certPem = certPem;
     this.certInfo = certInfo;
@@ -492,17 +498,8 @@ export class SigningService {
   /**
    * Sign a document
    */
-  sign(
-    document: Record<string, unknown>,
-    signingTime: Date = new Date()
-  ): SigningResult {
-    return sign(
-      document,
-      this.privateKey,
-      this.certPem,
-      this.certInfo,
-      signingTime
-    );
+  sign(document: Record<string, unknown>, signingTime: Date = new Date()): SigningResult {
+    return sign(document, this.privateKey, this.certPem, this.certInfo, signingTime);
   }
 
   /**

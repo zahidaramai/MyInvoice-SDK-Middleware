@@ -48,12 +48,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "health"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
             },
             "description": "Check if the API is running and healthy. No authentication required."
           },
@@ -102,15 +98,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "login"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
             },
             "description": "Authenticate user and receive access + refresh tokens.\n\n**Token Expiry:**\n- Access Token: 15 minutes\n- Refresh Token: 7 days\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"accessToken\": \"eyJ...\",\n    \"refreshToken\": \"eyJ...\",\n    \"user\": {\n      \"id\": \"...\",\n      \"email\": \"...\",\n      \"name\": \"...\",\n      \"role\": { \"name\": \"...\", \"permissions\": [...] },\n      \"companies\": [...]\n    }\n  }\n}\n```"
           },
@@ -123,15 +112,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "logout"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
             },
             "description": "Invalidate current tokens and end session. Requires valid access token."
           },
@@ -176,15 +158,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "refresh"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
             },
             "description": "Exchange refresh token for new access token. Use when access token expires."
           },
@@ -197,15 +172,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "me"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
             },
             "description": "Get authenticated user details including role, permissions, and accessible companies."
           },
@@ -227,15 +195,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/switch-company",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "switch-company"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "switch-company"]
             },
             "description": "Switch to a different company context for users with multi-company access. Returns new token scoped to selected company."
           },
@@ -263,15 +224,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-consolidate",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "hashlhdn",
-                "submit-consolidate"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-consolidate"]
             },
             "description": "Submit consolidated e-invoice combining multiple transactions into one.\n\n**Use Case:** Aggregate daily B2C sales into a single invoice for LHDN compliance.\n\n**Buyer TIN:** Uses generic TIN `EI00000000010` (General Public) for consolidated invoices.\n\n**Document Version:** Set to `1.1` for digital signing.\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"submissionUid\": \"...\",\n    \"acceptedDocuments\": [...],\n    \"rejectedDocuments\": [...]\n  }\n}\n```"
           },
@@ -293,15 +247,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-justsave",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "hashlhdn",
-                "submit-justsave"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-justsave"]
             },
             "description": "Save invoice to database WITHOUT submitting to LHDN.\n\n**Use Case:**\n- Draft invoices for review\n- Offline processing\n- Batch submission later\n\n**Note:** Uses `invoice` (singular object), NOT `invoices` array.\n\n**Status:** Document saved with `DRAFT` status. Not submitted to LHDN."
           },
@@ -323,15 +270,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-buyer",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "hashlhdn",
-                "submit-buyer"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-buyer"]
             },
             "description": "Submit B2B invoice with buyer TIN and BRN.\n\n**Note:** Uses `invoice` (singular object), NOT `invoices` array.\n\n**Required Buyer Fields:**\n- `tin` - Tax Identification Number (validated by LHDN)\n- `idType` - Must be `BRN` (Business Registration Number)\n- `idValue` - Business registration number\n- `name`, `address`, `city`, `state`, `postalCode` - All required\n\n**Required Item Fields:**\n- `description`, `quantity`, `unitPrice`, `taxCode`, `taxRate`, `taxAmount`, `total`\n\n**State Codes:**\n| Code | State |\n|------|-------|\n| 01 | Johor |\n| 02 | Kedah |\n| 03 | Kelantan |\n| 04 | Melaka |\n| 05 | Negeri Sembilan |\n| 06 | Pahang |\n| 07 | Pulau Pinang |\n| 08 | Perak |\n| 09 | Perlis |\n| 10 | Selangor |\n| 11 | Terengganu |\n| 12 | Sabah |\n| 13 | Sarawak |\n| 14 | WP Kuala Lumpur |\n| 15 | WP Labuan |\n| 16 | WP Putrajaya |\n| 17 | Not Applicable |"
           },
@@ -353,15 +293,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/hashlhdn/submit-personal",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "hashlhdn",
-                "submit-personal"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hashlhdn", "submit-personal"]
             },
             "description": "Submit B2C invoice with buyer NRIC (Malaysian IC).\n\n**CRITICAL:** Uses `invoice` (singular object), NOT `invoices` array!\n\n**Required Buyer Fields:**\n- `name` - Buyer full name\n- `idType` - Must be `NRIC` (literal value)\n- `idValue` - Malaysian IC number (12 digits)\n- `address` - Street address (string, NOT object)\n- `city`, `state`, `postalCode` - All required\n\n**Required Item Fields:**\n- `description`, `quantity`, `unitPrice`, `taxCode`, `taxRate`, `taxAmount`, `total`\n\n**Auto TIN:** System uses generic TIN `EI00000000010` for personal invoices.\n\n**WARNING for v1.1:** LHDN validates NRIC against taxpayer database. Use taxCode `06` (Not Applicable) for B2C to avoid strict buyer validation.\n\n**ID Types:**\n- `NRIC` - Malaysian IC (12 digits)\n- `PASSPORT` - Passport number (for foreigners)\n- `ARMY` - Army ID"
           },
@@ -380,14 +313,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents?page=1&limit=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents"],
               "query": [
                 {
                   "key": "page",
@@ -436,16 +363,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents/:uuid/status",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents",
-                ":uuid",
-                "status"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", ":uuid", "status"],
               "variable": [
                 {
                   "key": "uuid",
@@ -465,16 +384,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents/:uuid/pdf",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents",
-                ":uuid",
-                "pdf"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", ":uuid", "pdf"],
               "variable": [
                 {
                   "key": "uuid",
@@ -503,16 +414,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents/:uuid/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents",
-                ":uuid",
-                "cancel"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", ":uuid", "cancel"],
               "variable": [
                 {
                   "key": "uuid",
@@ -541,16 +444,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents/:trackingId/submit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents",
-                ":trackingId",
-                "submit"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", ":trackingId", "submit"],
               "variable": [
                 {
                   "key": "trackingId",
@@ -576,14 +471,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/users?page=1&limit=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "users"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
               "query": [
                 {
                   "key": "page",
@@ -615,14 +504,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "users"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"]
             },
             "description": "Create a new user with assigned role and company access.\n\n**Required Fields:**\n- `email` - Unique email address\n- `password` - Minimum 8 characters\n- `name` - Display name\n- `roleId` - Role UUID for permissions\n- `companyIds` - Array of company UUIDs for access"
           },
@@ -635,15 +518,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/users/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "users",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -671,15 +547,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/users/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "users",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -698,15 +567,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/users/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "users",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -731,14 +593,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/roles",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "roles"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles"]
             },
             "description": "List all roles with their permissions."
           },
@@ -760,14 +616,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/roles",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "roles"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles"]
             },
             "description": "Create a new role with specified permissions.\n\n**Example Roles:**\n- Admin: All permissions\n- Invoice Clerk: submit:invoice, read:documents\n- Viewer: read:documents only"
           },
@@ -780,15 +630,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/roles/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "roles",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -816,15 +659,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/roles/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "roles",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -843,15 +679,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/roles/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "roles",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "roles", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -876,14 +705,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/companies",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "companies"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies"]
             },
             "description": "List all companies the user has access to."
           },
@@ -905,14 +728,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/companies",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "companies"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies"]
             },
             "description": "Create a new company.\n\n**Required Fields:**\n- `name` - Company name\n- `tin` - Tax Identification Number (for LHDN)\n- `brn` - Business Registration Number"
           },
@@ -925,15 +742,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/companies/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "companies",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -961,15 +771,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/companies/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "companies",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -988,15 +791,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/companies/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "companies",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -1024,16 +820,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/companies/:id/credentials",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "companies",
-                ":id",
-                "credentials"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "companies", ":id", "credentials"],
               "variable": [
                 {
                   "key": "id",
@@ -1067,15 +855,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents/submit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents",
-                "submit"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "submit"]
             },
             "description": "Unified submission endpoint supporting multiple invoice types through flags.\n\n**Flags:**\n- Set `ConsolidatedInvoice: true` for consolidated daily sales\n- Set `SaveInvoice: true` to save without LHDN submission\n- With `customer.IdType: BRN` → B2B invoice\n- With `customer.IdType: NRIC` → B2C invoice\n\n**Response:**\n```json\n{\n  \"trackingId\": \"HASH-XXXXX-YYYYY\",\n  \"invoiceId\": \"LHDN-UUID-HERE\",\n  \"status\": \"SUBMITTED\",\n  \"message\": \"Invoice submitted successfully\"\n}\n```"
           },
@@ -1097,15 +878,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/documents/submit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "documents",
-                "submit"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "submit"]
             },
             "description": "Save invoice to database without submitting to LHDN.\n\nUse the returned `trackingId` to submit later via `/api/v1/documents/:trackingId/submit`\n\n**Response:**\n```json\n{\n  \"trackingId\": \"HASH-XXXXX-YYYYY\",\n  \"invoiceId\": \"HASH-XXXXX-YYYYY\",\n  \"status\": \"DRAFT\",\n  \"message\": \"Invoice saved locally (not submitted to LHDN)\"\n}\n```"
           },

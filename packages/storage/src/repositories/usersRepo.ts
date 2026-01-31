@@ -107,10 +107,7 @@ export async function findUserByEmailWithCompanies(
 /**
  * Update user
  */
-export async function updateUser(
-  id: string,
-  input: UpdateUserInput
-): Promise<UserWithRole> {
+export async function updateUser(id: string, input: UpdateUserInput): Promise<UserWithRole> {
   const prisma = getPrismaClient();
 
   return prisma.user.update({
@@ -185,10 +182,7 @@ export async function listUsers(
 /**
  * Link user to company
  */
-export async function linkUserToCompany(
-  userId: string,
-  companyId: string
-): Promise<void> {
+export async function linkUserToCompany(userId: string, companyId: string): Promise<void> {
   const prisma = getPrismaClient();
 
   await prisma.userCompany.create({
@@ -202,10 +196,7 @@ export async function linkUserToCompany(
 /**
  * Unlink user from company
  */
-export async function unlinkUserFromCompany(
-  userId: string,
-  companyId: string
-): Promise<void> {
+export async function unlinkUserFromCompany(userId: string, companyId: string): Promise<void> {
   const prisma = getPrismaClient();
 
   await prisma.userCompany.delete({

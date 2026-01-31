@@ -44,29 +44,23 @@ describe("TST-12: Database Failure Tests", () => {
   describe("Connection failures", () => {
     it("should handle connection timeout", async () => {
       const prisma = getPrismaClient();
-      vi.mocked(prisma.invoice.findMany).mockRejectedValue(
-        new Error("Connection timeout")
-      );
+      vi.mocked(prisma.invoice.findMany).mockRejectedValue(new Error("Connection timeout"));
 
-      await expect(
-        prisma.invoice.findMany({ where: { status: "DRAFT" } })
-      ).rejects.toThrow("Connection timeout");
+      await expect(prisma.invoice.findMany({ where: { status: "DRAFT" } })).rejects.toThrow(
+        "Connection timeout"
+      );
     });
 
     it("should handle connection refused", async () => {
       const prisma = getPrismaClient();
-      vi.mocked(prisma.invoice.findMany).mockRejectedValue(
-        new Error("ECONNREFUSED")
-      );
+      vi.mocked(prisma.invoice.findMany).mockRejectedValue(new Error("ECONNREFUSED"));
 
       await expect(prisma.invoice.findMany({})).rejects.toThrow("ECONNREFUSED");
     });
 
     it("should handle pool exhaustion", async () => {
       const prisma = getPrismaClient();
-      vi.mocked(prisma.invoice.findMany).mockRejectedValue(
-        new Error("Too many connections")
-      );
+      vi.mocked(prisma.invoice.findMany).mockRejectedValue(new Error("Too many connections"));
 
       await expect(prisma.invoice.findMany({})).rejects.toThrow("Too many connections");
     });
@@ -116,8 +110,7 @@ describe("TST-12: Database Failure Tests", () => {
     it("should detect constraint violation for retry logic", () => {
       const error = new Error("Unique constraint failed on field: posInvoiceId");
       const isConstraintViolation =
-        error.message.includes("Unique constraint") ||
-        error.message.includes("P2002");
+        error.message.includes("Unique constraint") || error.message.includes("P2002");
 
       expect(isConstraintViolation).toBe(true);
     });
@@ -147,9 +140,7 @@ describe("TST-12: Database Failure Tests", () => {
         throw new Error("Unique constraint violation in transaction");
       });
 
-      await expect(
-        prisma.$transaction([])
-      ).rejects.toThrow("Unique constraint violation");
+      await expect(prisma.$transaction([])).rejects.toThrow("Unique constraint violation");
     });
 
     it("should preserve data integrity on rollback", async () => {
@@ -179,8 +170,7 @@ describe("TST-12: Database Failure Tests", () => {
     it("should detect deadlock errors", () => {
       const deadlockError = new Error("Deadlock detected");
       const isDeadlock =
-        deadlockError.message.includes("Deadlock") ||
-        deadlockError.message.includes("deadlock");
+        deadlockError.message.includes("Deadlock") || deadlockError.message.includes("deadlock");
 
       expect(isDeadlock).toBe(true);
     });
@@ -219,9 +209,7 @@ describe("TST-12: Database Failure Tests", () => {
   describe("Query timeout", () => {
     it("should handle long-running query timeout", async () => {
       const prisma = getPrismaClient();
-      vi.mocked(prisma.invoice.findMany).mockRejectedValue(
-        new Error("Query timeout exceeded")
-      );
+      vi.mocked(prisma.invoice.findMany).mockRejectedValue(new Error("Query timeout exceeded"));
 
       await expect(
         prisma.invoice.findMany({
@@ -277,19 +265,15 @@ describe("TST-12: Database Failure Tests", () => {
         new Error("Argument invoiceNumber cannot be null")
       );
 
-      await expect(
-        createInvoice({ invoiceNumber: null } as any)
-      ).rejects.toThrow("cannot be null");
+      await expect(createInvoice({ invoiceNumber: null } as any)).rejects.toThrow("cannot be null");
     });
 
     it("should reject invalid enum values", async () => {
-      vi.mocked(createInvoice).mockRejectedValue(
-        new Error("Invalid value for field status")
-      );
+      vi.mocked(createInvoice).mockRejectedValue(new Error("Invalid value for field status"));
 
-      await expect(
-        createInvoice({ status: "INVALID_STATUS" } as any)
-      ).rejects.toThrow("Invalid value");
+      await expect(createInvoice({ status: "INVALID_STATUS" } as any)).rejects.toThrow(
+        "Invalid value"
+      );
     });
   });
 
@@ -308,9 +292,7 @@ describe("TST-12: Database Failure Tests", () => {
 
     it("should give up after max retries", async () => {
       const prisma = getPrismaClient();
-      vi.mocked(prisma.invoice.findMany).mockRejectedValue(
-        new Error("Connection failed")
-      );
+      vi.mocked(prisma.invoice.findMany).mockRejectedValue(new Error("Connection failed"));
 
       const maxRetries = 3;
       let attempts = 0;

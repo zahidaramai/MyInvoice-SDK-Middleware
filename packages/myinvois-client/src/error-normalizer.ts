@@ -89,8 +89,10 @@ function parseValidationSteps(body: unknown): ParsedValidationStep | undefined {
       const error = stepObj.error as Record<string, unknown> | undefined;
       if (error && typeof error === "object") {
         result.errorCode = typeof error.errorCode === "string" ? error.errorCode : undefined;
-        result.propertyName = typeof error.propertyName === "string" ? error.propertyName : undefined;
-        result.propertyPath = typeof error.propertyPath === "string" ? error.propertyPath : undefined;
+        result.propertyName =
+          typeof error.propertyName === "string" ? error.propertyName : undefined;
+        result.propertyPath =
+          typeof error.propertyPath === "string" ? error.propertyPath : undefined;
 
         // Get message from error object
         if (typeof error.error === "string") {
@@ -289,10 +291,7 @@ function extractAllSearchableText(body: unknown): string[] {
 /**
  * Match error against known patterns
  */
-function matchErrorPattern(
-  input: MyInvoisErrorInput,
-  message: string
-): ErrorPattern | undefined {
+function matchErrorPattern(input: MyInvoisErrorInput, message: string): ErrorPattern | undefined {
   const searchText = [
     input.stepName,
     extractStepName(input.body),
@@ -415,24 +414,20 @@ export function normalizeMyinvoisError(input: MyInvoisErrorInput): ErrorEnvelope
   const matchedPattern = matchErrorPattern(input, rawMessage || "");
   if (matchedPattern) {
     // Extract field and propertyPath from body
-    const field = matchedPattern.extractField?.(body, rawMessage || "") || extractPropertyName(body);
+    const field =
+      matchedPattern.extractField?.(body, rawMessage || "") || extractPropertyName(body);
     const propertyPath = extractPropertyPath(body);
 
     // Use the actual error message from MyInvois if available, otherwise use template
     const message = rawMessage || matchedPattern.messageTemplate;
 
-    return createErrorEnvelope(
-      matchedPattern.code,
-      message,
-      matchedPattern.httpStatus,
-      {
-        retryable: matchedPattern.retryable,
-        upstream,
-        field,
-        propertyPath,
-        correlationId,
-      }
-    );
+    return createErrorEnvelope(matchedPattern.code, message, matchedPattern.httpStatus, {
+      retryable: matchedPattern.retryable,
+      upstream,
+      field,
+      propertyPath,
+      correlationId,
+    });
   }
 
   // Handle 404
@@ -545,20 +540,15 @@ export function normalizeNetworkError(
     );
   }
 
-  return createErrorEnvelope(
-    ErrorCodes.NETWORK_ERROR,
-    `Network error: ${error.message}`,
-    503,
-    {
-      retryable: true,
-      correlationId: context?.correlationId,
-      upstream: {
-        source: "MYINVOIS",
-        path: context?.path,
-        method: context?.method,
-      },
-    }
-  );
+  return createErrorEnvelope(ErrorCodes.NETWORK_ERROR, `Network error: ${error.message}`, 503, {
+    retryable: true,
+    correlationId: context?.correlationId,
+    upstream: {
+      source: "MYINVOIS",
+      path: context?.path,
+      method: context?.method,
+    },
+  });
 }
 
 /**
@@ -574,20 +564,15 @@ export function createLocalValidationError(
     correlationId?: string;
   }
 ): ErrorEnvelope {
-  return createErrorEnvelope(
-    code,
-    message,
-    options?.httpStatus ?? 400,
-    {
-      retryable: false,
-      field: options?.field,
-      propertyPath: options?.propertyPath,
-      correlationId: options?.correlationId,
-      upstream: {
-        source: "MIDDLEWARE",
-      },
-    }
-  );
+  return createErrorEnvelope(code, message, options?.httpStatus ?? 400, {
+    retryable: false,
+    field: options?.field,
+    propertyPath: options?.propertyPath,
+    correlationId: options?.correlationId,
+    upstream: {
+      source: "MIDDLEWARE",
+    },
+  });
 }
 
 // Re-export types and utilities from core

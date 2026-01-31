@@ -3,21 +3,21 @@ import {
   SigningService,
   SIGNING_ENV_VARS,
   type CertificateInfo,
-  type DocumentVersion
-} from '@myinvois/signing';
-import type { KeyObject } from 'crypto';
-import { isS3Path, downloadFromS3 } from './s3-loader.js';
-import { createComponentLogger } from '../lib/appLogger.js';
+  type DocumentVersion,
+} from "@myinvois/signing";
+import type { KeyObject } from "crypto";
+import { isS3Path, downloadFromS3 } from "./s3-loader.js";
+import { createComponentLogger } from "../lib/appLogger.js";
 
 // P2-01: Structured logger for signing component
-const signingLogger = createComponentLogger('signing');
+const signingLogger = createComponentLogger("signing");
 
 /**
  * Legacy environment variable names (for backwards compatibility)
  */
 const LEGACY_ENV_VARS = {
-  PKCS12_PATH: 'P12_CERTIFICATE_PATH',
-  PKCS12_PASSPHRASE: 'P12_CERTIFICATE_PASSWORD'
+  PKCS12_PATH: "P12_CERTIFICATE_PATH",
+  PKCS12_PASSPHRASE: "P12_CERTIFICATE_PASSWORD",
 } as const;
 
 /**
@@ -45,16 +45,17 @@ let signingState: SigningState | null = null;
  * Get PKCS#12 path from environment (supports legacy and standard env var names)
  */
 function getPKCS12PathFromEnv(): string | undefined {
-  return process.env[SIGNING_ENV_VARS.PKCS12_PATH] ||
-    process.env[LEGACY_ENV_VARS.PKCS12_PATH];
+  return process.env[SIGNING_ENV_VARS.PKCS12_PATH] || process.env[LEGACY_ENV_VARS.PKCS12_PATH];
 }
 
 /**
  * Get PKCS#12 passphrase from environment (supports legacy and standard env var names)
  */
 function getPKCS12PassphraseFromEnv(): string | undefined {
-  return process.env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE] ||
-    process.env[LEGACY_ENV_VARS.PKCS12_PASSPHRASE];
+  return (
+    process.env[SIGNING_ENV_VARS.PKCS12_PASSPHRASE] ||
+    process.env[LEGACY_ENV_VARS.PKCS12_PASSPHRASE]
+  );
 }
 
 /**
@@ -64,7 +65,7 @@ function shouldEnableSigning(): boolean {
   // Explicit enable/disable takes precedence
   const explicitEnabled = process.env[SIGNING_ENV_VARS.ENABLED];
   if (explicitEnabled !== undefined) {
-    return explicitEnabled.toLowerCase() === 'true';
+    return explicitEnabled.toLowerCase() === "true";
   }
 
   // Auto-enable if PKCS#12 path is configured
@@ -89,27 +90,28 @@ export async function initializeSigning(logger?: {
   const shouldEnable = shouldEnableSigning();
   const pkcs12Path = getPKCS12PathFromEnv();
   const pkcs12Passphrase = getPKCS12PassphraseFromEnv();
-  const defaultVersion = (process.env[SIGNING_ENV_VARS.DEFAULT_VERSION] as DocumentVersion) || '1.1';
+  const defaultVersion =
+    (process.env[SIGNING_ENV_VARS.DEFAULT_VERSION] as DocumentVersion) || "1.1";
 
   if (!shouldEnable) {
-    log.info('Signing feature disabled via configuration');
-    signingState = {
-      enabled: false,
-      service: null,
-      certificateInfo: null,
-      defaultVersion
-    };
-    return signingState;
-  }
-
-  if (!pkcs12Path) {
-    log.info('Signing enabled but no PKCS#12 path configured');
+    log.info("Signing feature disabled via configuration");
     signingState = {
       enabled: false,
       service: null,
       certificateInfo: null,
       defaultVersion,
-      error: 'No PKCS#12 path configured (set SIGNING_PKCS12_PATH or P12_CERTIFICATE_PATH)'
+    };
+    return signingState;
+  }
+
+  if (!pkcs12Path) {
+    log.info("Signing enabled but no PKCS#12 path configured");
+    signingState = {
+      enabled: false,
+      service: null,
+      certificateInfo: null,
+      defaultVersion,
+      error: "No PKCS#12 path configured (set SIGNING_PKCS12_PATH or P12_CERTIFICATE_PATH)",
     };
     return signingState;
   }
@@ -125,7 +127,7 @@ export async function initializeSigning(logger?: {
     // Resolve path (download from S3 if needed)
     let localPath = pkcs12Path;
     if (isS3Path(pkcs12Path)) {
-      log.info('Downloading certificate from S3...');
+      log.info("Downloading certificate from S3...");
       localPath = await downloadFromS3(pkcs12Path);
       log.info(`Certificate downloaded to: ${localPath}`);
     }
@@ -133,16 +135,18 @@ export async function initializeSigning(logger?: {
     // Load PKCS#12
     const p12Result = loadPKCS12({
       path: localPath,
-      passphrase: pkcs12Passphrase
+      passphrase: pkcs12Passphrase,
     });
 
     certPem = p12Result.certPem;
     certInfo = p12Result.certInfo;
     privateKey = p12Result.privateKey;
 
-    log.info(`Certificate loaded from PKCS#12: ${certInfo.subject.commonName || certInfo.subject.raw}`);
+    log.info(
+      `Certificate loaded from PKCS#12: ${certInfo.subject.commonName || certInfo.subject.raw}`
+    );
     log.info(`Certificate valid until: ${certInfo.validTo.toISOString()}`);
-    log.info('Private key extracted from PKCS#12');
+    log.info("Private key extracted from PKCS#12");
 
     // Check for expiry warning
     let warning: string | undefined;
@@ -150,7 +154,7 @@ export async function initializeSigning(logger?: {
       warning = `Certificate expires in ${certInfo.daysUntilExpiry} days`;
       log.warn(warning);
     } else if (certInfo.isExpired) {
-      warning = 'Certificate has expired';
+      warning = "Certificate has expired";
       log.warn(warning);
     }
 
@@ -162,14 +166,13 @@ export async function initializeSigning(logger?: {
       service,
       certificateInfo: certInfo,
       defaultVersion,
-      warning
+      warning,
     };
 
     log.info(`Signing initialized - default version: ${signingState.defaultVersion}`);
     return signingState;
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     log.error({ error }, `Signing initialization failed: ${errorMessage}`);
 
     // Fall back to disabled state
@@ -177,8 +180,8 @@ export async function initializeSigning(logger?: {
       enabled: false,
       service: null,
       certificateInfo: null,
-      defaultVersion: '1.0',
-      error: errorMessage
+      defaultVersion: "1.0",
+      error: errorMessage,
     };
 
     return signingState;
@@ -196,8 +199,8 @@ export function getSigningState(): SigningState {
       enabled: false,
       service: null,
       certificateInfo: null,
-      defaultVersion: '1.0',
-      error: 'Signing not initialized - call initializeSigning() at startup'
+      defaultVersion: "1.0",
+      error: "Signing not initialized - call initializeSigning() at startup",
     };
   }
   return signingState;
@@ -243,7 +246,7 @@ export function getSigningHealthStatus(): {
     certificateExpiry: state.certificateInfo?.validTo?.toISOString(),
     defaultVersion: state.defaultVersion,
     warning: state.warning,
-    error: state.error
+    error: state.error,
   };
 }
 

@@ -85,7 +85,7 @@ describe.skipIf(SKIP_REAL_TESTS)("Real Sandbox Integration", () => {
 
     const data = await response.json();
     accessToken = data.access_token;
-    tokenExpiresAt = Date.now() + (data.expires_in * 1000);
+    tokenExpiresAt = Date.now() + data.expires_in * 1000;
 
     console.log(`Token acquired, expires in ${data.expires_in}s`);
     return accessToken;
@@ -160,8 +160,8 @@ describe.skipIf(SKIP_REAL_TESTS)("Real Sandbox Integration", () => {
       expect([200, 404]).toContain(response.status);
 
       // Should have correlation ID
-      const correlationId = response.headers.get("correlationid") ||
-        response.headers.get("x-correlation-id");
+      const correlationId =
+        response.headers.get("correlationid") || response.headers.get("x-correlation-id");
       expect(correlationId).toBeDefined();
 
       console.log(`   TIN validation: ${response.status}, correlationId: ${correlationId}`);
@@ -189,8 +189,8 @@ describe.skipIf(SKIP_REAL_TESTS)("Real Sandbox Integration", () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.status).toBeLessThan(500);
 
-      const correlationId = response.headers.get("correlationid") ||
-        response.headers.get("x-correlation-id");
+      const correlationId =
+        response.headers.get("correlationid") || response.headers.get("x-correlation-id");
       expect(correlationId).toBeDefined();
 
       console.log(`   Submit validation: ${response.status}, correlationId: ${correlationId}`);
@@ -243,16 +243,13 @@ describe.skipIf(SKIP_REAL_TESTS)("Real Sandbox Integration", () => {
       const token = await acquireToken();
 
       // Missing required query params
-      const response = await fetch(
-        `${SYSTEM_URL}/api/v1.0/taxpayer/validate/TEST`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${SYSTEM_URL}/api/v1.0/taxpayer/validate/TEST`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
       expect(response.status).toBe(400);
 

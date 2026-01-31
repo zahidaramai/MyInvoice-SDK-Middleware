@@ -10,13 +10,13 @@
  * Reference: https://sdk.myinvois.hasil.gov.my/codes/e-invoice-type-code/
  */
 export type InvoiceTypeCode =
-  | "01"  // Invoice
-  | "02"  // Credit Note
-  | "03"  // Debit Note
-  | "04"  // Refund Note
-  | "11"  // Self-billed Invoice
-  | "12"  // Self-billed Credit Note
-  | "13"  // Self-billed Debit Note
+  | "01" // Invoice
+  | "02" // Credit Note
+  | "03" // Debit Note
+  | "04" // Refund Note
+  | "11" // Self-billed Invoice
+  | "12" // Self-billed Credit Note
+  | "13" // Self-billed Debit Note
   | "14"; // Self-billed Refund Note
 
 export const InvoiceTypeCodes = {
@@ -46,11 +46,51 @@ export const InvoiceTypeDescriptions: Record<InvoiceTypeCode, string> = {
  * Reference: https://sdk.myinvois.hasil.gov.my/codes/classification-codes/
  */
 export type ClassificationCode =
-  | "001" | "002" | "003" | "004" | "005" | "006" | "007" | "008" | "009" | "010"
-  | "011" | "012" | "013" | "014" | "015" | "016" | "017" | "018" | "019" | "020"
-  | "021" | "022" | "023" | "024" | "025" | "026" | "027" | "028" | "029" | "030"
-  | "031" | "032" | "033" | "034" | "035" | "036" | "037" | "038" | "039" | "040"
-  | "041" | "042" | "043" | "044" | "045";
+  | "001"
+  | "002"
+  | "003"
+  | "004"
+  | "005"
+  | "006"
+  | "007"
+  | "008"
+  | "009"
+  | "010"
+  | "011"
+  | "012"
+  | "013"
+  | "014"
+  | "015"
+  | "016"
+  | "017"
+  | "018"
+  | "019"
+  | "020"
+  | "021"
+  | "022"
+  | "023"
+  | "024"
+  | "025"
+  | "026"
+  | "027"
+  | "028"
+  | "029"
+  | "030"
+  | "031"
+  | "032"
+  | "033"
+  | "034"
+  | "035"
+  | "036"
+  | "037"
+  | "038"
+  | "039"
+  | "040"
+  | "041"
+  | "042"
+  | "043"
+  | "044"
+  | "045";
 
 export const ClassificationCodes = {
   BREASTFEEDING_EQUIPMENT: "001" as const,
@@ -203,13 +243,13 @@ export const CurrencyCodes = {
  * Reference: https://sdk.myinvois.hasil.gov.my/codes/payment-mode/
  */
 export type PaymentModeCode =
-  | "01"  // Cash
-  | "02"  // Cheque
-  | "03"  // Bank Transfer
-  | "04"  // Credit Card
-  | "05"  // Debit Card
-  | "06"  // e-Wallet / Digital Wallet
-  | "07"  // Digital Bank
+  | "01" // Cash
+  | "02" // Cheque
+  | "03" // Bank Transfer
+  | "04" // Credit Card
+  | "05" // Debit Card
+  | "06" // e-Wallet / Digital Wallet
+  | "07" // Digital Bank
   | "08"; // Others
 
 export const PaymentModeCodes = {
@@ -239,22 +279,22 @@ export const PaymentModeDescriptions: Record<PaymentModeCode, string> = {
  * Reference: https://sdk.myinvois.hasil.gov.my/codes/state-codes/
  */
 export type MalaysianStateCode =
-  | "01"  // Johor
-  | "02"  // Kedah
-  | "03"  // Kelantan
-  | "04"  // Melaka
-  | "05"  // Negeri Sembilan
-  | "06"  // Pahang
-  | "07"  // Pulau Pinang
-  | "08"  // Perak
-  | "09"  // Perlis
-  | "10"  // Selangor
-  | "11"  // Terengganu
-  | "12"  // Sabah
-  | "13"  // Sarawak
-  | "14"  // Wilayah Persekutuan Kuala Lumpur
-  | "15"  // Wilayah Persekutuan Labuan
-  | "16"  // Wilayah Persekutuan Putrajaya
+  | "01" // Johor
+  | "02" // Kedah
+  | "03" // Kelantan
+  | "04" // Melaka
+  | "05" // Negeri Sembilan
+  | "06" // Pahang
+  | "07" // Pulau Pinang
+  | "08" // Perak
+  | "09" // Perlis
+  | "10" // Selangor
+  | "11" // Terengganu
+  | "12" // Sabah
+  | "13" // Sarawak
+  | "14" // Wilayah Persekutuan Kuala Lumpur
+  | "15" // Wilayah Persekutuan Labuan
+  | "16" // Wilayah Persekutuan Putrajaya
   | "17"; // Not Applicable
 
 export const MalaysianStateCodes = {
@@ -302,13 +342,13 @@ export const MalaysianStateNames: Record<MalaysianStateCode, string> = {
  * Reference: https://sdk.myinvois.hasil.gov.my/codes/tax-type/
  */
 export type TaxTypeCode =
-  | "01"  // Sales Tax
-  | "02"  // Service Tax
-  | "03"  // Tourism Tax
-  | "04"  // High-Value Goods Tax
-  | "05"  // Sales Tax on Low Value Goods
-  | "06"  // Not Applicable
-  | "E";  // Tax Exemption
+  | "01" // Sales Tax
+  | "02" // Service Tax
+  | "03" // Tourism Tax
+  | "04" // High-Value Goods Tax
+  | "05" // Sales Tax on Low Value Goods
+  | "06" // Not Applicable
+  | "E"; // Tax Exemption
 
 export const TaxTypeCodes = {
   SALES_TAX: "01" as const,
@@ -327,7 +367,7 @@ export const TaxTypeDescriptions: Record<TaxTypeCode, string> = {
   "04": "High-Value Goods Tax",
   "05": "Sales Tax on Low Value Goods",
   "06": "Not Applicable",
-  "E": "Tax Exemption",
+  E: "Tax Exemption",
 };
 
 /**
@@ -387,13 +427,13 @@ export const TaxpayerIdTypeDescriptions: Record<TaxpayerIdType, string> = {
  * Party Identification Scheme IDs
  */
 export type PartyIdScheme =
-  | "TIN"      // Tax Identification Number
-  | "NRIC"    // National Registration Identity Card
-  | "PASSPORT"// Passport Number
-  | "BRN"     // Business Registration Number
-  | "ARMY"    // Army Number
-  | "SST"     // Sales and Service Tax Registration Number
-  | "TTX";    // Tourism Tax Registration Number
+  | "TIN" // Tax Identification Number
+  | "NRIC" // National Registration Identity Card
+  | "PASSPORT" // Passport Number
+  | "BRN" // Business Registration Number
+  | "ARMY" // Army Number
+  | "SST" // Sales and Service Tax Registration Number
+  | "TTX"; // Tourism Tax Registration Number
 
 export const PartyIdSchemes = {
   TIN: "TIN" as const,
@@ -416,8 +456,8 @@ export type UnitCode =
   | "LTR" // Litre
   | "PCE" // Piece
   | "SET" // Set
-  | "BX"  // Box
-  | "PK"  // Pack
+  | "BX" // Box
+  | "PK" // Pack
   | "H87" // Piece (alternate)
   | "DAY" // Day
   | "MON" // Month
@@ -448,12 +488,7 @@ export const UnitCodes = {
  * Note: Some APIs return lowercase status (valid, invalid, etc.)
  * See einvoice/types.ts DocumentStatus for lowercase version
  */
-export type MyInvoisDocumentStatus =
-  | "Valid"
-  | "Invalid"
-  | "Cancelled"
-  | "Rejected"
-  | "Pending";
+export type MyInvoisDocumentStatus = "Valid" | "Invalid" | "Cancelled" | "Rejected" | "Pending";
 
 export const MyInvoisDocumentStatuses = {
   VALID: "Valid" as const,

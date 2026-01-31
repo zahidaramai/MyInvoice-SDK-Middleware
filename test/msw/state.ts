@@ -192,10 +192,7 @@ class MockState {
   /**
    * Update submission status (simulate polling progress)
    */
-  setSubmissionStatus(
-    submissionUid: string,
-    status: MockSubmission["overallStatus"]
-  ): void {
+  setSubmissionStatus(submissionUid: string, status: MockSubmission["overallStatus"]): void {
     const submission = this.submissions.get(submissionUid);
     if (submission) {
       submission.overallStatus = status;
@@ -268,11 +265,7 @@ class MockState {
   /**
    * Check TIN validity
    */
-  validateTin(
-    tin: string,
-    idType: string,
-    idValue: string
-  ): { valid: boolean; name?: string } {
+  validateTin(tin: string, idType: string, idValue: string): { valid: boolean; name?: string } {
     const key = `${tin}:${idType}:${idValue}`;
     const entry = this.validTins.get(key);
     if (entry) {

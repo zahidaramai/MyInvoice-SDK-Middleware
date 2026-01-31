@@ -7,7 +7,9 @@
 /**
  * Create a TAXPAYER mode session payload
  */
-export function createTaxpayerSession(overrides: Partial<TaxpayerSessionPayload> = {}): TaxpayerSessionPayload {
+export function createTaxpayerSession(
+  overrides: Partial<TaxpayerSessionPayload> = {}
+): TaxpayerSessionPayload {
   return {
     env: "SANDBOX",
     mode: "TAXPAYER",

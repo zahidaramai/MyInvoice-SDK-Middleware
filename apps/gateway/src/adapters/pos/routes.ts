@@ -5,15 +5,8 @@
  */
 
 import type { FastifyInstance } from "fastify";
-import {
-  CreatePosInvoiceSchema,
-  type CreatePosInvoiceRequest,
-} from "./schemas.js";
-import {
-  findCompanyById,
-  createInvoice,
-  findInvoiceByNumber,
-} from "@myinvois/storage";
+import { CreatePosInvoiceSchema, type CreatePosInvoiceRequest } from "./schemas.js";
+import { findCompanyById, createInvoice, findInvoiceByNumber } from "@myinvois/storage";
 import { authenticate, requirePermission } from "../../auth/middleware.js";
 
 /**
@@ -23,10 +16,11 @@ import { authenticate, requirePermission } from "../../auth/middleware.js";
  */
 function generatePosInvoiceId(companyName: string): string {
   // Derive prefix from company name (first 2 uppercase letters)
-  const prefix = companyName
-    .replace(/[^a-zA-Z]/g, "")
-    .substring(0, 2)
-    .toUpperCase() || "XX";
+  const prefix =
+    companyName
+      .replace(/[^a-zA-Z]/g, "")
+      .substring(0, 2)
+      .toUpperCase() || "XX";
 
   // Generate 8-char random (case-sensitive alphanumeric)
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -175,11 +169,11 @@ export async function posRoutes(fastify: FastifyInstance): Promise<void> {
       if (invoiceData.invoiceDate) {
         const dateStr = invoiceData.invoiceDate;
         // Check if timezone is specified (contains + or Z at the end)
-        if (dateStr.includes('+') || dateStr.includes('-', 10) || dateStr.endsWith('Z')) {
+        if (dateStr.includes("+") || dateStr.includes("-", 10) || dateStr.endsWith("Z")) {
           invoiceDate = new Date(dateStr);
         } else {
           // No timezone - assume Malaysia time (append +08:00)
-          invoiceDate = new Date(dateStr + '+08:00');
+          invoiceDate = new Date(dateStr + "+08:00");
         }
       } else {
         invoiceDate = new Date();

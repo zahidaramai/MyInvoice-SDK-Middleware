@@ -63,7 +63,7 @@ describe("getRecentDocuments (actual)", () => {
             dateTimeIssued: "2024-01-15T10:00:00Z",
             dateTimeReceived: "2024-01-15T10:05:00Z",
             dateTimeValidated: "2024-01-15T10:10:00Z",
-            totalPayableAmount: 106.00,
+            totalPayableAmount: 106.0,
             status: "Valid",
           },
         ],
@@ -127,11 +127,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -149,11 +145,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({ metadata: {} }),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -182,11 +174,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -216,11 +204,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -270,11 +254,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -305,11 +285,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -369,11 +345,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       const callUrl = mockFetch.mock.calls[0][0] as string;
       expect(callUrl).toContain("/api/v1.0/documents/recent");
@@ -441,11 +413,7 @@ describe("getRecentDocuments (actual)", () => {
         }),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -462,11 +430,7 @@ describe("getRecentDocuments (actual)", () => {
         headers: new Headers({}),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -487,11 +451,7 @@ describe("getRecentDocuments (actual)", () => {
         },
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -517,11 +477,7 @@ describe("getRecentDocuments (actual)", () => {
           json: () => Promise.resolve(upstreamResponse),
         });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(mockTokenManager.refreshToken).toHaveBeenCalled();
       expect(result.ok).toBe(true);
@@ -546,11 +502,7 @@ describe("getRecentDocuments (actual)", () => {
         },
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -572,11 +524,7 @@ describe("getRecentDocuments (actual)", () => {
           headers: new Headers({}),
         });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -590,11 +538,7 @@ describe("getRecentDocuments (actual)", () => {
     it("handles network error", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network timeout"));
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -607,11 +551,7 @@ describe("getRecentDocuments (actual)", () => {
     it("handles non-Error throw", async () => {
       mockFetch.mockRejectedValueOnce("Unknown error");
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -626,17 +566,14 @@ describe("getRecentDocuments (actual)", () => {
         ok: false,
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -653,11 +590,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.reject(new Error("Not JSON")),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -674,11 +607,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({}),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -702,11 +631,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      await getRecentDocuments(
-        sessionWithOnBehalf,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      await getRecentDocuments(sessionWithOnBehalf, {}, { tokenManager: mockTokenManager });
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -726,11 +651,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       const callHeaders = mockFetch.mock.calls[0][1].headers as Record<string, string>;
       expect(callHeaders.onbehalfof).toBeUndefined();
@@ -751,11 +672,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -776,11 +693,7 @@ describe("getRecentDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      const result = await getRecentDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await getRecentDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {

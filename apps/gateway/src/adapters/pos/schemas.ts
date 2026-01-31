@@ -40,19 +40,20 @@ export const PosInvoiceItemSchema = z.object({
  * POS invoice creation request (client's format)
  * Uses PascalCase CompanyId and invoices array
  */
-export const CreatePosInvoiceSchema = z.object({
-  // Accept both CompanyId (client) and companyId (normalized)
-  CompanyId: z.string().uuid("Invalid company ID").optional(),
-  companyId: z.string().uuid("Invalid company ID").optional(),
-  // Client's flags
-  ConsolidatedInvoice: z.boolean().optional(),
-  SaveInvoice: z.boolean().optional(),
-  // Invoices array
-  invoices: z.array(PosInvoiceItemSchema).min(1, "At least one invoice is required"),
-}).refine(
-  (data) => data.CompanyId || data.companyId,
-  { message: "Company ID is required (CompanyId or companyId)" }
-);
+export const CreatePosInvoiceSchema = z
+  .object({
+    // Accept both CompanyId (client) and companyId (normalized)
+    CompanyId: z.string().uuid("Invalid company ID").optional(),
+    companyId: z.string().uuid("Invalid company ID").optional(),
+    // Client's flags
+    ConsolidatedInvoice: z.boolean().optional(),
+    SaveInvoice: z.boolean().optional(),
+    // Invoices array
+    invoices: z.array(PosInvoiceItemSchema).min(1, "At least one invoice is required"),
+  })
+  .refine((data) => data.CompanyId || data.companyId, {
+    message: "Company ID is required (CompanyId or companyId)",
+  });
 
 /**
  * POS invoice response

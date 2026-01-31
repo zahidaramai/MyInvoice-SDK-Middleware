@@ -193,9 +193,7 @@ describe("submissionsRepo", () => {
     });
 
     it("returns submissions with pagination", async () => {
-      const mockSubmissions = [
-        { id: "sub-2", submissionUid: "UID-2" },
-      ];
+      const mockSubmissions = [{ id: "sub-2", submissionUid: "UID-2" }];
 
       mockPrismaClient.submission.findMany.mockResolvedValueOnce(mockSubmissions);
 
@@ -353,9 +351,7 @@ describe("submissionsRepo", () => {
 
   describe("submission date filtering", () => {
     it("filters by date range", async () => {
-      const mockSubmissions = [
-        { id: "sub-1", dateTimeReceived: new Date("2024-01-15") },
-      ];
+      const mockSubmissions = [{ id: "sub-1", dateTimeReceived: new Date("2024-01-15") }];
 
       mockPrismaClient.submission.findMany.mockResolvedValueOnce(mockSubmissions);
 

@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { getDocument, type GetDocumentParams, type GetDocumentOptions } from "../../src/einvoice/getDocument.js";
+import {
+  getDocument,
+  type GetDocumentParams,
+  type GetDocumentOptions,
+} from "../../src/einvoice/getDocument.js";
 import { TokenManager } from "../../src/tokenManager.js";
 import type { SessionCredentials } from "../../src/types.js";
 
@@ -59,7 +63,7 @@ describe("getDocument", () => {
         ok: true,
         headers: new Headers({
           "content-type": "application/xml",
-          "correlationid": "corr-123",
+          correlationid: "corr-123",
           "x-rate-limit-limit": "100",
           "x-rate-limit-remaining": "99",
         }),
@@ -101,7 +105,7 @@ describe("getDocument", () => {
     });
 
     it("detects XML format by content inspection when no content-type", async () => {
-      const xmlContent = '<Invoice><ID>INV001</ID></Invoice>';
+      const xmlContent = "<Invoice><ID>INV001</ID></Invoice>";
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -202,7 +206,7 @@ describe("getDocument", () => {
         status: 429,
         headers: new Headers({
           "retry-after": "60",
-          "correlationid": "corr-789",
+          correlationid: "corr-789",
         }),
       });
 
@@ -326,10 +330,11 @@ describe("getDocument", () => {
         ok: false,
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await getDocument(mockSession, mockParams, mockOptions);

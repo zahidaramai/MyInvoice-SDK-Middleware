@@ -208,7 +208,8 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot create Superadmin role via API. This role can only be managed via direct database access.",
+            message:
+              "Cannot create Superadmin role via API. This role can only be managed via direct database access.",
           },
         });
       }
@@ -217,7 +218,8 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PERMISSION_PROTECTED",
-            message: "Cannot assign superadmin permission via API. This permission can only be assigned via direct database access.",
+            message:
+              "Cannot assign superadmin permission via API. This permission can only be assigned via direct database access.",
           },
         });
       }
@@ -233,9 +235,7 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Validate permissions
-      const invalidPermissions = permissions.filter(
-        (p) => !AVAILABLE_PERMISSIONS.includes(p)
-      );
+      const invalidPermissions = permissions.filter((p) => !AVAILABLE_PERMISSIONS.includes(p));
 
       if (invalidPermissions.length > 0) {
         return reply.status(400).send({
@@ -353,7 +353,8 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot modify Superadmin role via API. This role can only be managed via direct database access.",
+            message:
+              "Cannot modify Superadmin role via API. This role can only be managed via direct database access.",
           },
         });
       }
@@ -373,7 +374,8 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PERMISSION_PROTECTED",
-            message: "Cannot assign superadmin permission via API. This permission can only be assigned via direct database access.",
+            message:
+              "Cannot assign superadmin permission via API. This permission can only be assigned via direct database access.",
           },
         });
       }
@@ -390,9 +392,7 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Validate permissions if provided
       if (permissions) {
-        const invalidPermissions = permissions.filter(
-          (p) => !AVAILABLE_PERMISSIONS.includes(p)
-        );
+        const invalidPermissions = permissions.filter((p) => !AVAILABLE_PERMISSIONS.includes(p));
 
         if (invalidPermissions.length > 0) {
           return reply.status(400).send({
@@ -468,7 +468,8 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot modify Superadmin role permissions via API. This role can only be managed via direct database access.",
+            message:
+              "Cannot modify Superadmin role permissions via API. This role can only be managed via direct database access.",
           },
         });
       }
@@ -478,15 +479,14 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PERMISSION_PROTECTED",
-            message: "Cannot assign superadmin permission via API. This permission can only be assigned via direct database access.",
+            message:
+              "Cannot assign superadmin permission via API. This permission can only be assigned via direct database access.",
           },
         });
       }
 
       // Validate permissions
-      const invalidPermissions = permissions.filter(
-        (p) => !AVAILABLE_PERMISSIONS.includes(p)
-      );
+      const invalidPermissions = permissions.filter((p) => !AVAILABLE_PERMISSIONS.includes(p));
 
       if (invalidPermissions.length > 0) {
         return reply.status(400).send({
@@ -546,7 +546,8 @@ export async function rolesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot delete Superadmin role via API. This role can only be managed via direct database access.",
+            message:
+              "Cannot delete Superadmin role via API. This role can only be managed via direct database access.",
           },
         });
       }

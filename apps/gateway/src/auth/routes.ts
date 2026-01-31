@@ -29,9 +29,9 @@ import { InMemoryRateLimiter } from "@myinvois/core";
 // P1-01: Rate limiters for auth endpoints
 const authRateLimiter = new InMemoryRateLimiter();
 const AUTH_RATE_LIMITS = {
-  LOGIN: 5,        // 5 login attempts per minute per IP
-  REFRESH: 10,     // 10 refresh attempts per minute per IP
-  POS_TOKEN: 250,  // 250 POS token generations per minute per user
+  LOGIN: 5, // 5 login attempts per minute per IP
+  REFRESH: 10, // 10 refresh attempts per minute per IP
+  POS_TOKEN: 250, // 250 POS token generations per minute per user
 };
 
 /**
@@ -111,9 +111,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       let selectedCompanyId = companyId;
 
       if (companyId) {
-        const hasAccess = user.companies.some(
-          (uc) => uc.company.id === companyId
-        );
+        const hasAccess = user.companies.some((uc) => uc.company.id === companyId);
 
         if (!hasAccess) {
           throw new AuthenticationError("Access denied to this company");
@@ -264,8 +262,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       const permissions = parsePermissions(user.role);
 
       // Determine company (use first company if user has one)
-      const companyId =
-        user.companies.length > 0 ? user.companies[0].company.id : undefined;
+      const companyId = user.companies.length > 0 ? user.companies[0].company.id : undefined;
 
       // Create new access token
       const access = createAccessToken({
@@ -488,11 +485,14 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         body: {
           type: ["object", "null"],
           properties: {
-            userId: { type: "string", description: "User ID for the POS system (default: hashmato-pos)" },
+            userId: {
+              type: "string",
+              description: "User ID for the POS system (default: hashmato-pos)",
+            },
             permissions: {
               type: "array",
               items: { type: "string" },
-              description: "Permissions array (default: [\"submit:invoice\"])",
+              description: 'Permissions array (default: ["submit:invoice"])',
             },
           },
         },
@@ -512,10 +512,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         });
       }
 
-      const {
-        userId = "hashmato-pos",
-        permissions = ["submit:invoice"],
-      } = request.body || {};
+      const { userId = "hashmato-pos", permissions = ["submit:invoice"] } = request.body || {};
 
       const { token, expiresAt } = createPosToken(userId, permissions);
 

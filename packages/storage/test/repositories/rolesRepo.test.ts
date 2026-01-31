@@ -264,9 +264,7 @@ describe("rolesRepo", () => {
       };
 
       const requiredPermissions = ["submit:invoice", "read:documents"];
-      const hasAll = requiredPermissions.every((perm) =>
-        role.permissions.includes(perm)
-      );
+      const hasAll = requiredPermissions.every((perm) => role.permissions.includes(perm));
 
       expect(hasAll).toBe(true);
     });
@@ -277,9 +275,7 @@ describe("rolesRepo", () => {
       };
 
       const anyPermissions = ["submit:invoice", "read:documents"];
-      const hasAny = anyPermissions.some((perm) =>
-        role.permissions.includes(perm)
-      );
+      const hasAny = anyPermissions.some((perm) => role.permissions.includes(perm));
 
       expect(hasAny).toBe(true);
     });

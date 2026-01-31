@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * HashLHDN MyInvois Middleware API
- * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ``` 
+ * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ```
  *
  * The version of the OpenAPI document: 1.1.1
  * Contact: hello@zahidaramai.com
@@ -12,75 +12,72 @@
  * Do not edit the class manually.
  */
 
-
-
 /**
- * 
+ *
  * @export
  * @interface UpdateCompanyRequest
  */
 export interface UpdateCompanyRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'name'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'address'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'city'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'state'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'postalCode'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'phone'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'email'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateCompanyRequest
-     */
-    'isActive'?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateCompanyRequest
-     */
-    'myinvoisEnv'?: UpdateCompanyRequestMyinvoisEnvEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  address?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  city?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  state?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  postalCode?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  phone?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  email?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof UpdateCompanyRequest
+   */
+  isActive?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateCompanyRequest
+   */
+  myinvoisEnv?: UpdateCompanyRequestMyinvoisEnvEnum;
 }
 
 export const UpdateCompanyRequestMyinvoisEnvEnum = {
-    Sandbox: 'SANDBOX',
-    Prod: 'PROD'
+  Sandbox: "SANDBOX",
+  Prod: "PROD",
 } as const;
 
-export type UpdateCompanyRequestMyinvoisEnvEnum = typeof UpdateCompanyRequestMyinvoisEnvEnum[keyof typeof UpdateCompanyRequestMyinvoisEnvEnum];
-
-
+export type UpdateCompanyRequestMyinvoisEnvEnum =
+  (typeof UpdateCompanyRequestMyinvoisEnvEnum)[keyof typeof UpdateCompanyRequestMyinvoisEnvEnum];

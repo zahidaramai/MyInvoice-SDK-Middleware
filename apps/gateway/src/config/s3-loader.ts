@@ -2,11 +2,11 @@
  * S3 Certificate Loader
  * Downloads certificates from S3 for signing configuration
  */
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { Readable } from 'stream';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 /**
  * Parse S3 URI into bucket and key
@@ -24,7 +24,7 @@ function parseS3Uri(s3Uri: string): { bucket: string; key: string } {
  * Check if a path is an S3 URI
  */
 export function isS3Path(filePath: string): boolean {
-  return filePath.startsWith('s3://');
+  return filePath.startsWith("s3://");
 }
 
 /**
@@ -33,10 +33,7 @@ export function isS3Path(filePath: string): boolean {
  * @param region - AWS region (defaults to ap-southeast-2)
  * @returns Local file path
  */
-export async function downloadFromS3(
-  s3Uri: string,
-  region = 'ap-southeast-2'
-): Promise<string> {
+export async function downloadFromS3(s3Uri: string, region = "ap-southeast-2"): Promise<string> {
   const { bucket, key } = parseS3Uri(s3Uri);
   const fileName = path.basename(key);
   const localPath = path.join(os.tmpdir(), `hashlhdn-${Date.now()}-${fileName}`);
@@ -65,7 +62,7 @@ export async function downloadFromS3(
 
     return localPath;
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Failed to download certificate from S3 (${s3Uri}): ${message}`);
   }
 }

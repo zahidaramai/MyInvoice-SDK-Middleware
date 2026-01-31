@@ -7,7 +7,7 @@
  * - '1.0': Unsigned documents (legacy)
  * - '1.1': Digitally signed documents
  */
-export type DocumentVersion = '1.0' | '1.1';
+export type DocumentVersion = "1.0" | "1.1";
 
 /**
  * Certificate subject/issuer distinguished name components

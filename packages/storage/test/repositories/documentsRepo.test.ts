@@ -227,7 +227,7 @@ describe("documentsRepo", () => {
         issuerName: "Test Company",
         receiverId: "C98765432100",
         receiverName: "Buyer Company",
-        totalPayableAmount: 106.00,
+        totalPayableAmount: 106.0,
       };
 
       mockPrismaClient.submissionDocument.findFirst.mockResolvedValueOnce(existingDoc);
@@ -244,7 +244,7 @@ describe("documentsRepo", () => {
         issuerName: "Test Company",
         receiverId: "C98765432100",
         receiverName: "Buyer Company",
-        totalPayableAmount: 106.00,
+        totalPayableAmount: 106.0,
         correlationId: "corr-full",
       };
 

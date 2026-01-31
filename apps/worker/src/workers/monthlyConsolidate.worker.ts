@@ -268,9 +268,7 @@ function buildConsolidatedUBL(
         Description: [{ _: item.description }],
         CommodityClassification: [
           {
-            ItemClassificationCode: [
-              { _: item.classification || "022", listID: "CLASS" },
-            ],
+            ItemClassificationCode: [{ _: item.classification || "022", listID: "CLASS" }],
           },
         ],
       },
@@ -283,7 +281,10 @@ function buildConsolidatedUBL(
   }));
 
   // Build tax total with subtotals grouped by tax code
-  const taxSubtotalMap = new Map<string, { taxableAmount: number; taxAmount: number; rate: number }>();
+  const taxSubtotalMap = new Map<
+    string,
+    { taxableAmount: number; taxAmount: number; rate: number }
+  >();
   for (const item of items) {
     const key = item.taxCode;
     const existing = taxSubtotalMap.get(key);
@@ -395,9 +396,7 @@ function buildConsolidatedUBL(
                     AddressLine: [{ Line: [{ _: "NA" }] }],
                     Country: [
                       {
-                        IdentificationCode: [
-                          { _: "MYS", listID: "ISO3166-1", listAgencyID: "6" },
-                        ],
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
                       },
                     ],
                   },
@@ -805,10 +804,7 @@ export function startMonthlyConsolidateWorker(): Worker<MonthlyConsolidateJobDat
 
   monthlyConsolidateWorker.on("failed", (job, error) => {
     if (job) {
-      logger.error(
-        { jobId: job.id, error: error.message },
-        "Monthly consolidation job failed"
-      );
+      logger.error({ jobId: job.id, error: error.message }, "Monthly consolidation job failed");
     }
   });
 

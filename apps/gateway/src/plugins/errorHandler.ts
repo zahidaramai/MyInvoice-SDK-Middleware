@@ -7,12 +7,7 @@
 
 import type { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
-import {
-  AppError,
-  createErrorEnvelope,
-  createNotFoundError,
-  ErrorCodes,
-} from "../lib/errors.js";
+import { AppError, createErrorEnvelope, createNotFoundError, ErrorCodes } from "../lib/errors.js";
 import { createErrorEnvelopeResponse, type ErrorEnvelope } from "@myinvois/core";
 import {
   isSigningError,
@@ -166,10 +161,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.setNotFoundHandler((request, reply) => {
     const correlationId = request.correlationId || request.id;
-    const envelope = createNotFoundError(
-      `${request.method} ${request.url}`,
-      correlationId
-    );
+    const envelope = createNotFoundError(`${request.method} ${request.url}`, correlationId);
 
     request.log.warn(
       { correlationId, path: request.url },

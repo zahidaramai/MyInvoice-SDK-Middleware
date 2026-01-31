@@ -190,9 +190,7 @@ describe("refreshTokensRepo", () => {
     });
 
     it("returns only active tokens", async () => {
-      const mockTokens = [
-        { id: "token-1", revokedAt: null },
-      ];
+      const mockTokens = [{ id: "token-1", revokedAt: null }];
 
       mockPrismaClient.refreshToken.findMany.mockResolvedValueOnce(mockTokens);
 

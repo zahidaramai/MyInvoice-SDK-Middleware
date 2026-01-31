@@ -14,15 +14,11 @@ describe("TST-10: Transformer Edge Cases", () => {
       const invoices = [
         {
           invoiceNumber: "INV-001",
-          items: [
-            { description: "Item 1", quantity: 1, unitPrice: 100, taxAmount: 6, total: 106 },
-          ],
+          items: [{ description: "Item 1", quantity: 1, unitPrice: 100, taxAmount: 6, total: 106 }],
         },
         {
           invoiceNumber: "INV-002",
-          items: [
-            { description: "Item 2", quantity: 2, unitPrice: 50, taxAmount: 6, total: 106 },
-          ],
+          items: [{ description: "Item 2", quantity: 2, unitPrice: 50, taxAmount: 6, total: 106 }],
         },
       ];
 
@@ -75,7 +71,7 @@ describe("TST-10: Transformer Edge Cases", () => {
       expect(calculateRounding(10.02)).toBeCloseTo(-0.02, 2); // Round down to 10.00
       expect(calculateRounding(10.03)).toBeCloseTo(0.02, 2); // Round up to 10.05
       expect(calculateRounding(10.05)).toBeCloseTo(0, 2); // Already on 5 sen
-      expect(calculateRounding(10.00)).toBeCloseTo(0, 2); // Already on 5 sen
+      expect(calculateRounding(10.0)).toBeCloseTo(0, 2); // Already on 5 sen
     });
 
     it("should preserve rounding value in transformed output", () => {

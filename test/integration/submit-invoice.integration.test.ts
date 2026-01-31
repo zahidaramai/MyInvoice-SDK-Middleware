@@ -48,7 +48,10 @@ const SYSTEM_URL = IS_PROD
  */
 function generateInvoiceNumber(): string {
   const now = new Date();
-  const ts = now.toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  const ts = now
+    .toISOString()
+    .replace(/[-:.TZ]/g, "")
+    .slice(0, 14);
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `INV-${ts}-${rand}`;
 }
@@ -69,151 +72,224 @@ function createUBLInvoice(invoiceNumber: string, issuerTin: string): object {
   const issueTime = `${hours}:${minutes}:${seconds}Z`;
 
   return {
-    "_D": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
-    "_A": "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
-    "_B": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-    "Invoice": [{
-      "ID": [{ "_": invoiceNumber }],
-      "IssueDate": [{ "_": issueDate }],
-      "IssueTime": [{ "_": issueTime }],
-      "InvoiceTypeCode": [{ "_": "01", "listVersionID": "1.0" }],
-      "DocumentCurrencyCode": [{ "_": "MYR" }],
-      "InvoicePeriod": [{
-        "StartDate": [{ "_": issueDate }],
-        "EndDate": [{ "_": issueDate }],
-        "Description": [{ "_": "Monthly" }]
-      }],
-      "BillingReference": [{
-        "AdditionalDocumentReference": [{
-          "ID": [{ "_": "E12345678912" }]
-        }]
-      }],
-      "AccountingSupplierParty": [{
-        "AdditionalAccountID": [{ "_": "CPT-CCN-W-211111-KL-000002", "schemeAgencyName": "CertEX" }],
-        "Party": [{
-          "IndustryClassificationCode": [{ "_": "46510", "name": "Wholesale of computers, computer peripheral equipment and software" }],
-          "PartyIdentification": [
-            { "ID": [{ "_": issuerTin, "schemeID": "TIN" }] },
-            { "ID": [{ "_": SUPPLIER_ID_VALUE, "schemeID": SUPPLIER_ID_TYPE }] }
-          ],
-          "PostalAddress": [{
-            "CityName": [{ "_": "Kuala Lumpur" }],
-            "PostalZone": [{ "_": "50480" }],
-            "CountrySubentityCode": [{ "_": "14" }],
-            "AddressLine": [
-              { "Line": [{ "_": "Lot 66" }] },
-              { "Line": [{ "_": "Bangunan Merdeka" }] },
-              { "Line": [{ "_": "Persiaran Jaya" }] }
+    _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+    _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+    _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+    Invoice: [
+      {
+        ID: [{ _: invoiceNumber }],
+        IssueDate: [{ _: issueDate }],
+        IssueTime: [{ _: issueTime }],
+        InvoiceTypeCode: [{ _: "01", listVersionID: "1.0" }],
+        DocumentCurrencyCode: [{ _: "MYR" }],
+        InvoicePeriod: [
+          {
+            StartDate: [{ _: issueDate }],
+            EndDate: [{ _: issueDate }],
+            Description: [{ _: "Monthly" }],
+          },
+        ],
+        BillingReference: [
+          {
+            AdditionalDocumentReference: [
+              {
+                ID: [{ _: "E12345678912" }],
+              },
             ],
-            "Country": [{
-              "IdentificationCode": [{ "_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6" }]
-            }]
-          }],
-          "PartyLegalEntity": [{
-            "RegistrationName": [{ "_": "Test Supplier Sdn Bhd" }]
-          }],
-          "Contact": [{
-            "Telephone": [{ "_": "+60123456789" }],
-            "ElectronicMail": [{ "_": "supplier@test.com" }]
-          }]
-        }]
-      }],
-      "AccountingCustomerParty": [{
-        "Party": [{
-          "PartyIdentification": [
-            { "ID": [{ "_": issuerTin, "schemeID": "TIN" }] },
-            { "ID": [{ "_": SUPPLIER_ID_VALUE, "schemeID": SUPPLIER_ID_TYPE }] }
-          ],
-          "PostalAddress": [{
-            "CityName": [{ "_": "Kuala Lumpur" }],
-            "PostalZone": [{ "_": "50480" }],
-            "CountrySubentityCode": [{ "_": "14" }],
-            "AddressLine": [
-              { "Line": [{ "_": "Lot 55" }] },
-              { "Line": [{ "_": "Bangunan Buyer" }] },
-              { "Line": [{ "_": "-" }] }
+          },
+        ],
+        AccountingSupplierParty: [
+          {
+            AdditionalAccountID: [{ _: "CPT-CCN-W-211111-KL-000002", schemeAgencyName: "CertEX" }],
+            Party: [
+              {
+                IndustryClassificationCode: [
+                  {
+                    _: "46510",
+                    name: "Wholesale of computers, computer peripheral equipment and software",
+                  },
+                ],
+                PartyIdentification: [
+                  { ID: [{ _: issuerTin, schemeID: "TIN" }] },
+                  { ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }] },
+                ],
+                PostalAddress: [
+                  {
+                    CityName: [{ _: "Kuala Lumpur" }],
+                    PostalZone: [{ _: "50480" }],
+                    CountrySubentityCode: [{ _: "14" }],
+                    AddressLine: [
+                      { Line: [{ _: "Lot 66" }] },
+                      { Line: [{ _: "Bangunan Merdeka" }] },
+                      { Line: [{ _: "Persiaran Jaya" }] },
+                    ],
+                    Country: [
+                      {
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+                PartyLegalEntity: [
+                  {
+                    RegistrationName: [{ _: "Test Supplier Sdn Bhd" }],
+                  },
+                ],
+                Contact: [
+                  {
+                    Telephone: [{ _: "+60123456789" }],
+                    ElectronicMail: [{ _: "supplier@test.com" }],
+                  },
+                ],
+              },
             ],
-            "Country": [{
-              "IdentificationCode": [{ "_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6" }]
-            }]
-          }],
-          "PartyLegalEntity": [{
-            "RegistrationName": [{ "_": "Test Buyer Sdn Bhd" }]
-          }],
-          "Contact": [{
-            "Telephone": [{ "_": "+60987654321" }],
-            "ElectronicMail": [{ "_": "buyer@test.com" }]
-          }]
-        }]
-      }],
-      "PaymentMeans": [{
-        "PaymentMeansCode": [{ "_": "01" }],
-        "PayeeFinancialAccount": [{
-          "ID": [{ "_": "1234567890123" }]
-        }]
-      }],
-      "PaymentTerms": [{
-        "Note": [{ "_": "Payment due within 30 days" }]
-      }],
-      "TaxTotal": [{
-        "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-        "TaxSubtotal": [{
-          "TaxableAmount": [{ "_": 100.00, "currencyID": "MYR" }],
-          "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-          "TaxCategory": [{
-            "ID": [{ "_": "E" }],
-            "TaxScheme": [{
-              "ID": [{ "_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6" }]
-            }]
-          }]
-        }]
-      }],
-      "LegalMonetaryTotal": [{
-        "LineExtensionAmount": [{ "_": 100.00, "currencyID": "MYR" }],
-        "TaxExclusiveAmount": [{ "_": 100.00, "currencyID": "MYR" }],
-        "TaxInclusiveAmount": [{ "_": 100.00, "currencyID": "MYR" }],
-        "AllowanceTotalAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-        "ChargeTotalAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-        "PayableRoundingAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-        "PayableAmount": [{ "_": 100.00, "currencyID": "MYR" }]
-      }],
-      "InvoiceLine": [{
-        "ID": [{ "_": "1" }],
-        "InvoicedQuantity": [{ "_": 1, "unitCode": "C62" }],
-        "LineExtensionAmount": [{ "_": 100.00, "currencyID": "MYR" }],
-        "AllowanceCharge": [{
-          "ChargeIndicator": [{ "_": false }],
-          "AllowanceChargeReason": [{ "_": "Sample discount" }],
-          "Amount": [{ "_": 0.00, "currencyID": "MYR" }]
-        }],
-        "TaxTotal": [{
-          "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-          "TaxSubtotal": [{
-            "TaxableAmount": [{ "_": 100.00, "currencyID": "MYR" }],
-            "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-            "TaxCategory": [{
-              "ID": [{ "_": "E" }],
-              "TaxExemptionReason": [{ "_": "Exempt New Means of Transport" }],
-              "TaxScheme": [{
-                "ID": [{ "_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6" }]
-              }]
-            }]
-          }]
-        }],
-        "Item": [{
-          "CommodityClassification": [{
-            "ItemClassificationCode": [{ "_": "001", "listID": "CLASS" }]
-          }],
-          "Description": [{ "_": "Test Product for E-Invoice Integration" }]
-        }],
-        "Price": [{
-          "PriceAmount": [{ "_": 100.00, "currencyID": "MYR" }]
-        }],
-        "ItemPriceExtension": [{
-          "Amount": [{ "_": 100.00, "currencyID": "MYR" }]
-        }]
-      }]
-    }]
+          },
+        ],
+        AccountingCustomerParty: [
+          {
+            Party: [
+              {
+                PartyIdentification: [
+                  { ID: [{ _: issuerTin, schemeID: "TIN" }] },
+                  { ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }] },
+                ],
+                PostalAddress: [
+                  {
+                    CityName: [{ _: "Kuala Lumpur" }],
+                    PostalZone: [{ _: "50480" }],
+                    CountrySubentityCode: [{ _: "14" }],
+                    AddressLine: [
+                      { Line: [{ _: "Lot 55" }] },
+                      { Line: [{ _: "Bangunan Buyer" }] },
+                      { Line: [{ _: "-" }] },
+                    ],
+                    Country: [
+                      {
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+                PartyLegalEntity: [
+                  {
+                    RegistrationName: [{ _: "Test Buyer Sdn Bhd" }],
+                  },
+                ],
+                Contact: [
+                  {
+                    Telephone: [{ _: "+60987654321" }],
+                    ElectronicMail: [{ _: "buyer@test.com" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        PaymentMeans: [
+          {
+            PaymentMeansCode: [{ _: "01" }],
+            PayeeFinancialAccount: [
+              {
+                ID: [{ _: "1234567890123" }],
+              },
+            ],
+          },
+        ],
+        PaymentTerms: [
+          {
+            Note: [{ _: "Payment due within 30 days" }],
+          },
+        ],
+        TaxTotal: [
+          {
+            TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+            TaxSubtotal: [
+              {
+                TaxableAmount: [{ _: 100.0, currencyID: "MYR" }],
+                TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+                TaxCategory: [
+                  {
+                    ID: [{ _: "E" }],
+                    TaxScheme: [
+                      {
+                        ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        LegalMonetaryTotal: [
+          {
+            LineExtensionAmount: [{ _: 100.0, currencyID: "MYR" }],
+            TaxExclusiveAmount: [{ _: 100.0, currencyID: "MYR" }],
+            TaxInclusiveAmount: [{ _: 100.0, currencyID: "MYR" }],
+            AllowanceTotalAmount: [{ _: 0.0, currencyID: "MYR" }],
+            ChargeTotalAmount: [{ _: 0.0, currencyID: "MYR" }],
+            PayableRoundingAmount: [{ _: 0.0, currencyID: "MYR" }],
+            PayableAmount: [{ _: 100.0, currencyID: "MYR" }],
+          },
+        ],
+        InvoiceLine: [
+          {
+            ID: [{ _: "1" }],
+            InvoicedQuantity: [{ _: 1, unitCode: "C62" }],
+            LineExtensionAmount: [{ _: 100.0, currencyID: "MYR" }],
+            AllowanceCharge: [
+              {
+                ChargeIndicator: [{ _: false }],
+                AllowanceChargeReason: [{ _: "Sample discount" }],
+                Amount: [{ _: 0.0, currencyID: "MYR" }],
+              },
+            ],
+            TaxTotal: [
+              {
+                TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+                TaxSubtotal: [
+                  {
+                    TaxableAmount: [{ _: 100.0, currencyID: "MYR" }],
+                    TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+                    TaxCategory: [
+                      {
+                        ID: [{ _: "E" }],
+                        TaxExemptionReason: [{ _: "Exempt New Means of Transport" }],
+                        TaxScheme: [
+                          {
+                            ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            Item: [
+              {
+                CommodityClassification: [
+                  {
+                    ItemClassificationCode: [{ _: "001", listID: "CLASS" }],
+                  },
+                ],
+                Description: [{ _: "Test Product for E-Invoice Integration" }],
+              },
+            ],
+            Price: [
+              {
+                PriceAmount: [{ _: 100.0, currencyID: "MYR" }],
+              },
+            ],
+            ItemPriceExtension: [
+              {
+                Amount: [{ _: 100.0, currencyID: "MYR" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   };
 }
 
@@ -262,7 +338,7 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
 
     const data = await response.json();
     accessToken = data.access_token;
-    tokenExpiresAt = Date.now() + (data.expires_in * 1000);
+    tokenExpiresAt = Date.now() + data.expires_in * 1000;
 
     console.log(`Token acquired, expires in ${data.expires_in}s`);
     return accessToken;
@@ -280,7 +356,9 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
       console.log(`   Supplier ID Type: ${SUPPLIER_ID_TYPE}`);
       console.log(`   Supplier ID Value: ${SUPPLIER_ID_VALUE.slice(0, 6)}...`);
     } else {
-      console.log("   WARNING: MYINVOIS_SUPPLIER_TIN not set - invoice submission will fail TIN validation");
+      console.log(
+        "   WARNING: MYINVOIS_SUPPLIER_TIN not set - invoice submission will fail TIN validation"
+      );
     }
   });
 
@@ -315,12 +393,14 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          documents: [{
-            format: "JSON",
-            documentHash: documentHash,
-            codeNumber: invoiceNumber,
-            document: documentBase64,
-          }],
+          documents: [
+            {
+              format: "JSON",
+              documentHash: documentHash,
+              codeNumber: invoiceNumber,
+              document: documentBase64,
+            },
+          ],
         }),
       });
 
@@ -337,16 +417,20 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
 
         if (responseBody.acceptedDocuments?.length > 0) {
           console.log(`   Accepted Documents: ${responseBody.acceptedDocuments.length}`);
-          responseBody.acceptedDocuments.forEach((doc: { uuid: string; invoiceCodeNumber: string }) => {
-            console.log(`     - UUID: ${doc.uuid}, Code: ${doc.invoiceCodeNumber}`);
-          });
+          responseBody.acceptedDocuments.forEach(
+            (doc: { uuid: string; invoiceCodeNumber: string }) => {
+              console.log(`     - UUID: ${doc.uuid}, Code: ${doc.invoiceCodeNumber}`);
+            }
+          );
         }
 
         if (responseBody.rejectedDocuments?.length > 0) {
           console.log(`   Rejected Documents: ${responseBody.rejectedDocuments.length}`);
-          responseBody.rejectedDocuments.forEach((doc: { invoiceCodeNumber: string; error: { message: string } }) => {
-            console.log(`     - Code: ${doc.invoiceCodeNumber}, Error: ${doc.error?.message}`);
-          });
+          responseBody.rejectedDocuments.forEach(
+            (doc: { invoiceCodeNumber: string; error: { message: string } }) => {
+              console.log(`     - Code: ${doc.invoiceCodeNumber}, Error: ${doc.error?.message}`);
+            }
+          );
         }
       } else if (response.status === 400) {
         // Validation error - document structure issue
@@ -355,7 +439,9 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
         expect(response.status).toBe(400);
       } else if (response.status === 422) {
         // Could be duplicate or other business rule violation
-        console.log(`   Business Rule Error: ${responseBody.message || JSON.stringify(responseBody)}`);
+        console.log(
+          `   Business Rule Error: ${responseBody.message || JSON.stringify(responseBody)}`
+        );
         expect([400, 422]).toContain(response.status);
       } else {
         // Unexpected error
@@ -364,8 +450,8 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
       }
 
       // Verify correlation ID is returned
-      const correlationId = response.headers.get("correlationid") ||
-        response.headers.get("x-correlation-id");
+      const correlationId =
+        response.headers.get("correlationid") || response.headers.get("x-correlation-id");
       console.log(`   Correlation ID: ${correlationId || "not provided"}`);
     });
 
@@ -383,7 +469,9 @@ describe.skipIf(SKIP_REAL_TESTS)("Real E-Invoice Submission", () => {
       expect(response.status).toBe(200);
 
       const documentTypes = await response.json();
-      console.log(`   Document Types available: ${Array.isArray(documentTypes) ? documentTypes.length : "N/A"}`);
+      console.log(
+        `   Document Types available: ${Array.isArray(documentTypes) ? documentTypes.length : "N/A"}`
+      );
 
       // Log first few document types if available
       if (Array.isArray(documentTypes) && documentTypes.length > 0) {

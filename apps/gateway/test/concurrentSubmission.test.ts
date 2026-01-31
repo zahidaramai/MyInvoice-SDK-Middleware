@@ -294,9 +294,7 @@ describe("TST-15: Concurrent Submission Tests", () => {
     it("should rollback on partial failure", async () => {
       const prisma = getPrismaClient();
 
-      vi.mocked(prisma.$transaction).mockRejectedValue(
-        new Error("Transaction rolled back")
-      );
+      vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Transaction rolled back"));
 
       await expect(prisma.$transaction([])).rejects.toThrow("rolled back");
     });

@@ -140,7 +140,9 @@ export async function usersRoutes(fastify: FastifyInstance): Promise<void> {
           total: result.total - (result.data.length - filteredData.length),
           page: result.page,
           limit: result.limit,
-          totalPages: Math.ceil((result.total - (result.data.length - filteredData.length)) / result.limit),
+          totalPages: Math.ceil(
+            (result.total - (result.data.length - filteredData.length)) / result.limit
+          ),
         },
       });
     }
@@ -196,7 +198,8 @@ export async function usersRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot assign Superadmin role via API. This role can only be assigned via direct database access.",
+            message:
+              "Cannot assign Superadmin role via API. This role can only be assigned via direct database access.",
           },
         });
       }
@@ -398,7 +401,8 @@ export async function usersRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot assign Superadmin role via API. This role can only be assigned via direct database access.",
+            message:
+              "Cannot assign Superadmin role via API. This role can only be assigned via direct database access.",
           },
         });
       }
@@ -617,7 +621,8 @@ export async function usersRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(403).send({
           error: {
             code: "SUPERADMIN_PROTECTED",
-            message: "Cannot assign Superadmin role via API. This role can only be assigned via direct database access.",
+            message:
+              "Cannot assign Superadmin role via API. This role can only be assigned via direct database access.",
           },
         });
       }

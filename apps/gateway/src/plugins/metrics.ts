@@ -62,33 +62,30 @@ const plugin: FastifyPluginAsync<MetricsPluginOptions> = async (fastify, options
   });
 
   // Record metrics on response
-  fastify.addHook(
-    "onResponse",
-    (request: FastifyRequest, reply: FastifyReply, done) => {
-      // Skip metrics endpoint itself to avoid recursion
-      if (request.url === route) {
-        done();
-        return;
-      }
-
-      const durationMs = performance.now() - request.metricsStartTime;
-      const durationSeconds = durationMs / 1000;
-
-      // Get route pattern (normalized to avoid high cardinality)
-      const routePattern = request.routeOptions?.url || normalizeRoute(request.url);
-
-      const labels = {
-        method: request.method,
-        route: routePattern,
-        status: String(reply.statusCode),
-      };
-
-      metrics.httpRequestsTotal.inc(labels);
-      metrics.httpRequestDuration.observe(labels, durationSeconds);
-
+  fastify.addHook("onResponse", (request: FastifyRequest, reply: FastifyReply, done) => {
+    // Skip metrics endpoint itself to avoid recursion
+    if (request.url === route) {
       done();
+      return;
     }
-  );
+
+    const durationMs = performance.now() - request.metricsStartTime;
+    const durationSeconds = durationMs / 1000;
+
+    // Get route pattern (normalized to avoid high cardinality)
+    const routePattern = request.routeOptions?.url || normalizeRoute(request.url);
+
+    const labels = {
+      method: request.method,
+      route: routePattern,
+      status: String(reply.statusCode),
+    };
+
+    metrics.httpRequestsTotal.inc(labels);
+    metrics.httpRequestDuration.observe(labels, durationSeconds);
+
+    done();
+  });
 
   fastify.log.info({ route }, "Metrics endpoint registered");
 };

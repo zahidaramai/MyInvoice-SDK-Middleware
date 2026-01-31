@@ -4,12 +4,12 @@
  * Extracts certificate and private key from PKCS#12 files using node-forge.
  */
 
-import * as crypto from 'crypto';
-import * as fs from 'fs';
-import forge from 'node-forge';
-import { CertificateLoadError, PrivateKeyLoadError } from './errors.js';
-import { parseCertificate } from './certificate-loader.js';
-import type { CertificateInfo } from './types.js';
+import * as crypto from "crypto";
+import * as fs from "fs";
+import forge from "node-forge";
+import { CertificateLoadError, PrivateKeyLoadError } from "./errors.js";
+import { parseCertificate } from "./certificate-loader.js";
+import type { CertificateInfo } from "./types.js";
 
 export interface PKCS12Source {
   /** Path to .p12/.pfx file */
@@ -46,36 +46,33 @@ export function loadPKCS12(source: PKCS12Source): PKCS12Result {
     }
   } else if (source.base64) {
     try {
-      p12Buffer = Buffer.from(source.base64, 'base64');
+      p12Buffer = Buffer.from(source.base64, "base64");
     } catch (error) {
       throw new CertificateLoadError(
         `Failed to decode base64 PKCS#12 data: ${(error as Error).message}`
       );
     }
   } else {
-    throw new CertificateLoadError(
-      'PKCS#12 source must specify either path or base64'
-    );
+    throw new CertificateLoadError("PKCS#12 source must specify either path or base64");
   }
 
-  const passphrase = source.passphrase || '';
+  const passphrase = source.passphrase || "";
 
   // Parse PKCS#12 using node-forge
   let p12: forge.pkcs12.Pkcs12Pfx;
   try {
-    const p12Der = p12Buffer.toString('binary');
+    const p12Der = p12Buffer.toString("binary");
     const p12Asn1 = forge.asn1.fromDer(p12Der);
     p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, passphrase);
   } catch (error) {
     const message = (error as Error).message;
-    if (message.includes('Invalid password') || message.includes('PKCS#12 MAC could not be verified')) {
-      throw new PrivateKeyLoadError(
-        'Invalid PKCS#12 passphrase or corrupted file'
-      );
+    if (
+      message.includes("Invalid password") ||
+      message.includes("PKCS#12 MAC could not be verified")
+    ) {
+      throw new PrivateKeyLoadError("Invalid PKCS#12 passphrase or corrupted file");
     }
-    throw new CertificateLoadError(
-      `Failed to parse PKCS#12: ${message}`
-    );
+    throw new CertificateLoadError(`Failed to parse PKCS#12: ${message}`);
   }
 
   // Extract certificate
@@ -93,9 +90,7 @@ export function loadPKCS12(source: PKCS12Source): PKCS12Result {
   }
 
   if (!certificate) {
-    throw new CertificateLoadError(
-      'No certificate found in PKCS#12 file'
-    );
+    throw new CertificateLoadError("No certificate found in PKCS#12 file");
   }
 
   // Convert certificate to PEM
@@ -136,9 +131,7 @@ export function loadPKCS12(source: PKCS12Source): PKCS12Result {
   }
 
   if (!forgePrivateKey) {
-    throw new PrivateKeyLoadError(
-      'No private key found in PKCS#12 file'
-    );
+    throw new PrivateKeyLoadError("No private key found in PKCS#12 file");
   }
 
   // Convert forge private key to PEM, then to Node.js KeyObject
@@ -147,18 +140,16 @@ export function loadPKCS12(source: PKCS12Source): PKCS12Result {
     const keyPem = forge.pki.privateKeyToPem(forgePrivateKey);
     privateKey = crypto.createPrivateKey({
       key: keyPem,
-      format: 'pem'
+      format: "pem",
     });
   } catch (error) {
-    throw new PrivateKeyLoadError(
-      `Failed to convert private key: ${(error as Error).message}`
-    );
+    throw new PrivateKeyLoadError(`Failed to convert private key: ${(error as Error).message}`);
   }
 
   return {
     certPem,
     certInfo,
-    privateKey
+    privateKey,
   };
 }
 
@@ -167,7 +158,7 @@ export function loadPKCS12(source: PKCS12Source): PKCS12Result {
  */
 export function isPKCS12File(path: string): boolean {
   const lower = path.toLowerCase();
-  return lower.endsWith('.p12') || lower.endsWith('.pfx');
+  return lower.endsWith(".p12") || lower.endsWith(".pfx");
 }
 
 /**

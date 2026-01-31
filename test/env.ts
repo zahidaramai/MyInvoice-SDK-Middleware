@@ -17,9 +17,7 @@ const __dirname = dirname(__filename);
 export function getTestDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
   if (!url) {
-    throw new Error(
-      "DATABASE_URL not set. Ensure Testcontainers is running via global setup."
-    );
+    throw new Error("DATABASE_URL not set. Ensure Testcontainers is running via global setup.");
   }
   return url;
 }
@@ -30,9 +28,7 @@ export function getTestDatabaseUrl(): string {
 export function getTestRedisUrl(): string {
   const url = process.env.REDIS_URL;
   if (!url) {
-    throw new Error(
-      "REDIS_URL not set. Ensure Testcontainers is running via global setup."
-    );
+    throw new Error("REDIS_URL not set. Ensure Testcontainers is running via global setup.");
   }
   return url;
 }

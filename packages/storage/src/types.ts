@@ -5,20 +5,12 @@
 /**
  * Submission status values
  */
-export type SubmissionStatus =
-  | "RECEIVED"
-  | "SUBMITTED"
-  | "DUPLICATE_SUPPRESSED"
-  | "ERROR";
+export type SubmissionStatus = "RECEIVED" | "SUBMITTED" | "DUPLICATE_SUPPRESSED" | "ERROR";
 
 /**
  * Upstream overall status values
  */
-export type UpstreamOverallStatus =
-  | "IN_PROGRESS"
-  | "VALID"
-  | "PARTIALLY_VALID"
-  | "INVALID";
+export type UpstreamOverallStatus = "IN_PROGRESS" | "VALID" | "PARTIALLY_VALID" | "INVALID";
 
 /**
  * Document initial result values
@@ -588,7 +580,7 @@ export interface CreateRefreshTokenInput {
 export type InvoiceStatus =
   | "DRAFT"
   | "PENDING"
-  | "SUBMITTING"  // Async: Invoice saved, MyInvois submission in progress
+  | "SUBMITTING" // Async: Invoice saved, MyInvois submission in progress
   | "SUBMITTED"
   | "VALID"
   | "INVALID"

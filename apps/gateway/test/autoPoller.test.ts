@@ -299,7 +299,11 @@ describe("TST-09: Auto-Poller Cron", () => {
 
       for (const invoice of mockSubmittedInvoices) {
         try {
-          const result = await getDocumentDetails({} as any, { uuid: invoice.myinvoisUuid! }, {} as any);
+          const result = await getDocumentDetails(
+            {} as any,
+            { uuid: invoice.myinvoisUuid! },
+            {} as any
+          );
           if (result.ok) successCount++;
         } catch {
           errorCount++;
@@ -313,9 +317,9 @@ describe("TST-09: Auto-Poller Cron", () => {
     it("should handle API timeout gracefully", async () => {
       vi.mocked(getDocumentDetails).mockRejectedValue(new Error("Request timeout"));
 
-      await expect(
-        getDocumentDetails({} as any, { uuid: "uuid-123" }, {} as any)
-      ).rejects.toThrow("Request timeout");
+      await expect(getDocumentDetails({} as any, { uuid: "uuid-123" }, {} as any)).rejects.toThrow(
+        "Request timeout"
+      );
     });
   });
 
@@ -336,11 +340,7 @@ describe("TST-09: Auto-Poller Cron", () => {
       }
 
       // Simulate concurrent calls
-      await Promise.all([
-        simulatePoll(),
-        simulatePoll(),
-        simulatePoll(),
-      ]);
+      await Promise.all([simulatePoll(), simulatePoll(), simulatePoll()]);
 
       // Only one should have started, others skipped
       const started = pollAttempts.filter((x) => x).length;

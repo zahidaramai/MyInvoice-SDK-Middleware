@@ -250,8 +250,7 @@ describe("getSubmission", () => {
 
   describe("polling strategy", () => {
     it("determines if polling should continue", () => {
-      const shouldContinuePolling = (status: string) =>
-        status === "in progress";
+      const shouldContinuePolling = (status: string) => status === "in progress";
 
       expect(shouldContinuePolling("in progress")).toBe(true);
       expect(shouldContinuePolling("valid")).toBe(false);

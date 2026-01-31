@@ -36,9 +36,7 @@ describe("submitDocuments", () => {
     it("handles partially successful submission", () => {
       const response = {
         submissionUid: "HJSD135P2S7D8IU",
-        acceptedDocuments: [
-          { uuid: "F9D425P6DS7D8IU", invoiceCodeNumber: "INV12345" },
-        ],
+        acceptedDocuments: [{ uuid: "F9D425P6DS7D8IU", invoiceCodeNumber: "INV12345" }],
         rejectedDocuments: [
           {
             invoiceCodeNumber: "INV12346",
@@ -320,8 +318,8 @@ describe("submitDocuments", () => {
         "x-rate-limit-remaining": "95",
       });
 
-      const correlationId = responseHeaders.get("correlationid") ||
-        responseHeaders.get("x-correlation-id");
+      const correlationId =
+        responseHeaders.get("correlationid") || responseHeaders.get("x-correlation-id");
 
       expect(correlationId).toBe("corr-12345");
     });

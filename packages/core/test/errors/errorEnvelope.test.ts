@@ -140,12 +140,7 @@ describe("errorEnvelope", () => {
     });
 
     it("defines network error codes", () => {
-      const networkCodes = [
-        "NETWORK_ERROR",
-        "TIMEOUT",
-        "CONNECTION_REFUSED",
-        "DNS_FAILURE",
-      ];
+      const networkCodes = ["NETWORK_ERROR", "TIMEOUT", "CONNECTION_REFUSED", "DNS_FAILURE"];
 
       networkCodes.forEach((code) => {
         expect(typeof code).toBe("string");
@@ -318,7 +313,12 @@ describe("errorEnvelope", () => {
     });
 
     it("checks if error is terminal", () => {
-      const terminalCodes = ["INVALID_TIN", "DUPLICATE_SUBMISSION", "FORBIDDEN", "DOCUMENT_NOT_FOUND"];
+      const terminalCodes = [
+        "INVALID_TIN",
+        "DUPLICATE_SUBMISSION",
+        "FORBIDDEN",
+        "DOCUMENT_NOT_FOUND",
+      ];
 
       const isTerminal = (code: string) => terminalCodes.includes(code);
 

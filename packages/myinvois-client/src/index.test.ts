@@ -36,11 +36,12 @@ describe("login", () => {
       ok: true,
       status: 200,
       headers: new Headers({ correlationid: "test-123" }),
-      json: () => Promise.resolve({
-        access_token: "token123",
-        token_type: "Bearer",
-        expires_in: 3600,
-      }),
+      json: () =>
+        Promise.resolve({
+          access_token: "token123",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
     };
     vi.mocked(fetch).mockResolvedValue(mockResponse as Response);
 
@@ -73,11 +74,12 @@ describe("login", () => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => Promise.resolve({
-        access_token: "token123",
-        token_type: "Bearer",
-        expires_in: 3600,
-      }),
+      json: () =>
+        Promise.resolve({
+          access_token: "token123",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
     };
     vi.mocked(fetch).mockResolvedValue(mockResponse as Response);
 
@@ -105,10 +107,11 @@ describe("login", () => {
       ok: false,
       status: 401,
       headers: new Headers(),
-      json: () => Promise.resolve({
-        error: "invalid_client",
-        error_description: "Invalid credentials",
-      }),
+      json: () =>
+        Promise.resolve({
+          error: "invalid_client",
+          error_description: "Invalid credentials",
+        }),
     };
     vi.mocked(fetch).mockResolvedValue(mockResponse as Response);
 
@@ -168,11 +171,12 @@ describe("TokenManager", () => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => Promise.resolve({
-        access_token: "token123",
-        token_type: "Bearer",
-        expires_in: 3600,
-      }),
+      json: () =>
+        Promise.resolve({
+          access_token: "token123",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
     };
     vi.mocked(fetch).mockResolvedValue(mockResponse as Response);
 
@@ -198,11 +202,12 @@ describe("TokenManager", () => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => Promise.resolve({
-        access_token: "token123",
-        token_type: "Bearer",
-        expires_in: 3600,
-      }),
+      json: () =>
+        Promise.resolve({
+          access_token: "token123",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
     };
     vi.mocked(fetch).mockResolvedValue(mockResponse as Response);
 
@@ -227,11 +232,12 @@ describe("TokenManager", () => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => Promise.resolve({
-        access_token: "token123",
-        token_type: "Bearer",
-        expires_in: 3600,
-      }),
+      json: () =>
+        Promise.resolve({
+          access_token: "token123",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
     };
     vi.mocked(fetch).mockResolvedValue(mockResponse as Response);
 

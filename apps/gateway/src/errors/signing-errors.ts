@@ -208,15 +208,10 @@ export function transformSigningError(
 
   // Unknown errors (fallback)
   const message = error instanceof Error ? error.message : "Unknown signing error";
-  const envelope = createErrorEnvelope(
-    ErrorCodes.SIGNING_FAILED,
-    message,
-    500,
-    {
-      retryable: false,
-      correlationId,
-    }
-  );
+  const envelope = createErrorEnvelope(ErrorCodes.SIGNING_FAILED, message, 500, {
+    retryable: false,
+    correlationId,
+  });
   return {
     ...envelope,
     signing: signingContext,
@@ -267,9 +262,7 @@ export function createSigningNotConfiguredError(
 /**
  * Create a signing disabled error
  */
-export function createSigningDisabledError(
-  correlationId?: string
-): SigningErrorEnvelope {
+export function createSigningDisabledError(correlationId?: string): SigningErrorEnvelope {
   const envelope = createErrorEnvelope(
     ErrorCodes.SIGNING_DISABLED,
     "Document signing is disabled in the current configuration",

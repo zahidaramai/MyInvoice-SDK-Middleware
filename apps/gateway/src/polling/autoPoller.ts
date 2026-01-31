@@ -134,7 +134,9 @@ async function pollSubmittedInvoices(logger: Logger): Promise<void> {
     }
 
     logger.info(`[AutoPoller] Found ${invoices.length} SUBMITTED invoices to poll`);
-    logger.info(`[AutoPoller] Mode: ${erpConfig.enabled ? "ERP (INTERMEDIARY)" : "Standard (TAXPAYER)"}`);
+    logger.info(
+      `[AutoPoller] Mode: ${erpConfig.enabled ? "ERP (INTERMEDIARY)" : "Standard (TAXPAYER)"}`
+    );
 
     // Group by company for efficient token usage
     const invoicesByCompany = new Map<string, (Invoice & { company: Company })[]>();
@@ -176,7 +178,9 @@ async function pollSubmittedInvoices(logger: Logger): Promise<void> {
         // Create token manager for this session
         const tokenManager = createTokenManager();
 
-        logger.info(`[AutoPoller] Polling ${companyInvoices.length} invoices for ${company.name} (TIN: ${company.tin})`);
+        logger.info(
+          `[AutoPoller] Polling ${companyInvoices.length} invoices for ${company.name} (TIN: ${company.tin})`
+        );
 
         for (const invoice of companyInvoices) {
           const uuid = invoice.myinvoisUuid!;
@@ -214,12 +218,16 @@ async function pollSubmittedInvoices(logger: Logger): Promise<void> {
 
             if (updateResult.count === 0) {
               // Another process updated the invoice - skip to avoid overwriting
-              logger.warn(`[AutoPoller] ⚠ ${invoice.invoiceNumber}: Skipped (concurrent update detected)`);
+              logger.warn(
+                `[AutoPoller] ⚠ ${invoice.invoiceNumber}: Skipped (concurrent update detected)`
+              );
               continue;
             }
 
             if (details.longId) {
-              logger.info(`[AutoPoller] ✓ ${invoice.invoiceNumber}: ${newStatus} - LongID: ${details.longId.substring(0, 20)}...`);
+              logger.info(
+                `[AutoPoller] ✓ ${invoice.invoiceNumber}: ${newStatus} - LongID: ${details.longId.substring(0, 20)}...`
+              );
             } else {
               logger.info(`[AutoPoller] ✓ ${invoice.invoiceNumber}: ${newStatus}`);
             }
@@ -298,12 +306,16 @@ async function pollSubmittedInvoices(logger: Logger): Promise<void> {
 
             if (updateResult.count === 0) {
               // Another process updated the invoice - skip to avoid overwriting
-              logger.warn(`[AutoPoller] ⚠ ${invoice.invoiceNumber}: Skipped (concurrent update detected)`);
+              logger.warn(
+                `[AutoPoller] ⚠ ${invoice.invoiceNumber}: Skipped (concurrent update detected)`
+              );
               continue;
             }
 
             if (details.longId) {
-              logger.info(`[AutoPoller] ✓ ${invoice.invoiceNumber}: ${newStatus} - LongID: ${details.longId.substring(0, 20)}...`);
+              logger.info(
+                `[AutoPoller] ✓ ${invoice.invoiceNumber}: ${newStatus} - LongID: ${details.longId.substring(0, 20)}...`
+              );
             } else {
               logger.info(`[AutoPoller] ✓ ${invoice.invoiceNumber}: ${newStatus}`);
             }
@@ -346,7 +358,9 @@ export function startAutoPoller(logger: Logger): void {
     return;
   }
 
-  logger.info(`[AutoPoller] Starting automatic status poller (every ${POLL_INTERVAL_MS / 60000} minutes)`);
+  logger.info(
+    `[AutoPoller] Starting automatic status poller (every ${POLL_INTERVAL_MS / 60000} minutes)`
+  );
 
   // Run immediately on startup
   pollSubmittedInvoices(logger).catch((err) => {

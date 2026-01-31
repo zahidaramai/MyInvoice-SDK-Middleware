@@ -9,9 +9,7 @@ import { PINO_REDACT_CONFIG, clientIdFingerprint } from "@myinvois/core";
 /**
  * Create Pino logger options for Fastify
  */
-export function createLoggerOptions(
-  level: string = "info"
-): FastifyServerOptions["logger"] {
+export function createLoggerOptions(level: string = "info"): FastifyServerOptions["logger"] {
   return {
     level,
     redact: PINO_REDACT_CONFIG,

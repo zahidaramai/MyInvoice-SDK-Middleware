@@ -12,11 +12,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.addHook(
     "onRequest",
-    (
-      request: FastifyRequest,
-      _reply: FastifyReply,
-      done: (err?: Error) => void
-    ) => {
+    (request: FastifyRequest, _reply: FastifyReply, done: (err?: Error) => void) => {
       request.correlationId = request.id;
       done();
     }

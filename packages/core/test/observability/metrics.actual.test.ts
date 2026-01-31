@@ -143,22 +143,14 @@ describe("metrics (actual)", () => {
     });
 
     it("increments request counter", async () => {
-      recordHttpRequest(
-        metrics,
-        { method: "GET", route: "/api/test", status: "200" },
-        0.05
-      );
+      recordHttpRequest(metrics, { method: "GET", route: "/api/test", status: "200" }, 0.05);
 
       const counter = await metrics.httpRequestsTotal.get();
       expect(counter.values[0].value).toBe(1);
     });
 
     it("records duration histogram", async () => {
-      recordHttpRequest(
-        metrics,
-        { method: "POST", route: "/api/submit", status: "201" },
-        0.123
-      );
+      recordHttpRequest(metrics, { method: "POST", route: "/api/submit", status: "201" }, 0.123);
 
       const histogram = await metrics.httpRequestDuration.get();
       expect(histogram.values.length).toBeGreaterThan(0);

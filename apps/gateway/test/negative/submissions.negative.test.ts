@@ -56,64 +56,92 @@ vi.mock("@myinvois/storage", async (importOriginal) => {
 
   return {
     ...original,
-    createSubmission: vi.fn().mockImplementation(async (data: { trackingId: string; sessionId: string; payloadHash: string; documents: Array<{ codeNumber: string }> }) => {
-      submissionCounter++;
-      const submission: MockSubmission = {
-        id: `sub_mock_${submissionCounter}`,
-        trackingId: data.trackingId || `trk_mock_${submissionCounter}`,
-        sessionId: data.sessionId,
-        payloadHash: data.payloadHash || "mock-hash",
-        status: "PENDING",
-        documents: (data.documents || []).map((d, i) => ({
-          id: `doc_mock_${submissionCounter}_${i}`,
-          codeNumber: d.codeNumber,
-          initialResult: "PENDING",
-        })),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      submissionStore.set(submission.trackingId, submission);
-      const hashKey = `${data.sessionId}:${data.payloadHash}`;
-      payloadHashStore.set(hashKey, submission); // Store by sessionId+hash for idempotency
-      return submission;
-    }),
-    findRecentByPayloadHash: vi.fn().mockImplementation(async (sessionId: string, payloadHash: string) => {
-      const hashKey = `${sessionId}:${payloadHash}`;
-      return payloadHashStore.get(hashKey) || null;
-    }),
-    updateWithUpstreamResult: vi.fn().mockImplementation(async (data: {
-      trackingId: string;
-      upstreamSubmissionUid: string;
-      correlationId?: string;
-      acceptedDocuments: Array<{ codeNumber: string; uuid: string }>;
-      rejectedDocuments: Array<{ codeNumber: string; errorCode?: string; errorMessage?: string }>;
-    }) => {
-      const existing = submissionStore.get(data.trackingId);
-      if (existing) {
-        const updatedDocs = existing.documents.map((doc) => {
-          const accepted = data.acceptedDocuments.find((a) => a.codeNumber === doc.codeNumber);
-          const rejected = data.rejectedDocuments.find((r) => r.codeNumber === doc.codeNumber);
-          if (accepted) return { ...doc, initialResult: "ACCEPTED", upstreamUuid: accepted.uuid };
-          if (rejected) return { ...doc, initialResult: "REJECTED", errorCode: rejected.errorCode, errorMessage: rejected.errorMessage };
-          return doc;
-        });
-        const updated: MockSubmission = {
-          ...existing,
-          upstreamSubmissionUid: data.upstreamSubmissionUid,
-          correlationId: data.correlationId,
-          documents: updatedDocs,
-          status: "SUBMITTED",
-          updatedAt: new Date(),
-        };
-        submissionStore.set(data.trackingId, updated);
-        return updated;
+    createSubmission: vi
+      .fn()
+      .mockImplementation(
+        async (data: {
+          trackingId: string;
+          sessionId: string;
+          payloadHash: string;
+          documents: Array<{ codeNumber: string }>;
+        }) => {
+          submissionCounter++;
+          const submission: MockSubmission = {
+            id: `sub_mock_${submissionCounter}`,
+            trackingId: data.trackingId || `trk_mock_${submissionCounter}`,
+            sessionId: data.sessionId,
+            payloadHash: data.payloadHash || "mock-hash",
+            status: "PENDING",
+            documents: (data.documents || []).map((d, i) => ({
+              id: `doc_mock_${submissionCounter}_${i}`,
+              codeNumber: d.codeNumber,
+              initialResult: "PENDING",
+            })),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          submissionStore.set(submission.trackingId, submission);
+          const hashKey = `${data.sessionId}:${data.payloadHash}`;
+          payloadHashStore.set(hashKey, submission); // Store by sessionId+hash for idempotency
+          return submission;
+        }
+      ),
+    findRecentByPayloadHash: vi
+      .fn()
+      .mockImplementation(async (sessionId: string, payloadHash: string) => {
+        const hashKey = `${sessionId}:${payloadHash}`;
+        return payloadHashStore.get(hashKey) || null;
+      }),
+    updateWithUpstreamResult: vi.fn().mockImplementation(
+      async (data: {
+        trackingId: string;
+        upstreamSubmissionUid: string;
+        correlationId?: string;
+        acceptedDocuments: Array<{ codeNumber: string; uuid: string }>;
+        rejectedDocuments: Array<{
+          codeNumber: string;
+          errorCode?: string;
+          errorMessage?: string;
+        }>;
+      }) => {
+        const existing = submissionStore.get(data.trackingId);
+        if (existing) {
+          const updatedDocs = existing.documents.map((doc) => {
+            const accepted = data.acceptedDocuments.find((a) => a.codeNumber === doc.codeNumber);
+            const rejected = data.rejectedDocuments.find((r) => r.codeNumber === doc.codeNumber);
+            if (accepted) return { ...doc, initialResult: "ACCEPTED", upstreamUuid: accepted.uuid };
+            if (rejected)
+              return {
+                ...doc,
+                initialResult: "REJECTED",
+                errorCode: rejected.errorCode,
+                errorMessage: rejected.errorMessage,
+              };
+            return doc;
+          });
+          const updated: MockSubmission = {
+            ...existing,
+            upstreamSubmissionUid: data.upstreamSubmissionUid,
+            correlationId: data.correlationId,
+            documents: updatedDocs,
+            status: "SUBMITTED",
+            updatedAt: new Date(),
+          };
+          submissionStore.set(data.trackingId, updated);
+          return updated;
+        }
+        return null;
       }
-      return null;
-    }),
+    ),
     markSubmissionError: vi.fn().mockImplementation(async (trackingId: string, error: string) => {
       const existing = submissionStore.get(trackingId);
       if (existing) {
-        const updated = { ...existing, status: "FAILED", errorMessage: error, updatedAt: new Date() };
+        const updated = {
+          ...existing,
+          status: "FAILED",
+          errorMessage: error,
+          updatedAt: new Date(),
+        };
         submissionStore.set(trackingId, updated);
         return updated;
       }
@@ -145,7 +173,9 @@ vi.mock("../../src/lib/pollQueue.js", async (importOriginal) => {
     enqueueImmediatePoll: vi.fn().mockResolvedValue({ id: "mock-job-id" }),
     calculatePollDelay: vi.fn().mockReturnValue(3000),
     closePollQueue: vi.fn().mockResolvedValue(undefined),
-    getPollQueueStats: vi.fn().mockResolvedValue({ waiting: 0, active: 0, completed: 0, failed: 0 }),
+    getPollQueueStats: vi
+      .fn()
+      .mockResolvedValue({ waiting: 0, active: 0, completed: 0, failed: 0 }),
   };
 });
 

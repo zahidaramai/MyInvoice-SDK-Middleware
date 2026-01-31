@@ -110,7 +110,12 @@ describe("stableHash", () => {
     });
 
     it("handles nested arrays", () => {
-      const document = { matrix: [[1, 2], [3, 4]] };
+      const document = {
+        matrix: [
+          [1, 2],
+          [3, 4],
+        ],
+      };
       const hash = hashDocument(document);
 
       expect(hash).toBeDefined();
@@ -192,15 +197,11 @@ describe("stableHash", () => {
   describe("deduplication use case", () => {
     it("detects duplicate submissions", () => {
       const submission1 = {
-        documents: [
-          { Invoice: { ID: "INV001", Amount: 100 } },
-        ],
+        documents: [{ Invoice: { ID: "INV001", Amount: 100 } }],
       };
 
       const submission2 = {
-        documents: [
-          { Invoice: { ID: "INV001", Amount: 100 } },
-        ],
+        documents: [{ Invoice: { ID: "INV001", Amount: 100 } }],
       };
 
       const hash1 = hashDocument(submission1);
@@ -211,15 +212,11 @@ describe("stableHash", () => {
 
     it("distinguishes different submissions", () => {
       const submission1 = {
-        documents: [
-          { Invoice: { ID: "INV001", Amount: 100 } },
-        ],
+        documents: [{ Invoice: { ID: "INV001", Amount: 100 } }],
       };
 
       const submission2 = {
-        documents: [
-          { Invoice: { ID: "INV001", Amount: 200 } },
-        ],
+        documents: [{ Invoice: { ID: "INV001", Amount: 200 } }],
       };
 
       const hash1 = hashDocument(submission1);

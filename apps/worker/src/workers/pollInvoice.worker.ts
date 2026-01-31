@@ -14,11 +14,7 @@ import {
   enqueueInvoicePoll,
   calculateInvoicePollDelay,
 } from "../queues/pollInvoice.queue.js";
-import {
-  findInvoiceById,
-  findCompanyById,
-  updateInvoice,
-} from "@myinvois/storage";
+import { findInvoiceById, findCompanyById, updateInvoice } from "@myinvois/storage";
 import type { Environment } from "@myinvois/core";
 import type { InvoiceStatus } from "@myinvois/storage";
 
@@ -54,16 +50,20 @@ async function fetchDocumentDetails(
   clientId: string,
   clientSecret: string,
   env: Environment
-): Promise<{ ok: true; data: DocumentDetailsResponse } | { ok: false; error: string; status?: number }> {
+): Promise<
+  { ok: true; data: DocumentDetailsResponse } | { ok: false; error: string; status?: number }
+> {
   try {
     // Get access token
-    const baseUrl = env === "PROD"
-      ? "https://api.myinvois.hasil.gov.my"
-      : "https://preprod-api.myinvois.hasil.gov.my";
+    const baseUrl =
+      env === "PROD"
+        ? "https://api.myinvois.hasil.gov.my"
+        : "https://preprod-api.myinvois.hasil.gov.my";
 
-    const identityUrl = env === "PROD"
-      ? "https://identity.myinvois.hasil.gov.my"
-      : "https://preprod-identity.myinvois.hasil.gov.my";
+    const identityUrl =
+      env === "PROD"
+        ? "https://identity.myinvois.hasil.gov.my"
+        : "https://preprod-identity.myinvois.hasil.gov.my";
 
     // Get token
     const tokenResponse = await fetch(`${identityUrl}/connect/token`, {
@@ -83,21 +83,25 @@ async function fetchDocumentDetails(
       return { ok: false, error: "Failed to get access token", status: tokenResponse.status };
     }
 
-    const tokenData = await tokenResponse.json() as { access_token: string };
+    const tokenData = (await tokenResponse.json()) as { access_token: string };
     const accessToken = tokenData.access_token;
 
     // Fetch document details
     const docResponse = await fetch(`${baseUrl}/api/v1.0/documents/${uuid}/details`, {
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
     if (!docResponse.ok) {
-      return { ok: false, error: `Document fetch failed: ${docResponse.status}`, status: docResponse.status };
+      return {
+        ok: false,
+        error: `Document fetch failed: ${docResponse.status}`,
+        status: docResponse.status,
+      };
     }
 
-    const data = await docResponse.json() as DocumentDetailsResponse;
+    const data = (await docResponse.json()) as DocumentDetailsResponse;
     return { ok: true, data };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Unknown error" };
@@ -109,11 +113,11 @@ async function fetchDocumentDetails(
  */
 function mapMyInvoisStatus(myinvoisStatus: string): string {
   const statusMap: Record<string, string> = {
-    "Valid": "VALID",
-    "Invalid": "INVALID",
-    "Submitted": "SUBMITTED",
-    "Cancelled": "CANCELLED",
-    "Rejected": "REJECTED",
+    Valid: "VALID",
+    Invalid: "INVALID",
+    Submitted: "SUBMITTED",
+    Cancelled: "CANCELLED",
+    Rejected: "REJECTED",
   };
   return statusMap[myinvoisStatus] || myinvoisStatus.toUpperCase();
 }
@@ -208,13 +212,16 @@ async function processPollInvoiceJob(job: Job<PollInvoiceJobData>): Promise<void
     const docDetails = result.data;
     const newStatus = mapMyInvoisStatus(docDetails.status);
 
-    log.info({
-      myinvoisUuid,
-      myinvoisStatus: docDetails.status,
-      mappedStatus: newStatus,
-      longId: docDetails.longId,
-      validationStatus: docDetails.validationResults?.status,
-    }, "Document details fetched");
+    log.info(
+      {
+        myinvoisUuid,
+        myinvoisStatus: docDetails.status,
+        mappedStatus: newStatus,
+        longId: docDetails.longId,
+        validationStatus: docDetails.validationResults?.status,
+      },
+      "Document details fetched"
+    );
 
     // Check for validation errors
     let errorCode: string | undefined;
@@ -250,15 +257,15 @@ async function processPollInvoiceJob(job: Job<PollInvoiceJobData>): Promise<void
 
       log.info({ nextAttempt, delay }, "Scheduling next poll");
 
-      await enqueueInvoicePoll(
-        { invoiceId, myinvoisUuid, companyId, attempt: nextAttempt },
-        delay
-      );
+      await enqueueInvoicePoll({ invoiceId, myinvoisUuid, companyId, attempt: nextAttempt }, delay);
     } else {
       log.info({ status: docDetails.status }, "Document reached terminal state, polling complete");
     }
   } catch (error) {
-    log.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error processing poll job");
+    log.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error processing poll job"
+    );
     throw error;
   }
 }

@@ -242,17 +242,13 @@ describe("httpClient", () => {
     it("handles network error", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network timeout"));
 
-      await expect(mockFetch("https://api.example.com/test")).rejects.toThrow(
-        "Network timeout"
-      );
+      await expect(mockFetch("https://api.example.com/test")).rejects.toThrow("Network timeout");
     });
 
     it("handles DNS resolution failure", async () => {
       mockFetch.mockRejectedValueOnce(new Error("getaddrinfo ENOTFOUND"));
 
-      await expect(mockFetch("https://invalid.example.com")).rejects.toThrow(
-        "ENOTFOUND"
-      );
+      await expect(mockFetch("https://invalid.example.com")).rejects.toThrow("ENOTFOUND");
     });
   });
 
@@ -273,9 +269,7 @@ describe("httpClient", () => {
 
       mockFetch.mockRejectedValueOnce(timeoutError);
 
-      await expect(mockFetch("https://api.example.com/slow")).rejects.toThrow(
-        "Request timeout"
-      );
+      await expect(mockFetch("https://api.example.com/slow")).rejects.toThrow("Request timeout");
     });
   });
 

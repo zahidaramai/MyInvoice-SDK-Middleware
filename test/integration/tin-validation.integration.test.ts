@@ -84,7 +84,10 @@ const GenericBuyers = {
 
 function generateDocumentNumber(prefix: string): string {
   const now = new Date();
-  const ts = now.toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  const ts = now
+    .toISOString()
+    .replace(/[-:.TZ]/g, "")
+    .slice(0, 14);
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `${prefix}-${ts}-${rand}`;
 }
@@ -171,7 +174,9 @@ function createSupplierParty(tin: string): object {
               { Line: [{ _: "Bangunan Merdeka" }] },
               { Line: [{ _: "Persiaran Jaya" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Test Supplier Sdn Bhd" }] }],
@@ -213,7 +218,9 @@ function createValidB2CCustomer(): object {
               { Line: [{ _: "-" }] },
               { Line: [{ _: "-" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Test Buyer (Sandbox Self-Transaction)" }] }],
@@ -232,7 +239,11 @@ function createValidB2CCustomer(): object {
  * Create B2B customer party using supplier's own TIN (self-transaction for testing)
  * This is the ONLY reliable way to test B2B in sandbox without another registered business
  */
-function createValidB2BCustomer(buyerTin: string, buyerIdType: string, buyerIdValue: string): object {
+function createValidB2BCustomer(
+  buyerTin: string,
+  buyerIdType: string,
+  buyerIdValue: string
+): object {
   return {
     Party: [
       {
@@ -250,10 +261,14 @@ function createValidB2BCustomer(buyerTin: string, buyerIdType: string, buyerIdVa
               { Line: [{ _: "Business Park" }] },
               { Line: [{ _: "-" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
-        PartyLegalEntity: [{ RegistrationName: [{ _: "Buyer Company (Same as Supplier for Test)" }] }],
+        PartyLegalEntity: [
+          { RegistrationName: [{ _: "Buyer Company (Same as Supplier for Test)" }] },
+        ],
         Contact: [
           {
             Telephone: [{ _: "+60387654321" }],
@@ -369,7 +384,9 @@ function createInvoice(
                 TaxCategory: [
                   {
                     ID: [{ _: taxAmount > 0 ? "01" : "E" }],
-                    TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                    TaxScheme: [
+                      { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                    ],
                   },
                 ],
               },
@@ -445,36 +462,44 @@ async function getSubmissionStatus(
   const data = await response.json();
 
   // Extract error details from the response structure
-  const documents = (data.documentSummary || []).map((doc: {
-    uuid: string;
-    status: string;
-    longId?: string;
-    error?: {
-      code?: string;
-      message?: string;
-      error?: { code?: string; message?: string; details?: Array<{ code: string; message: string; propertyPath?: string }> };
-      details?: Array<{ code: string; message: string; propertyPath?: string }>;
-    };
-  }) => {
-    // Extract errors from nested structure
-    let errors: Array<{ code: string; message: string }> = [];
-    if (doc.error) {
-      if (doc.error.details) {
-        errors = doc.error.details.map(d => ({ code: d.code, message: d.message }));
-      } else if (doc.error.error?.details) {
-        errors = doc.error.error.details.map(d => ({ code: d.code, message: d.message }));
-      } else if (doc.error.code || doc.error.messageEN) {
-        errors = [{ code: doc.error.code || "UNKNOWN", message: doc.error.messageEN || "Unknown error" }];
+  const documents = (data.documentSummary || []).map(
+    (doc: {
+      uuid: string;
+      status: string;
+      longId?: string;
+      error?: {
+        code?: string;
+        message?: string;
+        error?: {
+          code?: string;
+          message?: string;
+          details?: Array<{ code: string; message: string; propertyPath?: string }>;
+        };
+        details?: Array<{ code: string; message: string; propertyPath?: string }>;
+      };
+    }) => {
+      // Extract errors from nested structure
+      let errors: Array<{ code: string; message: string }> = [];
+      if (doc.error) {
+        if (doc.error.details) {
+          errors = doc.error.details.map((d) => ({ code: d.code, message: d.message }));
+        } else if (doc.error.error?.details) {
+          errors = doc.error.error.details.map((d) => ({ code: d.code, message: d.message }));
+        } else if (doc.error.code || doc.error.messageEN) {
+          errors = [
+            { code: doc.error.code || "UNKNOWN", message: doc.error.messageEN || "Unknown error" },
+          ];
+        }
       }
-    }
 
-    return {
-      uuid: doc.uuid,
-      status: doc.status as DocumentStatus,
-      longId: doc.longId,
-      errors: errors.length > 0 ? errors : undefined,
-    };
-  });
+      return {
+        uuid: doc.uuid,
+        status: doc.status as DocumentStatus,
+        longId: doc.longId,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+    }
+  );
 
   return {
     submissionUid: data.submissionUID || submissionUid,
@@ -747,49 +772,52 @@ describe.skipIf(SKIP_REAL_TESTS)("TIN Validation & Valid Buyer Tests", () => {
   });
 
   describe("3. Invoice with Valid B2B Buyer (Self-Transaction)", () => {
-    it.skipIf(SKIP_INVOICE_TEST)("submits B2B invoice using supplier TIN as buyer (self-transaction)", async () => {
-      console.log("\n--- B2B Invoice (Self-Transaction Test) ---");
-      const token = await acquireToken();
-      const invoiceNumber = generateDocumentNumber("B2B-SELF");
+    it.skipIf(SKIP_INVOICE_TEST)(
+      "submits B2B invoice using supplier TIN as buyer (self-transaction)",
+      async () => {
+        console.log("\n--- B2B Invoice (Self-Transaction Test) ---");
+        const token = await acquireToken();
+        const invoiceNumber = generateDocumentNumber("B2B-SELF");
 
-      console.log(`   Supplier TIN: ${SUPPLIER_TIN}`);
-      console.log(`   Buyer TIN: ${SUPPLIER_TIN} (same as supplier for testing)`);
-      console.log(`   Note: Self-transaction is valid for sandbox testing`);
+        console.log(`   Supplier TIN: ${SUPPLIER_TIN}`);
+        console.log(`   Buyer TIN: ${SUPPLIER_TIN} (same as supplier for testing)`);
+        console.log(`   Note: Self-transaction is valid for sandbox testing`);
 
-      const lineItems = [
-        createInvoiceLine("1", "Enterprise Software License", 1, 5000.0, 0.1),
-        createInvoiceLine("2", "Support Package", 1, 2000.0, 0.08),
-      ];
+        const lineItems = [
+          createInvoiceLine("1", "Enterprise Software License", 1, 5000.0, 0.1),
+          createInvoiceLine("2", "Support Package", 1, 2000.0, 0.08),
+        ];
 
-      const subtotal = 7000.0;
-      const tax = 5000 * 0.1 + 2000 * 0.08; // 500 + 160 = 660
-      console.log(`   Subtotal: RM ${subtotal.toFixed(2)}`);
-      console.log(`   Tax: RM ${tax.toFixed(2)}`);
-      console.log(`   Total: RM ${(subtotal + tax).toFixed(2)}`);
+        const subtotal = 7000.0;
+        const tax = 5000 * 0.1 + 2000 * 0.08; // 500 + 160 = 660
+        console.log(`   Subtotal: RM ${subtotal.toFixed(2)}`);
+        console.log(`   Tax: RM ${tax.toFixed(2)}`);
+        console.log(`   Total: RM ${(subtotal + tax).toFixed(2)}`);
 
-      const invoice = createInvoice(
-        invoiceNumber,
-        SUPPLIER_TIN,
-        createValidB2BCustomer(SUPPLIER_TIN, SUPPLIER_ID_TYPE, SUPPLIER_ID_VALUE),
-        lineItems,
-        subtotal,
-        tax
-      );
+        const invoice = createInvoice(
+          invoiceNumber,
+          SUPPLIER_TIN,
+          createValidB2BCustomer(SUPPLIER_TIN, SUPPLIER_ID_TYPE, SUPPLIER_ID_VALUE),
+          lineItems,
+          subtotal,
+          tax
+        );
 
-      const result = await submitDocument(token, invoiceNumber, invoice);
+        const result = await submitDocument(token, invoiceNumber, invoice);
 
-      // Allow 429 rate limit (happens when running with other tests)
-      expect(result.status).toBeLessThan(500);
-      if (result.status === 202 && result.submissionUid) {
-        expect(result.acceptedDocuments?.length).toBeGreaterThan(0);
+        // Allow 429 rate limit (happens when running with other tests)
+        expect(result.status).toBeLessThan(500);
+        if (result.status === 202 && result.submissionUid) {
+          expect(result.acceptedDocuments?.length).toBeGreaterThan(0);
 
-        // Wait for and verify VALID status
-        const docStatus = await waitForDocumentStatus(token, result.submissionUid);
-        expect(docStatus).not.toBeNull();
-        expect(docStatus?.status).toBe("Valid");
-        console.log(`   FINAL STATUS: ${docStatus?.status} ✅`);
+          // Wait for and verify VALID status
+          const docStatus = await waitForDocumentStatus(token, result.submissionUid);
+          expect(docStatus).not.toBeNull();
+          expect(docStatus?.status).toBe("Valid");
+          console.log(`   FINAL STATUS: ${docStatus?.status} ✅`);
+        }
       }
-    });
+    );
   });
 
   // =========================================================================

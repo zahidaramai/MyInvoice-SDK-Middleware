@@ -84,16 +84,14 @@ describe("TST-18: Transformer Coverage", () => {
 
   describe("Date formatting", () => {
     it("should format date as YYYY-MM-DD", () => {
-      const formatDate = (d: Date) =>
-        d.toISOString().split("T")[0];
+      const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
       const date = new Date("2026-01-28T12:00:00Z");
       expect(formatDate(date)).toBe("2026-01-28");
     });
 
     it("should format time as HH:MM:SSZ", () => {
-      const formatTime = (d: Date) =>
-        d.toISOString().split("T")[1];
+      const formatTime = (d: Date) => d.toISOString().split("T")[1];
 
       const date = new Date("2026-01-28T15:30:45Z");
       expect(formatTime(date)).toBe("15:30:45.000Z");

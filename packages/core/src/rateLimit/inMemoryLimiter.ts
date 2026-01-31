@@ -102,10 +102,7 @@ export class InMemoryRateLimiter implements RateLimiter {
    */
   private maybeCleanup(now: number): void {
     // Skip if recently cleaned and under max entries
-    if (
-      now - this.lastCleanup < CLEANUP_INTERVAL_MS &&
-      this.windows.size < MAX_ENTRIES
-    ) {
+    if (now - this.lastCleanup < CLEANUP_INTERVAL_MS && this.windows.size < MAX_ENTRIES) {
       return;
     }
 

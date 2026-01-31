@@ -6,11 +6,7 @@
 
 import { getPrismaClient, disconnectPrisma } from "@myinvois/storage";
 import { logger } from "./lib/logger.js";
-import {
-  initMetrics,
-  startMetricsServer,
-  stopMetricsServer,
-} from "./lib/metrics.js";
+import { initMetrics, startMetricsServer, stopMetricsServer } from "./lib/metrics.js";
 import { closeRedisConnection, isRedisConnected } from "./lib/redis.js";
 import { closePollQueue, getQueueStats } from "./queues/pollSubmission.queue.js";
 import { startPollWorker, stopPollWorker } from "./workers/pollSubmission.worker.js";
@@ -95,7 +91,10 @@ async function shutdown(signal: string): Promise<void> {
     logger.info("Shutdown complete");
     process.exit(0);
   } catch (error) {
-    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error during shutdown");
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error during shutdown"
+    );
     process.exit(1);
   }
 }
@@ -122,7 +121,10 @@ async function main(): Promise<void> {
     getPrismaClient();
     logger.info("Database initialized");
   } catch (error) {
-    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Failed to initialize database");
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Failed to initialize database"
+    );
     process.exit(1);
   }
 

@@ -79,10 +79,7 @@ function extractBearerToken(request: FastifyRequest): string | null {
  * Authentication hook - verifies JWT and attaches user to request
  * Supports both regular access tokens and POS tokens
  */
-export async function authenticate(
-  request: FastifyRequest,
-  _reply: FastifyReply
-): Promise<void> {
+export async function authenticate(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
   const token = extractBearerToken(request);
 
   if (!token) {
@@ -157,9 +154,7 @@ export function requirePermission(permission: string) {
     }
 
     if (!request.user.permissions.includes(permission)) {
-      throw new AuthorizationError(
-        `Missing required permission: ${permission}`
-      );
+      throw new AuthorizationError(`Missing required permission: ${permission}`);
     }
   };
 }
@@ -181,14 +176,10 @@ export function requireAnyPermission(...permissions: string[]) {
       return;
     }
 
-    const hasPermission = permissions.some((p) =>
-      request.user!.permissions.includes(p)
-    );
+    const hasPermission = permissions.some((p) => request.user!.permissions.includes(p));
 
     if (!hasPermission) {
-      throw new AuthorizationError(
-        `Missing required permissions: ${permissions.join(" or ")}`
-      );
+      throw new AuthorizationError(`Missing required permissions: ${permissions.join(" or ")}`);
     }
   };
 }

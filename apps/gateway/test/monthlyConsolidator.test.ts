@@ -263,9 +263,9 @@ describe("TST-08: Monthly Consolidation Cron", () => {
       const prisma = getPrismaClient();
       vi.mocked(prisma.invoice.findMany).mockRejectedValue(new Error("DB connection failed"));
 
-      await expect(
-        prisma.invoice.findMany({ where: { status: "DRAFT" } })
-      ).rejects.toThrow("DB connection failed");
+      await expect(prisma.invoice.findMany({ where: { status: "DRAFT" } })).rejects.toThrow(
+        "DB connection failed"
+      );
     });
 
     it("should continue with other companies if one fails", async () => {

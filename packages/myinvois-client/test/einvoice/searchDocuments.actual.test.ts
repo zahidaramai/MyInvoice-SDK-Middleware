@@ -62,7 +62,7 @@ describe("searchDocuments (actual)", () => {
             dateTimeIssued: "2024-01-15T10:00:00Z",
             dateTimeReceived: "2024-01-15T10:05:00Z",
             dateTimeValidated: "2024-01-15T10:10:00Z",
-            totalPayableAmount: 106.00,
+            totalPayableAmount: 106.0,
             status: "Valid",
           },
         ],
@@ -118,11 +118,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -153,11 +149,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -188,11 +180,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -237,11 +225,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -308,11 +292,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       const callUrl = mockFetch.mock.calls[0][0] as string;
       expect(callUrl).toContain("/api/v1.0/documents/search");
@@ -353,11 +333,7 @@ describe("searchDocuments (actual)", () => {
         }),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -378,11 +354,7 @@ describe("searchDocuments (actual)", () => {
         },
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -408,11 +380,7 @@ describe("searchDocuments (actual)", () => {
           json: () => Promise.resolve(upstreamResponse),
         });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(mockTokenManager.refreshToken).toHaveBeenCalled();
       expect(result.ok).toBe(true);
@@ -431,11 +399,7 @@ describe("searchDocuments (actual)", () => {
           headers: new Headers({}),
         });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -449,11 +413,7 @@ describe("searchDocuments (actual)", () => {
     it("handles network error", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network timeout"));
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -466,11 +426,7 @@ describe("searchDocuments (actual)", () => {
     it("handles non-Error throw", async () => {
       mockFetch.mockRejectedValueOnce("Unknown error");
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -485,17 +441,14 @@ describe("searchDocuments (actual)", () => {
         ok: false,
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -512,11 +465,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.reject(new Error("Not JSON")),
       });
 
-      const result = await searchDocuments(
-        mockSession,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      const result = await searchDocuments(mockSession, {}, { tokenManager: mockTokenManager });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -540,11 +489,7 @@ describe("searchDocuments (actual)", () => {
         json: () => Promise.resolve({ result: [] }),
       });
 
-      await searchDocuments(
-        sessionWithOnBehalf,
-        {},
-        { tokenManager: mockTokenManager }
-      );
+      await searchDocuments(sessionWithOnBehalf, {}, { tokenManager: mockTokenManager });
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),

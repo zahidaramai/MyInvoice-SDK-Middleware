@@ -105,12 +105,12 @@ interface LegacyCreateCompanyBody {
   myinvoisClientSecret?: string;
   myinvoisEnv?: string;
   // Client's original format
-  companyName?: string;  // → name
-  brn?: string;         // → idValue (with idType=BRN)
-  address1?: string;    // → address
-  stateCode?: string;   // → state
-  telephone?: string;   // → phone
-  industry1?: string;   // → industryCode (MSIC code e.g., "66191")
+  companyName?: string; // → name
+  brn?: string; // → idValue (with idType=BRN)
+  address1?: string; // → address
+  stateCode?: string; // → state
+  telephone?: string; // → phone
+  industry1?: string; // → industryCode (MSIC code e.g., "66191")
   industryCode1?: string; // → industryName (e.g., "Wholesales and Retail")
 }
 
@@ -138,14 +138,14 @@ interface UpdateCompanyBody {
   myinvoisEnv?: "SANDBOX" | "PROD";
   isActive?: boolean;
   // Client's original format aliases
-  companyName?: string;    // → name
-  brn?: string;           // → idValue (with idType=BRN)
-  address1?: string;      // → address
-  stateCode?: string;     // → state
-  telephone?: string;     // → phone
-  industry1?: string;     // → industryCode
+  companyName?: string; // → name
+  brn?: string; // → idValue (with idType=BRN)
+  address1?: string; // → address
+  stateCode?: string; // → state
+  telephone?: string; // → phone
+  industry1?: string; // → industryCode
   industryCode1?: string; // → industryName
-  sst?: string;           // → sstRegistration
+  sst?: string; // → sstRegistration
 }
 
 /**
@@ -252,7 +252,11 @@ export async function companiesRoutes(fastify: FastifyInstance): Promise<void> {
       const whereClause: {
         users: { some: { userId: string } };
         isActive?: boolean;
-        OR?: Array<{ name: { contains: string; mode: "insensitive" } } | { tin: { contains: string; mode: "insensitive" } } | { idValue: { contains: string; mode: "insensitive" } }>;
+        OR?: Array<
+          | { name: { contains: string; mode: "insensitive" } }
+          | { tin: { contains: string; mode: "insensitive" } }
+          | { idValue: { contains: string; mode: "insensitive" } }
+        >;
       } = {
         users: { some: { userId: request.user!.userId } },
       };
@@ -791,10 +795,7 @@ export async function companiesRoutes(fastify: FastifyInstance): Promise<void> {
       const newTin = tin ?? existing.tin;
       const newIdValue = idValue ?? existing.idValue;
 
-      if (
-        (tin || idValue) &&
-        (await tinIdValueExists(newTin, newIdValue, id))
-      ) {
+      if ((tin || idValue) && (await tinIdValueExists(newTin, newIdValue, id))) {
         return reply.status(400).send({
           error: {
             code: "COMPANY_EXISTS",

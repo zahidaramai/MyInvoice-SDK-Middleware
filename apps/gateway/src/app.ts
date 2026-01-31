@@ -15,7 +15,11 @@ import { initializeSigning } from "./config/signing.js";
 // HashLHDN imports
 import { authRoutes } from "./auth/routes.js";
 import { usersRoutes, rolesRoutes, companiesRoutes } from "./management/index.js";
-import { hashlhdnRoutes, documentRoutes as hashlhdnDocumentRoutes, legacySubmitRoutes } from "./adapters/hashlhdn/index.js";
+import {
+  hashlhdnRoutes,
+  documentRoutes as hashlhdnDocumentRoutes,
+  legacySubmitRoutes,
+} from "./adapters/hashlhdn/index.js";
 import { posRoutes } from "./adapters/pos/index.js";
 import { publicRoutes } from "./public/index.js";
 // Note: Auth error handling is now integrated into errorHandlerPlugin
@@ -28,9 +32,7 @@ export interface BuildAppOptions {
   metricsRoute?: string;
 }
 
-export async function buildApp(
-  options: BuildAppOptions = {}
-): Promise<FastifyInstance> {
+export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const config = loadConfig();
 
   // Determine logger configuration
@@ -58,24 +60,20 @@ export async function buildApp(
   });
 
   // Add custom content type parser to handle empty body with Content-Type: application/json
-  fastify.addContentTypeParser(
-    "application/json",
-    { parseAs: "string" },
-    (_req, body, done) => {
-      // Handle empty body
-      if (body === "" || body === undefined) {
-        done(null, null);
-        return;
-      }
-
-      try {
-        const json = JSON.parse(body as string);
-        done(null, json);
-      } catch (err) {
-        done(err as Error, undefined);
-      }
+  fastify.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
+    // Handle empty body
+    if (body === "" || body === undefined) {
+      done(null, null);
+      return;
     }
-  );
+
+    try {
+      const json = JSON.parse(body as string);
+      done(null, json);
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  });
 
   // Register CORS - allow all origins for now
   await fastify.register(cors, {
@@ -96,15 +94,17 @@ export async function buildApp(
   });
 
   // Initialize signing service (supports S3 paths)
-  const signingState = await initializeSigning(fastify.log as unknown as {
-    info: (msg: string) => void;
-    warn: (msg: string) => void;
-    error: (obj: unknown, msg: string) => void;
-  });
+  const signingState = await initializeSigning(
+    fastify.log as unknown as {
+      info: (msg: string) => void;
+      warn: (msg: string) => void;
+      error: (obj: unknown, msg: string) => void;
+    }
+  );
   if (signingState.enabled) {
     fastify.log.info(`Signing enabled - default version: ${signingState.defaultVersion}`);
   } else {
-    fastify.log.info(`Signing disabled${signingState.error ? `: ${signingState.error}` : ''}`);
+    fastify.log.info(`Signing disabled${signingState.error ? `: ${signingState.error}` : ""}`);
   }
 
   // Auth error handling is integrated into errorHandlerPlugin
@@ -144,19 +144,23 @@ export async function buildApp(
 
   // Start automatic status poller (every 30 minutes)
   // This polls MyInvois for SUBMITTED invoices and updates DB with LongID
-  startAutoPoller(fastify.log as unknown as {
-    info: (msg: string) => void;
-    warn: (msg: string) => void;
-    error: (obj: unknown, msg: string) => void;
-  });
+  startAutoPoller(
+    fastify.log as unknown as {
+      info: (msg: string) => void;
+      warn: (msg: string) => void;
+      error: (obj: unknown, msg: string) => void;
+    }
+  );
 
   // Start monthly consolidator (checks hourly, runs on 28th @ 2:00 AM MYT)
   // This consolidates all DRAFT invoices per company into a single e-invoice
-  startMonthlyConsolidator(fastify.log as unknown as {
-    info: (msg: string) => void;
-    warn: (msg: string) => void;
-    error: (obj: unknown, msg: string) => void;
-  });
+  startMonthlyConsolidator(
+    fastify.log as unknown as {
+      info: (msg: string) => void;
+      warn: (msg: string) => void;
+      error: (obj: unknown, msg: string) => void;
+    }
+  );
 
   return fastify;
 }

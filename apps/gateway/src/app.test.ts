@@ -35,7 +35,9 @@ vi.mock("./lib/pollQueue.js", async (importOriginal) => {
     enqueueImmediatePoll: vi.fn().mockResolvedValue({ id: "mock-job-id" }),
     calculatePollDelay: vi.fn().mockReturnValue(3000),
     closePollQueue: vi.fn().mockResolvedValue(undefined),
-    getPollQueueStats: vi.fn().mockResolvedValue({ waiting: 0, active: 0, completed: 0, failed: 0 }),
+    getPollQueueStats: vi
+      .fn()
+      .mockResolvedValue({ waiting: 0, active: 0, completed: 0, failed: 0 }),
   };
 });
 

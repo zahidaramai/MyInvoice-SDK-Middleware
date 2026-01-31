@@ -97,7 +97,6 @@ interface RawInvoiceItem {
   total?: number;
 }
 
-
 let consolidatorInterval: NodeJS.Timeout | null = null;
 let isConsolidating = false;
 // P2-04: Removed in-memory lastConsolidationDate - now queries database instead
@@ -135,7 +134,13 @@ function getErpConfig(): ErpConfig {
  * P2-06: Robust timezone handling using Intl.DateTimeFormat
  * More reliable across Node.js versions than toLocaleString() parsing
  */
-function getMalaysiaTimeComponents(): { year: number; month: number; day: number; hour: number; minute: number } {
+function getMalaysiaTimeComponents(): {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+} {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kuala_Lumpur",
@@ -307,7 +312,10 @@ function buildConsolidatedUBL(
 
   // Group items by tax code for tax subtotals
   const taxSubtotals: Array<Record<string, unknown>> = [];
-  const taxGroups = new Map<string, { taxableAmount: number; taxAmount: number; taxRate: number }>();
+  const taxGroups = new Map<
+    string,
+    { taxableAmount: number; taxAmount: number; taxRate: number }
+  >();
 
   for (const item of items) {
     const key = item.taxCode;
@@ -549,7 +557,10 @@ function buildConsolidatedUBL(
 /**
  * Run daily consolidation for all companies
  */
-async function runDailyConsolidation(logger: Logger, manual: boolean = false): Promise<{
+async function runDailyConsolidation(
+  logger: Logger,
+  manual: boolean = false
+): Promise<{
   processed: number;
   submitted: number;
   failed: number;
@@ -569,8 +580,12 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
     const prisma = getPrismaClient();
     const erpConfig = getErpConfig();
 
-    logger.info(`[Consolidator] Starting daily consolidation (${manual ? "manual trigger" : "scheduled"})`);
-    logger.info(`[Consolidator] Mode: ${erpConfig.enabled ? "ERP (INTERMEDIARY)" : "Standard (TAXPAYER)"}`);
+    logger.info(
+      `[Consolidator] Starting daily consolidation (${manual ? "manual trigger" : "scheduled"})`
+    );
+    logger.info(
+      `[Consolidator] Mode: ${erpConfig.enabled ? "ERP (INTERMEDIARY)" : "Standard (TAXPAYER)"}`
+    );
 
     // Get all companies
     const companies = await prisma.company.findMany({
@@ -616,7 +631,9 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
         // Build UBL document
         const ublDocument = buildConsolidatedUBL(company, invoiceNumber, now, items, totals);
 
-        logger.info(`[Consolidator] ${company.name}: Built ${invoiceNumber} with ${items.length} items, total: RM${totals.total.toFixed(2)}`);
+        logger.info(
+          `[Consolidator] ${company.name}: Built ${invoiceNumber} with ${items.length} items, total: RM${totals.total.toFixed(2)}`
+        );
 
         // Submit to MyInvois
         if (!erpConfig.enabled) {
@@ -641,10 +658,7 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
         // Encode document to base64 and compute hash (MyInvois requirement)
         const documentJson = JSON.stringify(ublDocument);
         const documentBase64 = Buffer.from(documentJson).toString("base64");
-        const documentHash = crypto
-          .createHash("sha256")
-          .update(documentJson)
-          .digest("hex");
+        const documentHash = crypto.createHash("sha256").update(documentJson).digest("hex");
 
         const submitResult = await submitDocuments(
           session,
@@ -663,11 +677,14 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
 
         if (!submitResult.ok) {
           const errMsg = submitResult.error?.message || "Unknown submission error";
-          logger.error({
-            error: errMsg,
-            errorCode: submitResult.error?.code,
-            fullError: JSON.stringify(submitResult.error)
-          }, `[Consolidator] ${company.name}: Submission failed`);
+          logger.error(
+            {
+              error: errMsg,
+              errorCode: submitResult.error?.code,
+              fullError: JSON.stringify(submitResult.error),
+            },
+            `[Consolidator] ${company.name}: Submission failed`
+          );
           results.failed++;
           results.errors.push(`${company.name}: ${errMsg}`);
           continue;
@@ -680,18 +697,23 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
           const rejectedDoc = submissionResult.rejectedDocuments?.[0];
           // Extract error message from various possible fields
           const errMsg = rejectedDoc?.errorMessage || rejectedDoc?.errorCode || "Document rejected";
-          logger.error({
-            error: errMsg,
-            rejectedDoc: JSON.stringify(rejectedDoc),
-            submissionResult: JSON.stringify(submissionResult)
-          }, `[Consolidator] ${company.name}: Document rejected`);
+          logger.error(
+            {
+              error: errMsg,
+              rejectedDoc: JSON.stringify(rejectedDoc),
+              submissionResult: JSON.stringify(submissionResult),
+            },
+            `[Consolidator] ${company.name}: Document rejected`
+          );
           results.failed++;
           results.errors.push(`${company.name}: ${errMsg}`);
           continue;
         }
 
         const myinvoisUuid = acceptedDoc.uuid;
-        logger.info(`[Consolidator] ${company.name}: Submitted successfully, UUID: ${myinvoisUuid}`);
+        logger.info(
+          `[Consolidator] ${company.name}: Submitted successfully, UUID: ${myinvoisUuid}`
+        );
 
         // P0-05: Wrap create + updateMany in transaction to prevent partial consolidation
         await prisma.$transaction(async (tx) => {
@@ -703,7 +725,11 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
               invoiceDate: now,
               invoiceType: "CONSOLIDATE",
               status: "SUBMITTED",
-              rawPayload: JSON.stringify({ items, totals, consolidatedFrom: drafts.map((d) => d.invoiceNumber) }),
+              rawPayload: JSON.stringify({
+                items,
+                totals,
+                consolidatedFrom: drafts.map((d) => d.invoiceNumber),
+              }),
               ublPayload: JSON.stringify(ublDocument),
               amount: totals.amount.toFixed(2),
               discount: totals.discount.toFixed(2),
@@ -756,7 +782,10 @@ async function runDailyConsolidation(logger: Logger, manual: boolean = false): P
 
     return results;
   } catch (err) {
-    logger.error({ error: err instanceof Error ? err.message : "Unknown" }, "[Consolidator] Fatal error");
+    logger.error(
+      { error: err instanceof Error ? err.message : "Unknown" },
+      "[Consolidator] Fatal error"
+    );
     throw err;
   } finally {
     isConsolidating = false;
@@ -779,7 +808,10 @@ async function checkAndRunConsolidation(logger: Logger): Promise<void> {
       return;
     }
   } catch (err) {
-    logger.error({ error: err instanceof Error ? err.message : "Unknown" }, "[Consolidator] Failed to check consolidation status");
+    logger.error(
+      { error: err instanceof Error ? err.message : "Unknown" },
+      "[Consolidator] Failed to check consolidation status"
+    );
     return;
   }
 
@@ -788,7 +820,10 @@ async function checkAndRunConsolidation(logger: Logger): Promise<void> {
   try {
     await runDailyConsolidation(logger, false);
   } catch (err) {
-    logger.error({ error: err instanceof Error ? err.message : "Unknown" }, "[Consolidator] Scheduled run failed");
+    logger.error(
+      { error: err instanceof Error ? err.message : "Unknown" },
+      "[Consolidator] Scheduled run failed"
+    );
   }
 }
 
@@ -798,7 +833,9 @@ async function checkAndRunConsolidation(logger: Logger): Promise<void> {
 export function startMonthlyConsolidator(logger: Logger): void {
   // Feature flag check - don't start if disabled
   if (!isConsolidationEnabled()) {
-    logger.info("[Consolidator] Daily consolidation is DISABLED (set ENABLE_MONTHLY_CONSOLIDATION=true to enable)");
+    logger.info(
+      "[Consolidator] Daily consolidation is DISABLED (set ENABLE_MONTHLY_CONSOLIDATION=true to enable)"
+    );
     return;
   }
 
@@ -807,7 +844,9 @@ export function startMonthlyConsolidator(logger: Logger): void {
     return;
   }
 
-  logger.info(`[Consolidator] Starting daily consolidator (checks every ${CHECK_INTERVAL_MS / 60000} minutes)`);
+  logger.info(
+    `[Consolidator] Starting daily consolidator (checks every ${CHECK_INTERVAL_MS / 60000} minutes)`
+  );
   logger.info(`[Consolidator] Schedule: Daily @ 1:00-2:00 AM MYT`);
 
   // Check immediately on startup

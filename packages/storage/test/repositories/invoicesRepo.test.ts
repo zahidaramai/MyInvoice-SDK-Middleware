@@ -34,9 +34,9 @@ describe("invoicesRepo", () => {
         invoiceNumber: "INV-001",
         companyId: "company-1",
         status: "DRAFT",
-        amount: 100.00,
-        taxAmount: 6.00,
-        total: 106.00,
+        amount: 100.0,
+        taxAmount: 6.0,
+        total: 106.0,
         invoiceDate: new Date("2024-01-15T10:00:00Z"),
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -142,9 +142,9 @@ describe("invoicesRepo", () => {
         invoiceNumber: "INV-NEW",
         companyId: "company-1",
         status: "DRAFT",
-        amount: 500.00,
-        taxAmount: 30.00,
-        total: 530.00,
+        amount: 500.0,
+        taxAmount: 30.0,
+        total: 530.0,
         discount: 0,
         rounding: 0,
         invoiceDate: new Date("2024-01-20T10:00:00Z"),
@@ -156,9 +156,7 @@ describe("invoicesRepo", () => {
           idType: "BRN",
           idValue: "202301012345",
         },
-        items: [
-          { description: "Item 1", quantity: 2, unitPrice: 250.00 },
-        ],
+        items: [{ description: "Item 1", quantity: 2, unitPrice: 250.0 }],
       };
 
       const createdInvoice = {
@@ -183,9 +181,9 @@ describe("invoicesRepo", () => {
         invoiceNumber: "DRAFT-001",
         companyId: "company-1",
         status: "DRAFT",
-        amount: 100.00,
-        taxAmount: 6.00,
-        total: 106.00,
+        amount: 100.0,
+        taxAmount: 6.0,
+        total: 106.0,
         invoiceDate: new Date(),
         isConsolidated: false,
       };
@@ -311,9 +309,7 @@ describe("invoicesRepo", () => {
     });
 
     it("returns invoices with pagination", async () => {
-      const mockInvoices = [
-        { id: "inv-2", invoiceNumber: "INV-002" },
-      ];
+      const mockInvoices = [{ id: "inv-2", invoiceNumber: "INV-002" }];
 
       mockPrismaClient.invoice.findMany.mockResolvedValueOnce(mockInvoices);
 
@@ -343,9 +339,7 @@ describe("invoicesRepo", () => {
     });
 
     it("returns invoices filtered by date range", async () => {
-      const mockInvoices = [
-        { id: "inv-1", invoiceDate: new Date("2024-01-15") },
-      ];
+      const mockInvoices = [{ id: "inv-1", invoiceDate: new Date("2024-01-15") }];
 
       mockPrismaClient.invoice.findMany.mockResolvedValueOnce(mockInvoices);
 
@@ -430,18 +424,15 @@ describe("invoicesRepo", () => {
   describe("invoice amounts", () => {
     it("validates amount calculations", () => {
       const invoice = {
-        amount: 100.00,
-        taxAmount: 6.00,
-        discount: 10.00,
+        amount: 100.0,
+        taxAmount: 6.0,
+        discount: 10.0,
         rounding: -0.02,
         total: 95.98, // 100 + 6 - 10 - 0.02
       };
 
       const calculatedTotal =
-        invoice.amount +
-        invoice.taxAmount -
-        invoice.discount +
-        invoice.rounding;
+        invoice.amount + invoice.taxAmount - invoice.discount + invoice.rounding;
 
       expect(calculatedTotal).toBeCloseTo(95.98, 2);
     });
@@ -463,8 +454,8 @@ describe("invoicesRepo", () => {
         id: "invoice-with-items",
         invoiceNumber: "INV-ITEMS",
         items: [
-          { id: "item-1", description: "Product A", quantity: 2, unitPrice: 50.00 },
-          { id: "item-2", description: "Product B", quantity: 1, unitPrice: 100.00 },
+          { id: "item-1", description: "Product A", quantity: 2, unitPrice: 50.0 },
+          { id: "item-2", description: "Product B", quantity: 1, unitPrice: 100.0 },
         ],
       };
 

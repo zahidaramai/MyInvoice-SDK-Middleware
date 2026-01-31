@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";
-import {
-  loadOpenAPIRoutes,
-  convertOpenAPIPathToFastify,
-} from "./lib/openapiCoverage.js";
+import { loadOpenAPIRoutes, convertOpenAPIPathToFastify } from "./lib/openapiCoverage.js";
 
 describe("OpenAPI Coverage", () => {
   let app: FastifyInstance;
@@ -26,16 +23,14 @@ describe("OpenAPI Coverage", () => {
       expect(convertOpenAPIPathToFastify("/v1/documents/{uuid}/cancel")).toBe(
         "/v1/documents/:uuid/cancel"
       );
-      expect(
-        convertOpenAPIPathToFastify("/v1/submissions/{trackingId}/poll")
-      ).toBe("/v1/submissions/:trackingId/poll");
+      expect(convertOpenAPIPathToFastify("/v1/submissions/{trackingId}/poll")).toBe(
+        "/v1/submissions/:trackingId/poll"
+      );
     });
 
     it("handles paths without params", () => {
       expect(convertOpenAPIPathToFastify("/healthz")).toBe("/healthz");
-      expect(convertOpenAPIPathToFastify("/v1/submissions")).toBe(
-        "/v1/submissions"
-      );
+      expect(convertOpenAPIPathToFastify("/v1/submissions")).toBe("/v1/submissions");
     });
   });
 
@@ -44,9 +39,7 @@ describe("OpenAPI Coverage", () => {
       const routes = loadOpenAPIRoutes();
       expect(routes.length).toBeGreaterThan(0);
 
-      const healthRoute = routes.find(
-        (r) => r.method === "GET" && r.path === "/healthz"
-      );
+      const healthRoute = routes.find((r) => r.method === "GET" && r.path === "/healthz");
       expect(healthRoute).toBeDefined();
     });
 
@@ -72,8 +65,7 @@ describe("OpenAPI Coverage", () => {
           const body = response.json();
           // Only count as missing if it's a route-level 404 (from notFoundHandler)
           // not a resource-level 404 (e.g., "Session not found")
-          if (body.error?.errorCode === "NOT_FOUND" &&
-              body.error?.messageEN?.includes("Route")) {
+          if (body.error?.errorCode === "NOT_FOUND" && body.error?.messageEN?.includes("Route")) {
             missingRoutes.push(route);
           }
         }

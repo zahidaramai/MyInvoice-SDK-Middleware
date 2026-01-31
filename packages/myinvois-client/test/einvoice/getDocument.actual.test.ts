@@ -430,10 +430,11 @@ describe("getDocument (actual)", () => {
         ok: false,
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await getDocument(
@@ -454,9 +455,10 @@ describe("getDocument (actual)", () => {
         ok: false,
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "Something went wrong",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "Something went wrong",
+          }),
       });
 
       const result = await getDocument(

@@ -34,35 +34,40 @@ export const VALIDATION_STEP_PATTERNS: ErrorPattern[] = [
     code: ErrorCodes.DUPLICATE_SUBMISSION,
     httpStatus: 409,
     retryable: false,
-    messageTemplate: "This document has already been submitted. Each invoice can only be submitted once.",
+    messageTemplate:
+      "This document has already been submitted. Each invoice can only be submitted once.",
   },
   {
     pattern: /taxpayer\s*profile\s*validator/i,
     code: ErrorCodes.INVALID_TAXPAYER,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Invalid taxpayer information. Please verify the TIN before issuing the invoice.",
+    messageTemplate:
+      "Invalid taxpayer information. Please verify the TIN before issuing the invoice.",
   },
   {
     pattern: /amount.*total|total.*validator/i,
     code: ErrorCodes.INVALID_TOTALS,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Invoice totals do not match line items. Please verify calculations and resubmit.",
+    messageTemplate:
+      "Invoice totals do not match line items. Please verify calculations and resubmit.",
   },
   {
     pattern: /document\s*relation\s*validator/i,
     code: ErrorCodes.INVALID_DOCUMENT_RELATION,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Invalid document reference. Credit notes and debit notes must reference a valid original invoice.",
+    messageTemplate:
+      "Invalid document reference. Credit notes and debit notes must reference a valid original invoice.",
   },
   {
     pattern: /document\s*structure\s*validator|format\s*validation/i,
     code: ErrorCodes.INVALID_DOCUMENT_STRUCTURE,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Invalid document structure. Please verify the document format and required fields.",
+    messageTemplate:
+      "Invalid document structure. Please verify the document format and required fields.",
   },
 ];
 
@@ -82,21 +87,26 @@ export const SIGNATURE_ERROR_PATTERNS: ErrorPattern[] = [
     code: ErrorCodes.DIGEST_MISMATCH,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Document digest does not match. The document may have been modified after signing.",
+    messageTemplate:
+      "Document digest does not match. The document may have been modified after signing.",
   },
   {
-    pattern: /signature.*invalid|invalid.*signature|signature.*verification.*fail|signaturevalue.*invalid/i,
+    pattern:
+      /signature.*invalid|invalid.*signature|signature.*verification.*fail|signaturevalue.*invalid/i,
     code: ErrorCodes.SIGNATURE_INVALID,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Document signature is invalid. Please verify the signing certificate and re-sign.",
+    messageTemplate:
+      "Document signature is invalid. Please verify the signing certificate and re-sign.",
   },
   {
-    pattern: /certificate.*invalid|invalid.*certificate|certificate.*reject|certificate.*untrusted|certificate.*expired/i,
+    pattern:
+      /certificate.*invalid|invalid.*certificate|certificate.*reject|certificate.*untrusted|certificate.*expired/i,
     code: ErrorCodes.CERTIFICATE_REJECTED,
     httpStatus: 400,
     retryable: false,
-    messageTemplate: "Signing certificate was rejected. Please verify your certificate is valid and trusted.",
+    messageTemplate:
+      "Signing certificate was rejected. Please verify your certificate is valid and trusted.",
   },
 ];
 

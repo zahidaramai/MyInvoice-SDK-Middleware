@@ -62,83 +62,77 @@ function rateLimitedResponse(): HttpResponse {
 
 // === Token Handlers ===
 
-const tokenHandler = http.post(
-  `${SANDBOX_BASE_URL}/connect/token`,
-  async ({ request }) => {
-    if (mockState.isRateLimited("token")) {
-      return rateLimitedResponse();
-    }
+const tokenHandler = http.post(`${SANDBOX_BASE_URL}/connect/token`, async ({ request }) => {
+  if (mockState.isRateLimited("token")) {
+    return rateLimitedResponse();
+  }
 
-    const formData = await request.text();
-    const params = new URLSearchParams(formData);
-    const clientId = params.get("client_id");
-    const clientSecret = params.get("client_secret");
+  const formData = await request.text();
+  const params = new URLSearchParams(formData);
+  const clientId = params.get("client_id");
+  const clientSecret = params.get("client_secret");
 
-    if (!clientId || !clientSecret) {
-      return HttpResponse.json(
-        { error: "invalid_request", error_description: "Missing credentials" },
-        { status: 400, headers: correlationHeaders() }
-      );
-    }
-
-    // Simple validation: client_secret must not be empty
-    if (clientSecret === "invalid") {
-      return HttpResponse.json(
-        { error: "invalid_client", error_description: "Invalid credentials" },
-        { status: 401, headers: correlationHeaders() }
-      );
-    }
-
-    const token = mockState.createToken(clientId);
+  if (!clientId || !clientSecret) {
     return HttpResponse.json(
-      {
-        access_token: token.accessToken,
-        token_type: "Bearer",
-        expires_in: token.expiresIn,
-      },
-      { status: 200, headers: correlationHeaders() }
+      { error: "invalid_request", error_description: "Missing credentials" },
+      { status: 400, headers: correlationHeaders() }
     );
   }
-);
 
-const prodTokenHandler = http.post(
-  `${PROD_BASE_URL}/connect/token`,
-  async ({ request }) => {
-    // Same logic as sandbox
-    if (mockState.isRateLimited("token")) {
-      return rateLimitedResponse();
-    }
-
-    const formData = await request.text();
-    const params = new URLSearchParams(formData);
-    const clientId = params.get("client_id");
-    const clientSecret = params.get("client_secret");
-
-    if (!clientId || !clientSecret) {
-      return HttpResponse.json(
-        { error: "invalid_request", error_description: "Missing credentials" },
-        { status: 400, headers: correlationHeaders() }
-      );
-    }
-
-    if (clientSecret === "invalid") {
-      return HttpResponse.json(
-        { error: "invalid_client", error_description: "Invalid credentials" },
-        { status: 401, headers: correlationHeaders() }
-      );
-    }
-
-    const token = mockState.createToken(clientId);
+  // Simple validation: client_secret must not be empty
+  if (clientSecret === "invalid") {
     return HttpResponse.json(
-      {
-        access_token: token.accessToken,
-        token_type: "Bearer",
-        expires_in: token.expiresIn,
-      },
-      { status: 200, headers: correlationHeaders() }
+      { error: "invalid_client", error_description: "Invalid credentials" },
+      { status: 401, headers: correlationHeaders() }
     );
   }
-);
+
+  const token = mockState.createToken(clientId);
+  return HttpResponse.json(
+    {
+      access_token: token.accessToken,
+      token_type: "Bearer",
+      expires_in: token.expiresIn,
+    },
+    { status: 200, headers: correlationHeaders() }
+  );
+});
+
+const prodTokenHandler = http.post(`${PROD_BASE_URL}/connect/token`, async ({ request }) => {
+  // Same logic as sandbox
+  if (mockState.isRateLimited("token")) {
+    return rateLimitedResponse();
+  }
+
+  const formData = await request.text();
+  const params = new URLSearchParams(formData);
+  const clientId = params.get("client_id");
+  const clientSecret = params.get("client_secret");
+
+  if (!clientId || !clientSecret) {
+    return HttpResponse.json(
+      { error: "invalid_request", error_description: "Missing credentials" },
+      { status: 400, headers: correlationHeaders() }
+    );
+  }
+
+  if (clientSecret === "invalid") {
+    return HttpResponse.json(
+      { error: "invalid_client", error_description: "Invalid credentials" },
+      { status: 401, headers: correlationHeaders() }
+    );
+  }
+
+  const token = mockState.createToken(clientId);
+  return HttpResponse.json(
+    {
+      access_token: token.accessToken,
+      token_type: "Bearer",
+      expires_in: token.expiresIn,
+    },
+    { status: 200, headers: correlationHeaders() }
+  );
+});
 
 // === Submit Documents Handler ===
 

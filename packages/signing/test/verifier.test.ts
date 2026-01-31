@@ -1,40 +1,35 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-import {
-  verify,
-  VerificationService,
-  extractSignature,
-  recalculateHash
-} from '../src/verifier.js';
-import { SigningService } from '../src/signer.js';
-import { parsePrivateKey } from '../src/private-key-loader.js';
-import { parseCertificate } from '../src/certificate-loader.js';
-import type { CertificateInfo } from '../src/types.js';
-import type { KeyObject } from 'crypto';
+import { describe, it, expect, beforeAll } from "vitest";
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { verify, VerificationService, extractSignature, recalculateHash } from "../src/verifier.js";
+import { SigningService } from "../src/signer.js";
+import { parsePrivateKey } from "../src/private-key-loader.js";
+import { parseCertificate } from "../src/certificate-loader.js";
+import type { CertificateInfo } from "../src/types.js";
+import type { KeyObject } from "crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const fixturesDir = path.join(__dirname, 'fixtures');
+const fixturesDir = path.join(__dirname, "fixtures");
 
-describe('Signature Verifier', () => {
+describe("Signature Verifier", () => {
   let privateKey: KeyObject;
   let certPem: string;
   let certInfo: CertificateInfo;
   let signingService: SigningService;
 
   beforeAll(() => {
-    const keyPem = fs.readFileSync(path.join(fixturesDir, 'valid-key.pem'), 'utf-8');
-    certPem = fs.readFileSync(path.join(fixturesDir, 'valid-cert.pem'), 'utf-8');
+    const keyPem = fs.readFileSync(path.join(fixturesDir, "valid-key.pem"), "utf-8");
+    certPem = fs.readFileSync(path.join(fixturesDir, "valid-cert.pem"), "utf-8");
     privateKey = parsePrivateKey(keyPem);
     certInfo = parseCertificate(certPem);
     signingService = new SigningService(privateKey, certPem, certInfo);
   });
 
-  describe('extractSignature', () => {
-    it('extracts signature from signed Invoice document', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+  describe("extractSignature", () => {
+    it("extracts signature from signed Invoice document", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const extracted = extractSignature(signedDocument);
@@ -46,8 +41,8 @@ describe('Signature Verifier', () => {
       expect(extracted.signedInfo).toBeTruthy();
     });
 
-    it('extracts signature from signed CreditNote document', () => {
-      const doc = { CreditNote: { ID: 'CN-001' } };
+    it("extracts signature from signed CreditNote document", () => {
+      const doc = { CreditNote: { ID: "CN-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const extracted = extractSignature(signedDocument);
@@ -55,8 +50,8 @@ describe('Signature Verifier', () => {
       expect(extracted.signatureBlock).not.toBeNull();
     });
 
-    it('extracts signature from signed DebitNote document', () => {
-      const doc = { DebitNote: { ID: 'DN-001' } };
+    it("extracts signature from signed DebitNote document", () => {
+      const doc = { DebitNote: { ID: "DN-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const extracted = extractSignature(signedDocument);
@@ -64,8 +59,8 @@ describe('Signature Verifier', () => {
       expect(extracted.signatureBlock).not.toBeNull();
     });
 
-    it('returns null for unsigned document', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+    it("returns null for unsigned document", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
 
       const extracted = extractSignature(doc);
 
@@ -74,20 +69,20 @@ describe('Signature Verifier', () => {
       expect(extracted.signatureValue).toBeNull();
     });
 
-    it('extracts certificate PEM correctly', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+    it("extracts certificate PEM correctly", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const extracted = extractSignature(signedDocument);
 
-      expect(extracted.certificatePem).toContain('-----BEGIN CERTIFICATE-----');
-      expect(extracted.certificatePem).toContain('-----END CERTIFICATE-----');
+      expect(extracted.certificatePem).toContain("-----BEGIN CERTIFICATE-----");
+      expect(extracted.certificatePem).toContain("-----END CERTIFICATE-----");
     });
   });
 
-  describe('recalculateHash', () => {
-    it('calculates hash excluding signature', () => {
-      const doc = { Invoice: { ID: 'INV-001', Amount: 100 } };
+  describe("recalculateHash", () => {
+    it("calculates hash excluding signature", () => {
+      const doc = { Invoice: { ID: "INV-001", Amount: 100 } };
       const { signedDocument, documentHash } = signingService.sign(doc);
 
       const recalculated = recalculateHash(signedDocument);
@@ -95,8 +90,8 @@ describe('Signature Verifier', () => {
       expect(recalculated).toBe(documentHash);
     });
 
-    it('produces same hash as original document', () => {
-      const originalDoc = { Invoice: { ID: 'INV-001' } };
+    it("produces same hash as original document", () => {
+      const originalDoc = { Invoice: { ID: "INV-001" } };
       const { signedDocument } = signingService.sign(originalDoc);
 
       const originalHash = recalculateHash(originalDoc);
@@ -106,9 +101,9 @@ describe('Signature Verifier', () => {
     });
   });
 
-  describe('verify', () => {
-    it('verifies valid signed document', () => {
-      const doc = { Invoice: { ID: 'INV-001', Amount: 100 } };
+  describe("verify", () => {
+    it("verifies valid signed document", () => {
+      const doc = { Invoice: { ID: "INV-001", Amount: 100 } };
       const { signedDocument } = signingService.sign(doc);
 
       const result = verify(signedDocument);
@@ -117,8 +112,8 @@ describe('Signature Verifier', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('returns correct document hash info', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+    it("returns correct document hash info", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument, documentHash } = signingService.sign(doc);
 
       const result = verify(signedDocument);
@@ -128,8 +123,8 @@ describe('Signature Verifier', () => {
       expect(result.document.claimedHash).toBe(documentHash);
     });
 
-    it('returns correct signature info', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+    it("returns correct signature info", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const result = verify(signedDocument);
@@ -138,8 +133,8 @@ describe('Signature Verifier', () => {
       expect(result.signature.algorithm).toBeTruthy();
     });
 
-    it('returns correct certificate info', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+    it("returns correct certificate info", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const result = verify(signedDocument);
@@ -150,17 +145,17 @@ describe('Signature Verifier', () => {
       expect(result.certificate.expiresAt).toEqual(certInfo.validTo);
     });
 
-    it('fails for unsigned document', () => {
-      const doc = { Invoice: { ID: 'INV-001' } };
+    it("fails for unsigned document", () => {
+      const doc = { Invoice: { ID: "INV-001" } };
 
       const result = verify(doc);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing signature block');
+      expect(result.errors).toContain("Missing signature block");
     });
 
-    it('detects tampered document (hash mismatch)', () => {
-      const doc = { Invoice: { ID: 'INV-001', Amount: 100 } };
+    it("detects tampered document (hash mismatch)", () => {
+      const doc = { Invoice: { ID: "INV-001", Amount: 100 } };
       const { signedDocument } = signingService.sign(doc);
 
       // Tamper with the document
@@ -171,23 +166,23 @@ describe('Signature Verifier', () => {
 
       expect(result.valid).toBe(false);
       expect(result.document.hashValid).toBe(false);
-      expect(result.errors).toContain('Document hash mismatch - document may have been tampered');
+      expect(result.errors).toContain("Document hash mismatch - document may have been tampered");
     });
 
-    it('handles complex nested documents', () => {
+    it("handles complex nested documents", () => {
       const doc = {
         Invoice: {
-          ID: 'INV-001',
+          ID: "INV-001",
           AccountingSupplierParty: {
             Party: {
-              PartyName: { Name: 'Test Company' }
-            }
+              PartyName: { Name: "Test Company" },
+            },
           },
           InvoiceLine: [
-            { ID: '1', Amount: 100 },
-            { ID: '2', Amount: 200 }
-          ]
-        }
+            { ID: "1", Amount: 100 },
+            { ID: "2", Amount: 200 },
+          ],
+        },
       };
 
       const { signedDocument } = signingService.sign(doc);
@@ -197,15 +192,15 @@ describe('Signature Verifier', () => {
     });
   });
 
-  describe('VerificationService', () => {
-    it('creates instance', () => {
+  describe("VerificationService", () => {
+    it("creates instance", () => {
       const service = new VerificationService();
       expect(service).toBeDefined();
     });
 
-    it('verifies documents', () => {
+    it("verifies documents", () => {
       const service = new VerificationService();
-      const doc = { Invoice: { ID: 'INV-001' } };
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument } = signingService.sign(doc);
 
       const result = service.verify(signedDocument);
@@ -213,19 +208,19 @@ describe('Signature Verifier', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('checks if document has signature', () => {
+    it("checks if document has signature", () => {
       const service = new VerificationService();
 
-      const unsignedDoc = { Invoice: { ID: 'INV-001' } };
+      const unsignedDoc = { Invoice: { ID: "INV-001" } };
       expect(service.hasSignature(unsignedDoc)).toBe(false);
 
       const { signedDocument } = signingService.sign(unsignedDoc);
       expect(service.hasSignature(signedDocument)).toBe(true);
     });
 
-    it('gets claimed hash from signed document', () => {
+    it("gets claimed hash from signed document", () => {
       const service = new VerificationService();
-      const doc = { Invoice: { ID: 'INV-001' } };
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument, documentHash } = signingService.sign(doc);
 
       const claimedHash = service.getClaimedHash(signedDocument);
@@ -233,18 +228,18 @@ describe('Signature Verifier', () => {
       expect(claimedHash).toBe(documentHash);
     });
 
-    it('returns null for unsigned document hash', () => {
+    it("returns null for unsigned document hash", () => {
       const service = new VerificationService();
-      const doc = { Invoice: { ID: 'INV-001' } };
+      const doc = { Invoice: { ID: "INV-001" } };
 
       const claimedHash = service.getClaimedHash(doc);
 
       expect(claimedHash).toBeNull();
     });
 
-    it('recalculates hash', () => {
+    it("recalculates hash", () => {
       const service = new VerificationService();
-      const doc = { Invoice: { ID: 'INV-001' } };
+      const doc = { Invoice: { ID: "INV-001" } };
       const { signedDocument, documentHash } = signingService.sign(doc);
 
       const recalculated = service.recalculateHash(signedDocument);
@@ -253,9 +248,9 @@ describe('Signature Verifier', () => {
     });
   });
 
-  describe('round-trip verification', () => {
-    it('sign and verify works correctly', () => {
-      const doc = { Invoice: { ID: 'INV-001', Amount: 500 } };
+  describe("round-trip verification", () => {
+    it("sign and verify works correctly", () => {
+      const doc = { Invoice: { ID: "INV-001", Amount: 500 } };
 
       const { signedDocument } = signingService.sign(doc);
       const result = verify(signedDocument);
@@ -266,11 +261,11 @@ describe('Signature Verifier', () => {
       expect(result.certificate.valid).toBe(true);
     });
 
-    it('multiple sign and verify cycles work', () => {
+    it("multiple sign and verify cycles work", () => {
       const docs = [
-        { Invoice: { ID: 'INV-001' } },
-        { CreditNote: { ID: 'CN-001' } },
-        { DebitNote: { ID: 'DN-001' } }
+        { Invoice: { ID: "INV-001" } },
+        { CreditNote: { ID: "CN-001" } },
+        { DebitNote: { ID: "DN-001" } },
       ];
 
       for (const doc of docs) {
@@ -281,13 +276,13 @@ describe('Signature Verifier', () => {
     });
   });
 
-  describe('error cases', () => {
-    it('handles malformed UBLExtensions gracefully', () => {
+  describe("error cases", () => {
+    it("handles malformed UBLExtensions gracefully", () => {
       const doc = {
         Invoice: {
-          UBLExtensions: 'not an object',
-          ID: 'INV-001'
-        }
+          UBLExtensions: "not an object",
+          ID: "INV-001",
+        },
       };
 
       const result = verify(doc);
@@ -295,28 +290,28 @@ describe('Signature Verifier', () => {
       expect(result.valid).toBe(false);
     });
 
-    it('handles empty UBLExtension array', () => {
+    it("handles empty UBLExtension array", () => {
       const doc = {
         Invoice: {
           UBLExtensions: { UBLExtension: [] },
-          ID: 'INV-001'
-        }
+          ID: "INV-001",
+        },
       };
 
       const result = verify(doc);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing signature block');
+      expect(result.errors).toContain("Missing signature block");
     });
 
-    it('handles missing ExtensionContent', () => {
+    it("handles missing ExtensionContent", () => {
       const doc = {
         Invoice: {
           UBLExtensions: {
-            UBLExtension: [{ ExtensionURI: 'test' }]
+            UBLExtension: [{ ExtensionURI: "test" }],
           },
-          ID: 'INV-001'
-        }
+          ID: "INV-001",
+        },
       };
 
       const result = verify(doc);

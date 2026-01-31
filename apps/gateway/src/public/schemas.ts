@@ -9,8 +9,23 @@ import { z } from "zod";
  * State codes for Malaysia
  */
 export const StateCodeSchema = z.enum([
-  "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-  "11", "12", "13", "14", "15", "16", "17",
+  "01",
+  "02",
+  "03",
+  "04",
+  "05",
+  "06",
+  "07",
+  "08",
+  "09",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
 ]);
 
 /**
@@ -69,30 +84,36 @@ export const PublicInvoiceItemSchema = z.object({
  * P2-09: Schema for validating parsed raw payload from database
  * Used to safely parse JSON.parse results
  */
-export const RawPayloadItemSchema = z.object({
-  description: z.string().optional().default("Item"),
-  quantity: z.number().optional().default(1),
-  unitPrice: z.number().optional().default(0),
-  discount: z.number().optional().default(0),
-  taxCode: z.string().optional().default("02"),
-  taxRate: z.number().optional().default(0),
-  taxAmount: z.number().optional().default(0),
-  total: z.number().optional().default(0),
-}).passthrough();
+export const RawPayloadItemSchema = z
+  .object({
+    description: z.string().optional().default("Item"),
+    quantity: z.number().optional().default(1),
+    unitPrice: z.number().optional().default(0),
+    discount: z.number().optional().default(0),
+    taxCode: z.string().optional().default("02"),
+    taxRate: z.number().optional().default(0),
+    taxAmount: z.number().optional().default(0),
+    total: z.number().optional().default(0),
+  })
+  .passthrough();
 
-export const RawPayloadInvoiceSchema = z.object({
-  items: z.array(RawPayloadItemSchema).optional(),
-  paymentType: z.string().optional(),
-  invoiceDate: z.string().optional(),
-}).passthrough();
+export const RawPayloadInvoiceSchema = z
+  .object({
+    items: z.array(RawPayloadItemSchema).optional(),
+    paymentType: z.string().optional(),
+    invoiceDate: z.string().optional(),
+  })
+  .passthrough();
 
-export const RawPayloadSchema = z.object({
-  items: z.array(RawPayloadItemSchema).optional(),
-  invoices: z.array(RawPayloadInvoiceSchema).optional(),
-  invoice: RawPayloadInvoiceSchema.optional(), // Format 3: singular invoice object
-  paymentType: z.string().optional(),
-  invoiceDate: z.string().optional(),
-}).passthrough();
+export const RawPayloadSchema = z
+  .object({
+    items: z.array(RawPayloadItemSchema).optional(),
+    invoices: z.array(RawPayloadInvoiceSchema).optional(),
+    invoice: RawPayloadInvoiceSchema.optional(), // Format 3: singular invoice object
+    paymentType: z.string().optional(),
+    invoiceDate: z.string().optional(),
+  })
+  .passthrough();
 
 /**
  * TypeScript types

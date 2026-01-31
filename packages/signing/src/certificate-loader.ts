@@ -1,8 +1,12 @@
-import * as crypto from 'crypto';
-import * as fs from 'fs';
-import type { CertificateSource } from './config.js';
-import type { CertificateInfo, DistinguishedName } from './types.js';
-import { CertificateLoadError, CertificateExpiredError, CertificateNotYetValidError } from './errors.js';
+import * as crypto from "crypto";
+import * as fs from "fs";
+import type { CertificateSource } from "./config.js";
+import type { CertificateInfo, DistinguishedName } from "./types.js";
+import {
+  CertificateLoadError,
+  CertificateExpiredError,
+  CertificateNotYetValidError,
+} from "./errors.js";
 
 /**
  * Parse a distinguished name string into structured components
@@ -20,9 +24,9 @@ function parseDistinguishedName(dn: string): DistinguishedName {
   //
   // Node.js: "C=MY\nO=LHDNM\nOU=...\nCN=..."
   // RFC2253: "CN=..., OU=..., O=LHDNM, C=MY"
-  const parts = dn.split('\n').filter(p => p.trim());
+  const parts = dn.split("\n").filter((p) => p.trim());
   const reversedParts = parts.reverse();
-  const normalizedDn = reversedParts.join(', ');
+  const normalizedDn = reversedParts.join(", ");
   const result: DistinguishedName = { raw: normalizedDn };
 
   // Parse common DN components - stop at comma OR newline
@@ -55,12 +59,13 @@ function parseDistinguishedName(dn: string): DistinguishedName {
  */
 export function loadCertificateFromFile(path: string): string {
   try {
-    return fs.readFileSync(path, 'utf-8');
+    return fs.readFileSync(path, "utf-8");
   } catch (error) {
-    throw new CertificateLoadError(
-      `Failed to load certificate from file: ${path}`,
-      { source: 'file', path, cause: error as Error }
-    );
+    throw new CertificateLoadError(`Failed to load certificate from file: ${path}`, {
+      source: "file",
+      path,
+      cause: error as Error,
+    });
   }
 }
 
@@ -69,12 +74,12 @@ export function loadCertificateFromFile(path: string): string {
  */
 export function loadCertificateFromBase64(base64Data: string): string {
   try {
-    return Buffer.from(base64Data, 'base64').toString('utf-8');
+    return Buffer.from(base64Data, "base64").toString("utf-8");
   } catch (error) {
-    throw new CertificateLoadError(
-      'Failed to decode base64 certificate data',
-      { source: 'base64', cause: error as Error }
-    );
+    throw new CertificateLoadError("Failed to decode base64 certificate data", {
+      source: "base64",
+      cause: error as Error,
+    });
   }
 }
 
@@ -84,10 +89,9 @@ export function loadCertificateFromBase64(base64Data: string): string {
 export function loadCertificateFromEnv(envVar: string): string {
   const value = process.env[envVar];
   if (!value) {
-    throw new CertificateLoadError(
-      `Environment variable ${envVar} is not set or empty`,
-      { source: 'env' }
-    );
+    throw new CertificateLoadError(`Environment variable ${envVar} is not set or empty`, {
+      source: "env",
+    });
   }
   return value;
 }
@@ -105,7 +109,7 @@ export function loadCertificatePem(source: CertificateSource): string {
   if (source.envVar) {
     return loadCertificateFromEnv(source.envVar);
   }
-  throw new CertificateLoadError('No certificate source specified');
+  throw new CertificateLoadError("No certificate source specified");
 }
 
 /**
@@ -132,21 +136,21 @@ export function parseCertificate(pemContent: string): CertificateInfo {
 
     // Get key info
     const publicKey = cert.publicKey;
-    let keyType = 'unknown';
+    let keyType = "unknown";
     let keySize = 0;
 
-    if (publicKey.asymmetricKeyType === 'rsa') {
-      keyType = 'RSA';
+    if (publicKey.asymmetricKeyType === "rsa") {
+      keyType = "RSA";
       const keyDetails = publicKey.asymmetricKeyDetails;
       keySize = keyDetails?.modulusLength ?? 0;
-    } else if (publicKey.asymmetricKeyType === 'ec') {
-      keyType = 'EC';
+    } else if (publicKey.asymmetricKeyType === "ec") {
+      keyType = "EC";
       const keyDetails = publicKey.asymmetricKeyDetails;
       // EC key size based on curve
       const curve = keyDetails?.namedCurve;
-      if (curve === 'prime256v1' || curve === 'P-256') keySize = 256;
-      else if (curve === 'secp384r1' || curve === 'P-384') keySize = 384;
-      else if (curve === 'secp521r1' || curve === 'P-521') keySize = 521;
+      if (curve === "prime256v1" || curve === "P-256") keySize = 256;
+      else if (curve === "secp384r1" || curve === "P-384") keySize = 384;
+      else if (curve === "secp521r1" || curve === "P-521") keySize = 521;
     }
 
     // Parse key usage
@@ -161,19 +165,20 @@ export function parseCertificate(pemContent: string): CertificateInfo {
     }
 
     // Calculate fingerprint
-    const fingerprint = crypto
-      .createHash('sha256')
-      .update(Buffer.from(cert.raw))
-      .digest('hex')
-      .toUpperCase()
-      .match(/.{2}/g)
-      ?.join(':') ?? '';
+    const fingerprint =
+      crypto
+        .createHash("sha256")
+        .update(Buffer.from(cert.raw))
+        .digest("hex")
+        .toUpperCase()
+        .match(/.{2}/g)
+        ?.join(":") ?? "";
 
     // Convert serial number from hex to decimal
     // Node.js X509Certificate.serialNumber returns hex format (e.g., "012BA689")
     // MyInvois expects decimal format (e.g., "19637897")
-    const hexSerial = cert.serialNumber.replace(/:/g, ''); // Remove any colons
-    const decimalSerial = BigInt('0x' + hexSerial).toString();
+    const hexSerial = cert.serialNumber.replace(/:/g, ""); // Remove any colons
+    const decimalSerial = BigInt("0x" + hexSerial).toString();
 
     return {
       subject: parseDistinguishedName(cert.subject),
@@ -188,14 +193,14 @@ export function parseCertificate(pemContent: string): CertificateInfo {
       fingerprint,
       keyType,
       keySize,
-      keyUsage
+      keyUsage,
     };
   } catch (error) {
     if (error instanceof CertificateLoadError) {
       throw error;
     }
     throw new CertificateLoadError(
-      'Failed to parse certificate: Invalid PEM format or corrupted data',
+      "Failed to parse certificate: Invalid PEM format or corrupted data",
       { cause: error as Error }
     );
   }
@@ -255,9 +260,8 @@ export function getX509Certificate(pemContent: string): crypto.X509Certificate {
   try {
     return new crypto.X509Certificate(pemContent);
   } catch (error) {
-    throw new CertificateLoadError(
-      'Failed to create X509Certificate: Invalid PEM format',
-      { cause: error as Error }
-    );
+    throw new CertificateLoadError("Failed to create X509Certificate: Invalid PEM format", {
+      cause: error as Error,
+    });
   }
 }

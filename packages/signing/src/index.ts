@@ -6,8 +6,8 @@
  */
 
 // Package info
-export const PACKAGE_NAME = '@myinvois/signing';
-export const PACKAGE_VERSION = '0.1.0';
+export const PACKAGE_NAME = "@myinvois/signing";
+export const PACKAGE_VERSION = "0.1.0";
 
 // Configuration
 export {
@@ -19,26 +19,26 @@ export {
   PKCS12SourceSchema,
   loadSigningConfig,
   validateSigningConfig,
-  SIGNING_ENV_VARS
-} from './config.js';
+  SIGNING_ENV_VARS,
+} from "./config.js";
 
 export type {
   SigningConfig,
   CertificateSource,
   PrivateKeySource,
   RotationConfig,
-  PKCS12Source
-} from './config.js';
+  PKCS12Source,
+} from "./config.js";
 
 // PKCS#12 Loader
 export {
   loadPKCS12,
   loadPKCS12FromFile,
   loadPKCS12FromBase64,
-  isPKCS12File
-} from './pkcs12-loader.js';
+  isPKCS12File,
+} from "./pkcs12-loader.js";
 
-export type { PKCS12Result } from './pkcs12-loader.js';
+export type { PKCS12Result } from "./pkcs12-loader.js";
 
 // Types
 export type {
@@ -50,8 +50,8 @@ export type {
   VerificationResult,
   SigningOptions,
   SessionSigningConfig,
-  SigningHealthStatus
-} from './types.js';
+  SigningHealthStatus,
+} from "./types.js";
 
 // Errors
 export {
@@ -68,8 +68,8 @@ export {
   SigningNotConfiguredError,
   InvalidDocumentVersionError,
   isSigningError,
-  getSigningErrorHttpStatus
-} from './errors.js';
+  getSigningErrorHttpStatus,
+} from "./errors.js";
 
 // Certificate Loader
 export {
@@ -81,8 +81,8 @@ export {
   loadCertificateFromEnv,
   parseCertificate,
   validateCertificate,
-  getX509Certificate
-} from './certificate-loader.js';
+  getX509Certificate,
+} from "./certificate-loader.js";
 
 // Private Key Loader
 export {
@@ -94,10 +94,10 @@ export {
   loadPrivateKeyFromEnv,
   parsePrivateKey,
   verifyKeyMatchesCertificate,
-  getPrivateKeyInfo
-} from './private-key-loader.js';
+  getPrivateKeyInfo,
+} from "./private-key-loader.js";
 
-export type { PrivateKeyInfo } from './private-key-loader.js';
+export type { PrivateKeyInfo } from "./private-key-loader.js";
 
 // Hash Generation
 export {
@@ -105,8 +105,8 @@ export {
   generateDocumentHash,
   generateDocumentHashHex,
   hashString,
-  verifyDocumentHash
-} from './hash.js';
+  verifyDocumentHash,
+} from "./hash.js";
 
 // Document Signer
 export {
@@ -115,21 +115,16 @@ export {
   createSignatureBlock,
   createUBLExtensions,
   injectSignature,
-  SIGNATURE_URIS
-} from './signer.js';
+  SIGNATURE_URIS,
+} from "./signer.js";
 
 // Signature Verifier
-export {
-  verify,
-  VerificationService,
-  extractSignature,
-  recalculateHash
-} from './verifier.js';
+export { verify, VerificationService, extractSignature, recalculateHash } from "./verifier.js";
 
 // Placeholder exports - will be expanded in subsequent user stories
 export function getPackageInfo(): { name: string; version: string } {
   return {
     name: PACKAGE_NAME,
-    version: PACKAGE_VERSION
+    version: PACKAGE_VERSION,
   };
 }

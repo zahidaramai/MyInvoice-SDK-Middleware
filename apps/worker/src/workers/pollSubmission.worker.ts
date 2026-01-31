@@ -118,7 +118,10 @@ async function processPollJob(job: Job<PollSubmissionJobData>): Promise<void> {
 
     const tokenManager = getTokenManager(submission.sessionId);
 
-    log.info({ submissionUid: submission.upstreamSubmissionUid }, "Calling MyInvois Get Submission");
+    log.info(
+      { submissionUid: submission.upstreamSubmissionUid },
+      "Calling MyInvois Get Submission"
+    );
 
     // Call MyInvois API
     const result = await getSubmission(
@@ -139,12 +142,15 @@ async function processPollJob(job: Job<PollSubmissionJobData>): Promise<void> {
     // Success - update submission status
     const { overallStatus, documentSummary, meta } = result.result;
 
-    log.info({
-      submissionUid: submission.upstreamSubmissionUid,
-      overallStatus,
-      documentCount: documentSummary.length,
-      correlationId: meta.correlationId,
-    }, "Poll successful");
+    log.info(
+      {
+        submissionUid: submission.upstreamSubmissionUid,
+        overallStatus,
+        documentCount: documentSummary.length,
+        correlationId: meta.correlationId,
+      },
+      "Poll successful"
+    );
 
     // Clear any previous poll errors
     await clearPollErrors(trackingId);
@@ -201,11 +207,14 @@ async function handlePollError(
 ): Promise<void> {
   const now = new Date();
 
-  log.warn({
-    status: error.status,
-    code: error.code,
-    message: error.message,
-  }, "Poll failed");
+  log.warn(
+    {
+      status: error.status,
+      code: error.code,
+      message: error.message,
+    },
+    "Poll failed"
+  );
 
   // Handle rate limiting (429)
   if (error.status === 429) {
@@ -292,10 +301,7 @@ async function updateDocumentSummaries(
  *
  * For now, this uses environment variables as a fallback.
  */
-function buildSessionFromSubmission(
-  sessionId: string,
-  env: string
-): SessionCredentials | null {
+function buildSessionFromSubmission(sessionId: string, env: string): SessionCredentials | null {
   // In production, fetch from secure storage using sessionId
   // For now, use environment variables
   const clientId = process.env.MYINVOIS_CLIENT_ID;
@@ -324,21 +330,15 @@ export function startPollWorker(): Worker<PollSubmissionJobData> {
     return pollWorker;
   }
 
-  pollWorker = new Worker<PollSubmissionJobData>(
-    POLL_QUEUE_NAME,
-    processPollJob,
-    {
-      connection: getRedisConnection(),
-      concurrency: 10, // Process up to 10 jobs concurrently
-      // BullMQ doesn't have built-in per-key rate limiting
-      // Rate limiting is handled at the API client level
-    }
-  );
+  pollWorker = new Worker<PollSubmissionJobData>(POLL_QUEUE_NAME, processPollJob, {
+    connection: getRedisConnection(),
+    concurrency: 10, // Process up to 10 jobs concurrently
+    // BullMQ doesn't have built-in per-key rate limiting
+    // Rate limiting is handled at the API client level
+  });
 
   pollWorker.on("completed", (job) => {
-    createLogger({ trackingId: job.data.trackingId, jobId: job.id }).debug(
-      "Job completed"
-    );
+    createLogger({ trackingId: job.data.trackingId, jobId: job.id }).debug("Job completed");
   });
 
   pollWorker.on("failed", (job, err) => {

@@ -132,10 +132,9 @@ export default function (data) {
 
       sleep(0.5);
 
-      const statusResponse = http.get(
-        `${BASE_URL}/v1/submissions/${submitData.trackingId}`,
-        { headers }
-      );
+      const statusResponse = http.get(`${BASE_URL}/v1/submissions/${submitData.trackingId}`, {
+        headers,
+      });
 
       check(statusResponse, {
         "get submission status 200": (r) => r.status === 200,

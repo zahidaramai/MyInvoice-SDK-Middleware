@@ -44,27 +44,20 @@ export class AppError extends Error {
  * Common pre-defined errors for convenience
  */
 export const AppErrors = {
-  notFound: (resource: string) =>
-    new AppError(404, `${resource} not found`, "NOT_FOUND"),
+  notFound: (resource: string) => new AppError(404, `${resource} not found`, "NOT_FOUND"),
 
-  badRequest: (message: string, code = "BAD_REQUEST") =>
-    new AppError(400, message, code),
+  badRequest: (message: string, code = "BAD_REQUEST") => new AppError(400, message, code),
 
-  unauthorized: (message = "Unauthorized") =>
-    new AppError(401, message, "UNAUTHORIZED"),
+  unauthorized: (message = "Unauthorized") => new AppError(401, message, "UNAUTHORIZED"),
 
-  forbidden: (message = "Access denied") =>
-    new AppError(403, message, "FORBIDDEN"),
+  forbidden: (message = "Access denied") => new AppError(403, message, "FORBIDDEN"),
 
-  conflict: (message: string, code = "CONFLICT") =>
-    new AppError(409, message, code),
+  conflict: (message: string, code = "CONFLICT") => new AppError(409, message, code),
 
   internalError: (message = "Internal server error") =>
     new AppError(500, message, "INTERNAL_ERROR"),
 
-  configError: (message: string) =>
-    new AppError(500, message, "CONFIG_ERROR"),
+  configError: (message: string) => new AppError(500, message, "CONFIG_ERROR"),
 
-  validationError: (message: string) =>
-    new AppError(400, message, "VALIDATION_ERROR"),
+  validationError: (message: string) => new AppError(400, message, "VALIDATION_ERROR"),
 };

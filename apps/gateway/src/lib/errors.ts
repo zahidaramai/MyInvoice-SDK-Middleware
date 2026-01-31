@@ -78,20 +78,15 @@ export class AppError extends Error {
    * Convert AppError to ErrorEnvelope
    */
   toErrorEnvelope(correlationId?: string): CoreErrorEnvelope {
-    return coreCreateErrorEnvelope(
-      this.code,
-      this.message,
-      this.statusCode,
-      {
-        retryable: this.retryable,
-        correlationId: this.details?.correlationId || correlationId,
-        propertyPath: this.details?.propertyPath,
-        field: this.details?.field,
-        upstream: this.details?.upstream,
-        retryAfterSeconds: this.details?.retryAfterSeconds,
-        trackingId: this.details?.trackingId,
-      }
-    );
+    return coreCreateErrorEnvelope(this.code, this.message, this.statusCode, {
+      retryable: this.retryable,
+      correlationId: this.details?.correlationId || correlationId,
+      propertyPath: this.details?.propertyPath,
+      field: this.details?.field,
+      upstream: this.details?.upstream,
+      retryAfterSeconds: this.details?.retryAfterSeconds,
+      trackingId: this.details?.trackingId,
+    });
   }
 }
 
@@ -114,32 +109,23 @@ export function createErrorEnvelope(
   } = {}
 ): ErrorEnvelopeResponse {
   const code = options.errorCode || ErrorCodes.INTERNAL_ERROR;
-  const envelope = coreCreateErrorEnvelope(
-    code,
-    messageEN,
-    httpStatus,
-    {
-      retryable: options.retryable ?? isRetryableError(code),
-      correlationId: options.correlationId,
-      propertyPath: options.propertyPath,
-      retryAfterSeconds: options.retryAfterSeconds,
-      upstream: options.upstream,
-    }
-  );
+  const envelope = coreCreateErrorEnvelope(code, messageEN, httpStatus, {
+    retryable: options.retryable ?? isRetryableError(code),
+    correlationId: options.correlationId,
+    propertyPath: options.propertyPath,
+    retryAfterSeconds: options.retryAfterSeconds,
+    upstream: options.upstream,
+  });
   return createErrorEnvelopeResponse(envelope);
 }
 
 /**
  * Create a 404 Not Found error
  */
-export function createNotFoundError(
-  path: string,
-  correlationId?: string
-): ErrorEnvelopeResponse {
+export function createNotFoundError(path: string, correlationId?: string): ErrorEnvelopeResponse {
   return createErrorEnvelope(404, `Route ${path} not found`, {
     correlationId,
     errorCode: ErrorCodes.NOT_FOUND,
     retryable: false,
   });
 }
-

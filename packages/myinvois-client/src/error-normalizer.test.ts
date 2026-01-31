@@ -171,21 +171,26 @@ describe("normalizeMyinvoisError", () => {
                 name: "Step05-Taxpayer Profile Validator",
                 error: {
                   propertyName: "CustomerTin",
-                  propertyPath: "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID",
+                  propertyPath:
+                    "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID",
                   errorCode: "ERR406",
                   error: "Step05-Invalid Taxpayer Profile Validator",
                   errorMs: "Step05-Pengesah Profil Pembayar Cukai Tidak Sah",
-                  innerError: [{
-                    propertyName: "CustomerTin",
-                    errorCode: "ERR406",
-                    error: "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
-                    errorMs: "TIN pembeli tidak sah. Sila gunakan fungsi Carian TIN untuk mendapatkan TIN yang betul"
-                  }]
-                }
+                  innerError: [
+                    {
+                      propertyName: "CustomerTin",
+                      errorCode: "ERR406",
+                      error:
+                        "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN",
+                      errorMs:
+                        "TIN pembeli tidak sah. Sila gunakan fungsi Carian TIN untuk mendapatkan TIN yang betul",
+                    },
+                  ],
+                },
               },
-              { status: "Valid", name: "Step06-Document References Validator" }
-            ]
-          }
+              { status: "Valid", name: "Step06-Document References Validator" },
+            ],
+          },
         },
       };
 
@@ -196,11 +201,15 @@ describe("normalizeMyinvoisError", () => {
       expect(result.httpStatus).toBe(400);
       expect(result.retryable).toBe(false);
       // Should use the message from innerError (actual user-facing message)
-      expect(result.messageEN).toBe("Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN");
+      expect(result.messageEN).toBe(
+        "Buyer TIN is invalid. Kindly use the Search TIN function to get the correct TIN"
+      );
       // Should preserve the field name
       expect(result.field).toBe("CustomerTin");
       // Should preserve the full property path
-      expect(result.propertyPath).toBe("document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID");
+      expect(result.propertyPath).toBe(
+        "document.Invoice.AccountingCustomerParty.Party.PartyIdentification.ID"
+      );
       // Should have upstream context
       expect(result.upstream?.errorCode).toBe("ERR406");
       expect(result.upstream?.errorName).toBe("Step05-Taxpayer Profile Validator");
@@ -219,13 +228,15 @@ describe("normalizeMyinvoisError", () => {
                 error: {
                   errorCode: "ERR003",
                   error: "Document has been submitted before",
-                  innerError: [{
-                    error: "This invoice number has already been submitted to MyInvois"
-                  }]
-                }
-              }
-            ]
-          }
+                  innerError: [
+                    {
+                      error: "This invoice number has already been submitted to MyInvois",
+                    },
+                  ],
+                },
+              },
+            ],
+          },
         },
       };
 
@@ -467,7 +478,10 @@ describe("normalizeMyinvoisError", () => {
         { body: { message: "Error from message" }, expected: "Error from message" },
         { body: { Message: "Error from Message" }, expected: "Error from Message" },
         { body: { error: "Error from error" }, expected: "Error from error" },
-        { body: { error_description: "Error from error_description" }, expected: "Error from error_description" },
+        {
+          body: { error_description: "Error from error_description" },
+          expected: "Error from error_description",
+        },
         { body: { ErrorMessage: "Error from ErrorMessage" }, expected: "Error from ErrorMessage" },
       ];
 
@@ -601,10 +615,7 @@ describe("createLocalValidationError", () => {
   });
 
   it("uses default httpStatus of 400", () => {
-    const result = createLocalValidationError(
-      ErrorCodes.VALIDATION_ERROR,
-      "Invalid field value"
-    );
+    const result = createLocalValidationError(ErrorCodes.VALIDATION_ERROR, "Invalid field value");
 
     expect(result.httpStatus).toBe(400);
   });
@@ -618,11 +629,23 @@ describe("Error Code Mapping Table", () => {
   it("documents the error mapping table", () => {
     const mappingTable = [
       // MyInvois Step/Error → Middleware Code → Retryable
-      { step: "Duplicated Submission Validator", code: ErrorCodes.DUPLICATE_SUBMISSION, retryable: false },
+      {
+        step: "Duplicated Submission Validator",
+        code: ErrorCodes.DUPLICATE_SUBMISSION,
+        retryable: false,
+      },
       { step: "Taxpayer Profile Validator", code: ErrorCodes.INVALID_TAXPAYER, retryable: false },
       { step: "Amount/Totals Validator", code: ErrorCodes.INVALID_TOTALS, retryable: false },
-      { step: "Document Relation Validator", code: ErrorCodes.INVALID_DOCUMENT_RELATION, retryable: false },
-      { step: "Document Structure Validator", code: ErrorCodes.INVALID_DOCUMENT_STRUCTURE, retryable: false },
+      {
+        step: "Document Relation Validator",
+        code: ErrorCodes.INVALID_DOCUMENT_RELATION,
+        retryable: false,
+      },
+      {
+        step: "Document Structure Validator",
+        code: ErrorCodes.INVALID_DOCUMENT_STRUCTURE,
+        retryable: false,
+      },
       { httpStatus: 429, code: ErrorCodes.UPSTREAM_RATE_LIMITED, retryable: true },
       { httpStatus: 500, code: ErrorCodes.UPSTREAM_ERROR, retryable: true },
       { httpStatus: 0, code: ErrorCodes.UPSTREAM_TIMEOUT, retryable: true },

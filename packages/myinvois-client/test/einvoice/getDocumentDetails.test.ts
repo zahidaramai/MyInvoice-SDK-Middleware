@@ -37,10 +37,10 @@ describe("getDocumentDetails", () => {
         dateTimeIssued: "2024-01-15T10:00:00Z",
         dateTimeReceived: "2024-01-15T10:05:00Z",
         dateTimeValidated: "2024-01-15T10:06:00Z",
-        totalExcludingTax: 100.00,
-        totalDiscount: 0.00,
-        totalNetAmount: 100.00,
-        totalPayableAmount: 106.00,
+        totalExcludingTax: 100.0,
+        totalDiscount: 0.0,
+        totalNetAmount: 100.0,
+        totalPayableAmount: 106.0,
         status: "Valid",
         validationResults: {
           status: "Valid",
@@ -139,9 +139,7 @@ describe("getDocumentDetails", () => {
         ],
       };
 
-      const failedSteps = validationResults.validationSteps.filter(
-        (s) => s.status === "Invalid"
-      );
+      const failedSteps = validationResults.validationSteps.filter((s) => s.status === "Invalid");
       expect(failedSteps).toHaveLength(1);
       expect(failedSteps[0].error?.code).toBe("InvalidTaxAmount");
       expect(failedSteps[0].error?.propertyPath).toBe("Invoice/TaxTotal/TaxAmount");
@@ -164,9 +162,7 @@ describe("getDocumentDetails", () => {
         ],
       };
 
-      const failedSteps = validationResults.validationSteps.filter(
-        (s) => s.status === "Invalid"
-      );
+      const failedSteps = validationResults.validationSteps.filter((s) => s.status === "Invalid");
       expect(failedSteps).toHaveLength(2);
     });
 
@@ -181,9 +177,7 @@ describe("getDocumentDetails", () => {
         ],
       };
 
-      const failedSteps = validationResults.validationSteps.filter(
-        (s) => s.status === "Invalid"
-      );
+      const failedSteps = validationResults.validationSteps.filter((s) => s.status === "Invalid");
       expect(failedSteps).toHaveLength(0);
     });
   });
@@ -220,10 +214,10 @@ describe("getDocumentDetails", () => {
   describe("amount calculations", () => {
     it("verifies amount consistency", () => {
       const amounts = {
-        totalExcludingTax: 100.00,
-        totalDiscount: 10.00,
-        totalNetAmount: 90.00,
-        totalPayableAmount: 95.40, // 90 + 6% tax
+        totalExcludingTax: 100.0,
+        totalDiscount: 10.0,
+        totalNetAmount: 90.0,
+        totalPayableAmount: 95.4, // 90 + 6% tax
       };
 
       expect(amounts.totalNetAmount).toBe(amounts.totalExcludingTax - amounts.totalDiscount);

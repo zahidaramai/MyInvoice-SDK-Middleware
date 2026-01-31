@@ -49,9 +49,7 @@ describe("searchDocuments", () => {
         status: "Valid",
       };
 
-      expect(["Submitted", "Valid", "Invalid", "Cancelled", "Rejected"]).toContain(
-        params.status
-      );
+      expect(["Submitted", "Valid", "Invalid", "Cancelled", "Rejected"]).toContain(params.status);
     });
 
     it("builds search with document type", () => {
@@ -116,7 +114,7 @@ describe("searchDocuments", () => {
             internalId: "INV001",
             status: "Valid",
             dateTimeIssued: "2024-01-15T10:00:00Z",
-            totalPayableAmount: 106.00,
+            totalPayableAmount: 106.0,
           },
           {
             uuid: "doc-2",
@@ -125,7 +123,7 @@ describe("searchDocuments", () => {
             internalId: "INV002",
             status: "Valid",
             dateTimeIssued: "2024-01-15T11:00:00Z",
-            totalPayableAmount: 212.00,
+            totalPayableAmount: 212.0,
           },
         ],
         metadata: {
@@ -166,9 +164,9 @@ describe("searchDocuments", () => {
         dateTimeIssued: "2024-01-15T10:00:00Z",
         dateTimeReceived: "2024-01-15T10:05:00Z",
         dateTimeValidated: "2024-01-15T10:06:00Z",
-        totalExcludingTax: 100.00,
-        totalNetAmount: 100.00,
-        totalPayableAmount: 106.00,
+        totalExcludingTax: 100.0,
+        totalNetAmount: 100.0,
+        totalPayableAmount: 106.0,
         status: "Valid",
       };
 
@@ -310,9 +308,7 @@ describe("searchDocuments", () => {
       ];
 
       const sorted = [...documents].sort(
-        (a, b) =>
-          new Date(b.dateTimeReceived).getTime() -
-          new Date(a.dateTimeReceived).getTime()
+        (a, b) => new Date(b.dateTimeReceived).getTime() - new Date(a.dateTimeReceived).getTime()
       );
 
       expect(sorted[0].dateTimeReceived).toBe("2024-01-16T10:00:00Z");
@@ -325,9 +321,7 @@ describe("searchDocuments", () => {
         { totalPayableAmount: 150 },
       ];
 
-      const sorted = [...documents].sort(
-        (a, b) => a.totalPayableAmount - b.totalPayableAmount
-      );
+      const sorted = [...documents].sort((a, b) => a.totalPayableAmount - b.totalPayableAmount);
 
       expect(sorted[0].totalPayableAmount).toBe(100);
     });

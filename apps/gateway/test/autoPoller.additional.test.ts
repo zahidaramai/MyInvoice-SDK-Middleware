@@ -33,7 +33,9 @@ vi.mock("../src/config.js", () => ({
 // Mock token manager
 vi.mock("../src/lib/myinvois.js", () => ({
   getTokenManager: () => ({
-    getToken: vi.fn().mockResolvedValue({ accessToken: "mock-token", expiresAt: Date.now() + 3600000 }),
+    getToken: vi
+      .fn()
+      .mockResolvedValue({ accessToken: "mock-token", expiresAt: Date.now() + 3600000 }),
   }),
   getRateLimiter: () => ({
     checkLimit: vi.fn().mockResolvedValue(true),

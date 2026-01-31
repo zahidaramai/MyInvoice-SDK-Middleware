@@ -145,8 +145,7 @@ describe.skipIf(skipE2E)("E2E: Submissions", () => {
 
       // Plugin uses lowercase 'correlationid' without hyphen, or 'x-correlation-id'
       expect(
-        response.headers["correlationid"] ||
-        response.headers["x-correlation-id"]
+        response.headers["correlationid"] || response.headers["x-correlation-id"]
       ).toBeDefined();
     });
   });

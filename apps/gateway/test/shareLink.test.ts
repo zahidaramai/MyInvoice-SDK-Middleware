@@ -127,7 +127,9 @@ describe("TST-06: Share-link Endpoint", () => {
 
       const shareUrl = `${baseUrl}/${uuid}/share/${longId}`;
 
-      expect(shareUrl).toBe("https://myinvois.hasil.gov.my/F9D425P6DS7D8IU/share/ABC123XYZ789LONGID");
+      expect(shareUrl).toBe(
+        "https://myinvois.hasil.gov.my/F9D425P6DS7D8IU/share/ABC123XYZ789LONGID"
+      );
     });
 
     it("should include environment-specific base URL", () => {

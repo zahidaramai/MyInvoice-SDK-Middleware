@@ -193,7 +193,8 @@ describe("normalizer", () => {
         },
       };
 
-      const idValue = (input.customer as { idValue?: string }).idValue || input.customer.customerIcNo;
+      const idValue =
+        (input.customer as { idValue?: string }).idValue || input.customer.customerIcNo;
 
       expect(idValue).toBe("fallback-id");
     });
@@ -318,10 +319,7 @@ describe("normalizer", () => {
   describe("invoice array handling", () => {
     it("preserves invoices array", () => {
       const input = {
-        invoices: [
-          { invoiceNumber: "INV001" },
-          { invoiceNumber: "INV002" },
-        ],
+        invoices: [{ invoiceNumber: "INV001" }, { invoiceNumber: "INV002" }],
       };
 
       expect(input.invoices).toHaveLength(2);
@@ -332,13 +330,13 @@ describe("normalizer", () => {
         invoiceNumber: "INV001",
         invoiceDate: "2024-01-15T10:00:00+08:00",
         paymentType: "CASH",
-        amount: 100.00,
-        taxAmount: 6.00,
-        total: 106.00,
+        amount: 100.0,
+        taxAmount: 6.0,
+        total: 106.0,
       };
 
       expect(invoice.invoiceNumber).toBe("INV001");
-      expect(invoice.amount).toBe(100.00);
+      expect(invoice.amount).toBe(100.0);
     });
   });
 
@@ -346,8 +344,8 @@ describe("normalizer", () => {
     it("preserves items array in invoice", () => {
       const invoice = {
         items: [
-          { description: "Item 1", quantity: 1, unitPrice: 50.00 },
-          { description: "Item 2", quantity: 2, unitPrice: 25.00 },
+          { description: "Item 1", quantity: 1, unitPrice: 50.0 },
+          { description: "Item 2", quantity: 2, unitPrice: 25.0 },
         ],
       };
 
@@ -357,11 +355,11 @@ describe("normalizer", () => {
     it("calculates item total", () => {
       const item = {
         quantity: 2,
-        unitPrice: 25.00,
+        unitPrice: 25.0,
       };
 
       const total = item.quantity * item.unitPrice;
-      expect(total).toBe(50.00);
+      expect(total).toBe(50.0);
     });
   });
 

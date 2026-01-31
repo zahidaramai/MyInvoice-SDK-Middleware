@@ -64,10 +64,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(mockSession);
@@ -86,10 +87,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(sessionWithScope);
@@ -103,10 +105,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       const renewSkewMs = 60000; // 1 minute
@@ -128,10 +131,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(mockSession);
@@ -145,10 +149,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(mockSession);
@@ -172,10 +177,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(intermediarySession);
@@ -189,10 +195,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(mockSession);
@@ -211,10 +218,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(sessionWithMode);
@@ -258,16 +266,20 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       const result = await login(mockSession, { rateLimiter: mockRateLimiter as any });
 
       expect(result.ok).toBe(true);
-      expect(mockRateLimiter.consume).toHaveBeenCalledWith(mockSession.clientId, expect.any(Number));
+      expect(mockRateLimiter.consume).toHaveBeenCalledWith(
+        mockSession.clientId,
+        expect.any(Number)
+      );
     });
   });
 
@@ -277,10 +289,11 @@ describe("identity (actual)", () => {
         ok: false,
         status: 401,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "invalid_client",
-          error_description: "Client credentials are invalid",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "invalid_client",
+            error_description: "Client credentials are invalid",
+          }),
       });
 
       const result = await login(mockSession);
@@ -298,9 +311,10 @@ describe("identity (actual)", () => {
         ok: false,
         status: 401,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "invalid_client",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "invalid_client",
+          }),
       });
 
       const result = await login(mockSession);
@@ -317,10 +331,11 @@ describe("identity (actual)", () => {
         ok: false,
         status: 429,
         headers: new Headers({ correlationid: "corr-429" }),
-        json: () => Promise.resolve({
-          error: "rate_limit",
-          error_description: "Too many requests",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "rate_limit",
+            error_description: "Too many requests",
+          }),
       });
 
       const result = await login(mockSession);
@@ -337,9 +352,10 @@ describe("identity (actual)", () => {
         ok: false,
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error_description: "Server error",
-        }),
+        json: () =>
+          Promise.resolve({
+            error_description: "Server error",
+          }),
       });
 
       const result = await login(mockSession);
@@ -418,10 +434,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(mockSession);
@@ -441,10 +458,11 @@ describe("identity (actual)", () => {
         ok: true,
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       await login(prodSession);
@@ -465,10 +483,11 @@ describe("identity (actual)", () => {
           "x-rate-limit-limit": "12",
           "x-rate-limit-remaining": "10",
         }),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       const result = await login(mockSession);
@@ -488,10 +507,11 @@ describe("identity (actual)", () => {
         headers: new Headers({
           "x-correlation-id": "x-corr-456",
         }),
-        json: () => Promise.resolve({
-          access_token: "test-token",
-          expires_in: 3600,
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: "test-token",
+            expires_in: 3600,
+          }),
       });
 
       const result = await login(mockSession);
@@ -510,9 +530,10 @@ describe("identity (actual)", () => {
           correlationid: "error-corr-id",
           "x-rate-limit-remaining": "5",
         }),
-        json: () => Promise.resolve({
-          error: "invalid_client",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "invalid_client",
+          }),
       });
 
       const result = await login(mockSession);

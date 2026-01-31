@@ -40,12 +40,9 @@ export default defineConfig({
     },
     // Global setup for Testcontainers (E2E tests)
     // Set SKIP_TESTCONTAINERS=true to skip for unit tests only
-    globalSetup: process.env.SKIP_TESTCONTAINERS === "true"
-      ? undefined
-      : ["./test/globalSetup.ts"],
-    globalTeardown: process.env.SKIP_TESTCONTAINERS === "true"
-      ? undefined
-      : ["./test/globalTeardown.ts"],
+    globalSetup: process.env.SKIP_TESTCONTAINERS === "true" ? undefined : ["./test/globalSetup.ts"],
+    globalTeardown:
+      process.env.SKIP_TESTCONTAINERS === "true" ? undefined : ["./test/globalTeardown.ts"],
     // Increase timeout for E2E tests with containers
     testTimeout: 30000,
     hookTimeout: 60000,

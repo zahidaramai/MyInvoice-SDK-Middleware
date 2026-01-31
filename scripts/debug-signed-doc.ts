@@ -6,10 +6,7 @@ import { config as dotenvConfig } from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { readFileSync, writeFileSync } from "fs";
-import {
-  SigningService,
-  loadPKCS12,
-} from "../packages/signing/src/index.js";
+import { SigningService, loadPKCS12 } from "../packages/signing/src/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenvConfig({ path: resolve(__dirname, "../.env") });
@@ -73,7 +70,10 @@ async function main() {
         // Check UBLExtensions
         if (invoiceObj.UBLExtensions) {
           console.log("\nUBLExtensions present");
-          console.log("UBLExtensions structure:", JSON.stringify(invoiceObj.UBLExtensions, null, 2).slice(0, 500) + "...");
+          console.log(
+            "UBLExtensions structure:",
+            JSON.stringify(invoiceObj.UBLExtensions, null, 2).slice(0, 500) + "..."
+          );
         }
       }
     }
@@ -82,7 +82,6 @@ async function main() {
     console.log("\n=== MyInvois Expected Structure ===");
     console.log("MyInvois v1.1 expects the UBLExtensions to be placed as the FIRST element");
     console.log("inside the Invoice array, with a specific structure.");
-
   } catch (error) {
     console.error("\nError:", error);
     process.exit(1);

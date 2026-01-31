@@ -19,11 +19,7 @@ import {
   type OriginalSubmitRequest,
 } from "./schemas.js";
 import { transformToUBL, type CompanyInfo, type TransformOptions } from "./transformer.js";
-import {
-  normalizeRequest,
-  validateNormalizedRequest,
-  type OriginalRequest,
-} from "./normalizer.js";
+import { normalizeRequest, validateNormalizedRequest, type OriginalRequest } from "./normalizer.js";
 import {
   findCompanyById,
   createInvoice,
@@ -44,8 +40,19 @@ import {
   type UpdateInvoiceStatusInput,
   type UpdateDraftInvoiceInput,
 } from "@myinvois/storage";
-import { authenticate, requirePermission, AuthorizationError, AuthenticationError, isSuperadmin } from "../../auth/middleware.js";
-import { submitDocuments, createTokenManager, changeDocumentState, getDocument } from "@myinvois/myinvois-client";
+import {
+  authenticate,
+  requirePermission,
+  AuthorizationError,
+  AuthenticationError,
+  isSuperadmin,
+} from "../../auth/middleware.js";
+import {
+  submitDocuments,
+  createTokenManager,
+  changeDocumentState,
+  getDocument,
+} from "@myinvois/myinvois-client";
 import { enqueueInvoicePoll } from "../../polling/pollInvoice.queue.js";
 import { triggerPoll } from "../../polling/autoPoller.js";
 import { triggerConsolidation, getConsolidatorStatus } from "../../polling/monthlyConsolidator.js";
@@ -54,7 +61,12 @@ import { submissionLogger } from "../../lib/appLogger.js";
 import { AppError } from "../../lib/AppError.js";
 import type { DocumentVersion } from "@myinvois/signing";
 import crypto from "crypto";
-import { signDocument, getSigningStatus, type SignableDocument, type SigningOptions } from "../../middleware/signing.js";
+import {
+  signDocument,
+  getSigningStatus,
+  type SignableDocument,
+  type SigningOptions,
+} from "../../middleware/signing.js";
 import QRCode from "qrcode";
 
 /**
@@ -65,7 +77,10 @@ const MYINVOIS_BASE_URL = "https://myinvois.hasil.gov.my";
 /**
  * Generate document links for valid documents
  */
-function generateDocumentLinks(uuid: string, longId: string): {
+function generateDocumentLinks(
+  uuid: string,
+  longId: string
+): {
   shareLink: string;
   verifyLink: string;
   qrCodeUrl: string;
@@ -102,10 +117,11 @@ function generateSessionId(): string {
  */
 function generatePosInvoiceId(companyName: string): string {
   // Derive prefix from company name (first 2 uppercase letters)
-  const prefix = companyName
-    .replace(/[^a-zA-Z]/g, "")
-    .substring(0, 2)
-    .toUpperCase() || "XX";
+  const prefix =
+    companyName
+      .replace(/[^a-zA-Z]/g, "")
+      .substring(0, 2)
+      .toUpperCase() || "XX";
 
   // Generate 8-char random (case-sensitive alphanumeric)
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -169,7 +185,11 @@ function getErpConfig(): ErpConfig {
 
   if (!clientId || !clientSecret) {
     // P2-02: Use AppError instead of plain object
-    throw new AppError(500, "ERP mode is enabled but ERP_MYINVOIS_CLIENT_ID or ERP_MYINVOIS_CLIENT_SECRET is not configured", "ERP_CONFIG_ERROR");
+    throw new AppError(
+      500,
+      "ERP mode is enabled but ERP_MYINVOIS_CLIENT_ID or ERP_MYINVOIS_CLIENT_SECRET is not configured",
+      "ERP_CONFIG_ERROR"
+    );
   }
 
   return { enabled: true, clientId, clientSecret, env, erpTin };
@@ -197,7 +217,9 @@ function getSessionCredentials(company: {
   const erpConfig = getErpConfig();
 
   if (erpConfig.enabled) {
-    const erpEnv = (erpConfig.env === "PROD" || erpConfig.env === "prod" ? "PROD" : "SANDBOX") as Environment;
+    const erpEnv = (
+      erpConfig.env === "PROD" || erpConfig.env === "prod" ? "PROD" : "SANDBOX"
+    ) as Environment;
 
     // Always use INTERMEDIARY mode with onBehalfOf for ALL companies in ERP mode
     // This includes the ERP's own company - MyInvois requires consistent mode for document operations
@@ -229,11 +251,13 @@ function getSessionCredentials(company: {
  * Get company with credentials check
  * In ERP mode, uses ERP credentials instead of per-company credentials
  */
-async function getCompanyWithCredentials(companyId: string): Promise<CompanyInfo & {
-  myinvoisClientId: string;
-  myinvoisClientSecret: string;
-  myinvoisEnv: string;
-}> {
+async function getCompanyWithCredentials(companyId: string): Promise<
+  CompanyInfo & {
+    myinvoisClientId: string;
+    myinvoisClientSecret: string;
+    myinvoisEnv: string;
+  }
+> {
   const company = await findCompanyById(companyId);
 
   if (!company) {
@@ -338,27 +362,26 @@ async function submitToMyInvois(
     const documentBase64 = Buffer.from(documentJson).toString("base64");
 
     // Create document hash (SHA256 of raw JSON in HEX format - MyInvois requirement)
-    const documentHash = crypto
-      .createHash("sha256")
-      .update(documentJson)
-      .digest("hex");
+    const documentHash = crypto.createHash("sha256").update(documentJson).digest("hex");
 
     // P2-01: Structured logging for UBL submission
     const ublInvoice = (ublDocument as { Invoice?: Array<Record<string, unknown>> })?.Invoice?.[0];
-    submissionLogger.info(JSON.stringify({
-      event: "submitting",
-      invoiceNumber,
-      hasInvoice: !!ublInvoice,
-      invoiceId: ublInvoice?.ID,
-      hasSupplier: !!ublInvoice?.AccountingSupplierParty,
-      hasCustomer: !!ublInvoice?.AccountingCustomerParty,
-      hasInvoicePeriod: !!ublInvoice?.InvoicePeriod,
-      hasTaxTotal: !!ublInvoice?.TaxTotal,
-      hasLegalMonetaryTotal: !!ublInvoice?.LegalMonetaryTotal,
-      lineCount: (ublInvoice?.InvoiceLine as unknown[])?.length,
-      erpMode: erpConfig.enabled,
-      onBehalfOf: erpConfig.enabled ? company.tin : undefined,
-    }));
+    submissionLogger.info(
+      JSON.stringify({
+        event: "submitting",
+        invoiceNumber,
+        hasInvoice: !!ublInvoice,
+        invoiceId: ublInvoice?.ID,
+        hasSupplier: !!ublInvoice?.AccountingSupplierParty,
+        hasCustomer: !!ublInvoice?.AccountingCustomerParty,
+        hasInvoicePeriod: !!ublInvoice?.InvoicePeriod,
+        hasTaxTotal: !!ublInvoice?.TaxTotal,
+        hasLegalMonetaryTotal: !!ublInvoice?.LegalMonetaryTotal,
+        lineCount: (ublInvoice?.InvoiceLine as unknown[])?.length,
+        erpMode: erpConfig.enabled,
+        onBehalfOf: erpConfig.enabled ? company.tin : undefined,
+      })
+    );
 
     // Submit to MyInvois
     // In ERP mode: use INTERMEDIARY mode with onBehalfOf = supplier's TIN
@@ -366,7 +389,11 @@ async function submitToMyInvois(
     const result = await submitDocuments(
       {
         sessionId: generateSessionId(),
-        env: erpConfig.enabled ? (erpConfig.env === "PROD" || erpConfig.env === "prod" ? "PROD" : "SANDBOX") as Environment : env,
+        env: erpConfig.enabled
+          ? ((erpConfig.env === "PROD" || erpConfig.env === "prod"
+              ? "PROD"
+              : "SANDBOX") as Environment)
+          : env,
         mode: erpConfig.enabled ? ("INTERMEDIARY" as Mode) : ("TAXPAYER" as Mode),
         clientId: erpConfig.enabled ? erpConfig.clientId : company.myinvoisClientId,
         clientSecret: erpConfig.enabled ? erpConfig.clientSecret : company.myinvoisClientSecret,
@@ -415,15 +442,25 @@ async function submitToMyInvois(
       let detailedMessage = rejected.errorMessage || "Document rejected";
 
       if (rejected.errorDetails && rejected.errorDetails.length > 0) {
-        const detailStrings = rejected.errorDetails.map((detail: { code?: string; message?: string; target?: string; propertyName?: string; propertyPath?: string }) => {
-          const parts: string[] = [];
-          if (detail.propertyName) parts.push(`Field: ${detail.propertyName}`);
-          if (detail.propertyPath) parts.push(`Path: ${detail.propertyPath}`);
-          if (detail.message) parts.push(`Error: ${detail.message}`);
-          if (detail.code) parts.push(`Code: ${detail.code}`);
-          if (detail.target) parts.push(`Target: ${detail.target}`);
-          return parts.join(", ");
-        }).filter(Boolean);
+        const detailStrings = rejected.errorDetails
+          .map(
+            (detail: {
+              code?: string;
+              message?: string;
+              target?: string;
+              propertyName?: string;
+              propertyPath?: string;
+            }) => {
+              const parts: string[] = [];
+              if (detail.propertyName) parts.push(`Field: ${detail.propertyName}`);
+              if (detail.propertyPath) parts.push(`Path: ${detail.propertyPath}`);
+              if (detail.message) parts.push(`Error: ${detail.message}`);
+              if (detail.code) parts.push(`Code: ${detail.code}`);
+              if (detail.target) parts.push(`Target: ${detail.target}`);
+              return parts.join(", ");
+            }
+          )
+          .filter(Boolean);
 
         if (detailStrings.length > 0) {
           detailedMessage = `${detailedMessage}. Details: [${detailStrings.join("; ")}]`;
@@ -525,7 +562,9 @@ function submitToMyInvoisAsync(
         if (attempt > 0) {
           // Exponential backoff: 1s, 4s, 16s
           const delayMs = BASE_DELAY_MS * Math.pow(4, attempt - 1);
-          log.info(`[AsyncSubmit] Retry ${attempt}/${MAX_RETRIES} for ${invoiceNumber} after ${delayMs}ms delay`);
+          log.info(
+            `[AsyncSubmit] Retry ${attempt}/${MAX_RETRIES} for ${invoiceNumber} after ${delayMs}ms delay`
+          );
           await sleep(delayMs);
         }
 
@@ -635,7 +674,11 @@ function submitToMyInvoisAsync(
  * Helper to check if user has access to a specific company
  * Superadmin users (*) bypass company access checks
  */
-async function checkCompanyAccess(request: FastifyRequest, _reply: FastifyReply, companyId: string): Promise<void> {
+async function checkCompanyAccess(
+  request: FastifyRequest,
+  _reply: FastifyReply,
+  companyId: string
+): Promise<void> {
   if (!request.user) {
     throw new AuthenticationError("Not authenticated");
   }
@@ -653,9 +696,7 @@ async function checkCompanyAccess(request: FastifyRequest, _reply: FastifyReply,
   }
 
   // Check if user has access to the requested company
-  const hasAccess = userWithCompanies.companies.some(
-    (uc) => uc.company.id === companyId
-  );
+  const hasAccess = userWithCompanies.companies.some((uc) => uc.company.id === companyId);
 
   if (!hasAccess) {
     throw new AuthorizationError("Access denied to this company", "COMPANY_ACCESS_DENIED", 403);
@@ -671,7 +712,11 @@ function validateSigningCapability(documentVersion: DocumentVersion): void {
 
   if (!signingStatus.canProceed) {
     // P2-02: Use AppError instead of plain object
-    throw new AppError(503, signingStatus.reason || "Signing is required for v1.1 but not configured", "SIGNING_UNAVAILABLE");
+    throw new AppError(
+      503,
+      signingStatus.reason || "Signing is required for v1.1 but not configured",
+      "SIGNING_UNAVAILABLE"
+    );
   }
 }
 
@@ -1086,7 +1131,11 @@ export async function hashlhdnRoutes(fastify: FastifyInstance): Promise<void> {
         querystring: {
           type: "object",
           properties: {
-            id: { type: "string", description: "Generic ID - auto-detects type (posInvoiceId, trackingId, or invoiceId)" },
+            id: {
+              type: "string",
+              description:
+                "Generic ID - auto-detects type (posInvoiceId, trackingId, or invoiceId)",
+            },
             posInvoiceId: { type: "string", description: "POS unique invoice ID (short ID)" },
             trackingId: { type: "string", description: "Internal tracking ID (HASH-xxx)" },
             invoiceId: { type: "string", description: "Internal invoice ID (cuid)" },
@@ -1582,7 +1631,8 @@ export async function legacySubmitRoutes(fastify: FastifyInstance): Promise<void
         const error: ErrorResponse = {
           error: {
             code: "NO_MYINVOIS_UUID",
-            message: "Document does not have a MyInvois UUID. It may not have been submitted to LHDN yet.",
+            message:
+              "Document does not have a MyInvois UUID. It may not have been submitted to LHDN yet.",
           },
         };
         return reply.status(400).send(error);
@@ -1651,20 +1701,20 @@ export async function legacySubmitRoutes(fastify: FastifyInstance): Promise<void
         // cancelled with this UUID, treat it as "already cancelled at LHDN"
         const hasLocalCancelledInvoice = invoice.status === "CANCELLED";
 
-        const isExplicitAlreadyCancelled = !result.ok && (
-          result.error?.code === "ALREADY_CANCELLED" ||
-          result.error?.code === "DocumentAlreadyCancelled" ||
-          result.error?.message?.toLowerCase().includes("already cancelled") ||
-          result.error?.message?.toLowerCase().includes("already been cancelled")
-        );
+        const isExplicitAlreadyCancelled =
+          !result.ok &&
+          (result.error?.code === "ALREADY_CANCELLED" ||
+            result.error?.code === "DocumentAlreadyCancelled" ||
+            result.error?.message?.toLowerCase().includes("already cancelled") ||
+            result.error?.message?.toLowerCase().includes("already been cancelled"));
 
         // If LHDN returns 400/VALIDATION_ERROR and we have at least one locally
         // cancelled invoice, assume the document IS cancelled at LHDN
-        const isImplicitAlreadyCancelled = !result.ok &&
-          result.error?.code === "VALIDATION_ERROR" &&
-          hasLocalCancelledInvoice;
+        const isImplicitAlreadyCancelled =
+          !result.ok && result.error?.code === "VALIDATION_ERROR" && hasLocalCancelledInvoice;
 
-        const isAlreadyCancelledAtLhdnLegacy = isExplicitAlreadyCancelled || isImplicitAlreadyCancelled;
+        const isAlreadyCancelledAtLhdnLegacy =
+          isExplicitAlreadyCancelled || isImplicitAlreadyCancelled;
 
         if (!result.ok && !isAlreadyCancelledAtLhdnLegacy) {
           // Real error - not just "already cancelled"
@@ -1687,7 +1737,9 @@ export async function legacySubmitRoutes(fastify: FastifyInstance): Promise<void
           fastify.log.info({
             msg: "Document already cancelled at LHDN, updating all local invoices",
             myinvoisUuid,
-            detection: isExplicitAlreadyCancelled ? "explicit" : "implicit (VALIDATION_ERROR + local cancelled invoice)",
+            detection: isExplicitAlreadyCancelled
+              ? "explicit"
+              : "implicit (VALIDATION_ERROR + local cancelled invoice)",
           });
         }
 
@@ -1750,10 +1802,24 @@ export async function legacySubmitRoutes(fastify: FastifyInstance): Promise<void
         body: {
           type: "object",
           properties: {
-            CompanyId: { type: "string", description: "Company ID (required for invoiceNumber lookup)" },
-            companyId: { type: "string", description: "Company ID (required for invoiceNumber lookup)" },
-            InvoiceId: { type: "string", minLength: 1, description: "Flexible: invoiceNumber, database ID, trackingId, or UUID" },
-            invoiceId: { type: "string", minLength: 1, description: "Flexible: invoiceNumber, database ID, trackingId, or UUID" },
+            CompanyId: {
+              type: "string",
+              description: "Company ID (required for invoiceNumber lookup)",
+            },
+            companyId: {
+              type: "string",
+              description: "Company ID (required for invoiceNumber lookup)",
+            },
+            InvoiceId: {
+              type: "string",
+              minLength: 1,
+              description: "Flexible: invoiceNumber, database ID, trackingId, or UUID",
+            },
+            invoiceId: {
+              type: "string",
+              minLength: 1,
+              description: "Flexible: invoiceNumber, database ID, trackingId, or UUID",
+            },
             Uuid: { type: "string", minLength: 1 },
             uuid: { type: "string", minLength: 1 },
           },
@@ -2421,7 +2487,8 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
       const companyId = request.query.companyId || request.query.CompanyId;
       const fromDate = request.query.fromDate || request.query.StartDate;
       const toDate = request.query.toDate || request.query.EndDate;
-      const page = request.query.page ||
+      const page =
+        request.query.page ||
         (request.query.StartPage !== undefined ? Number(request.query.StartPage) + 1 : undefined);
       const limit = request.query.limit || request.query.NumberOfRecords;
       const invoiceType = request.query.invoiceType;
@@ -2645,8 +2712,10 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Update the invoice data in the payload
-      const invoiceData = (existingPayload.invoices as Array<Record<string, unknown>>)?.[0] ||
-        (existingPayload.invoice as Record<string, unknown>) || {};
+      const invoiceData =
+        (existingPayload.invoices as Array<Record<string, unknown>>)?.[0] ||
+        (existingPayload.invoice as Record<string, unknown>) ||
+        {};
 
       if (request.body.invoiceDate) {
         invoiceData.invoiceDate = request.body.invoiceDate;
@@ -2881,9 +2950,10 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Fetch document details from MyInvois
-        const baseUrl = sessionCreds.env === "PROD"
-          ? "https://api.myinvois.hasil.gov.my"
-          : "https://preprod-api.myinvois.hasil.gov.my";
+        const baseUrl =
+          sessionCreds.env === "PROD"
+            ? "https://api.myinvois.hasil.gov.my"
+            : "https://preprod-api.myinvois.hasil.gov.my";
 
         const docResponse = await fetch(`${baseUrl}/api/v1.0/documents/${uuid}/details`, {
           headers,
@@ -3063,7 +3133,8 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!result.ok) {
           // Check if it's a 404 from MyInvois - document exists locally but not on MyInvois
-          const isNotFoundOnMyInvois = result.error.status === 404 ||
+          const isNotFoundOnMyInvois =
+            result.error.status === 404 ||
             result.error.code === "DOCUMENT_NOT_FOUND" ||
             result.error.message?.toLowerCase().includes("not found");
 
@@ -3071,7 +3142,8 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
             const error: ErrorResponse = {
               error: {
                 code: "DOCUMENT_NOT_FOUND_ON_MYINVOIS",
-                message: "Document exists in local database but could not be retrieved from MyInvois. The document may have been removed or the sandbox data may have been cleared.",
+                message:
+                  "Document exists in local database but could not be retrieved from MyInvois. The document may have been removed or the sandbox data may have been cleared.",
                 details: {
                   localStatus: invoice.status,
                   myinvoisUuid: uuid,
@@ -3099,7 +3171,8 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
             invoiceNumber: invoice.invoiceNumber,
             document: result.result.document,
             format: result.result.format,
-            message: "Document not yet valid. Raw UBL document returned. PDF available after validation.",
+            message:
+              "Document not yet valid. Raw UBL document returned. PDF available after validation.",
           });
         }
 
@@ -3111,7 +3184,8 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
           status: invoice.status,
           myinvoisLongId: invoice.myinvoisLongId,
           links,
-          message: "Visit the viewLink to access the official MyInvois document view with PDF print option.",
+          message:
+            "Visit the viewLink to access the official MyInvois document view with PDF print option.",
           document: result.result.document,
           format: result.result.format,
         });
@@ -3326,9 +3400,7 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       // Filter to invoices with matching UUID
-      const consolidatedInvoices = invoicesResult.data.filter(
-        (inv) => inv.myinvoisUuid === uuid
-      );
+      const consolidatedInvoices = invoicesResult.data.filter((inv) => inv.myinvoisUuid === uuid);
 
       if (consolidatedInvoices.length === 0) {
         const error: ErrorResponse = {
@@ -3344,9 +3416,7 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
       await checkCompanyAccess(request, reply, consolidatedInvoices[0].companyId);
 
       // Find the main consolidated invoice (CONSOLIDATE type)
-      const mainInvoice = consolidatedInvoices.find(
-        (inv) => inv.invoiceType === "CONSOLIDATE"
-      );
+      const mainInvoice = consolidatedInvoices.find((inv) => inv.invoiceType === "CONSOLIDATE");
 
       // Get source invoices (all others)
       const sourceInvoices = consolidatedInvoices.filter(
@@ -3354,16 +3424,19 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
       );
 
       // Aggregate items from all source invoices
-      const aggregatedItems: Record<string, {
-        description: string;
-        taxCode: string;
-        taxRate: number;
-        quantity: number;
-        unitPrice: number;
-        discount: number;
-        taxAmount: number;
-        total: number;
-      }> = {};
+      const aggregatedItems: Record<
+        string,
+        {
+          description: string;
+          taxCode: string;
+          taxRate: number;
+          quantity: number;
+          unitPrice: number;
+          discount: number;
+          taxAmount: number;
+          total: number;
+        }
+      > = {};
 
       for (const inv of sourceInvoices) {
         try {
@@ -3560,20 +3633,20 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
         // cancelled with this UUID, treat it as "already cancelled at LHDN"
         const hasLocalCancelledInvoiceNew = invoice.status === "CANCELLED";
 
-        const isExplicitAlreadyCancelledNew = !result.ok && (
-          result.error?.code === "ALREADY_CANCELLED" ||
-          result.error?.code === "DocumentAlreadyCancelled" ||
-          result.error?.message?.toLowerCase().includes("already cancelled") ||
-          result.error?.message?.toLowerCase().includes("already been cancelled")
-        );
+        const isExplicitAlreadyCancelledNew =
+          !result.ok &&
+          (result.error?.code === "ALREADY_CANCELLED" ||
+            result.error?.code === "DocumentAlreadyCancelled" ||
+            result.error?.message?.toLowerCase().includes("already cancelled") ||
+            result.error?.message?.toLowerCase().includes("already been cancelled"));
 
         // If LHDN returns 400/VALIDATION_ERROR and we have at least one locally
         // cancelled invoice, assume the document IS cancelled at LHDN
-        const isImplicitAlreadyCancelledNew = !result.ok &&
-          result.error?.code === "VALIDATION_ERROR" &&
-          hasLocalCancelledInvoiceNew;
+        const isImplicitAlreadyCancelledNew =
+          !result.ok && result.error?.code === "VALIDATION_ERROR" && hasLocalCancelledInvoiceNew;
 
-        const isAlreadyCancelledAtLhdn = isExplicitAlreadyCancelledNew || isImplicitAlreadyCancelledNew;
+        const isAlreadyCancelledAtLhdn =
+          isExplicitAlreadyCancelledNew || isImplicitAlreadyCancelledNew;
 
         if (!result.ok && !isAlreadyCancelledAtLhdn) {
           // Real error - not just "already cancelled"
@@ -3596,7 +3669,9 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
           fastify.log.info({
             msg: "Document already cancelled at LHDN, updating all local invoices",
             uuid,
-            detection: isExplicitAlreadyCancelledNew ? "explicit" : "implicit (VALIDATION_ERROR + local cancelled invoice)",
+            detection: isExplicitAlreadyCancelledNew
+              ? "explicit"
+              : "implicit (VALIDATION_ERROR + local cancelled invoice)",
           });
         }
 
@@ -3928,11 +4003,13 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
       request.log.info(`[Admin] Manual poll trigger requested (${remainingTriggers} remaining)`);
 
       // Trigger the poll asynchronously
-      triggerPoll(request.log as unknown as {
-        info: (msg: string) => void;
-        warn: (msg: string) => void;
-        error: (obj: unknown, msg: string) => void;
-      }).catch((err) => {
+      triggerPoll(
+        request.log as unknown as {
+          info: (msg: string) => void;
+          warn: (msg: string) => void;
+          error: (obj: unknown, msg: string) => void;
+        }
+      ).catch((err) => {
         request.log.error({ error: err }, "[Admin] Manual poll failed");
       });
 
@@ -3974,7 +4051,8 @@ export async function documentRoutes(fastify: FastifyInstance): Promise<void> {
           return reply.status(503).send({
             error: {
               code: "FEATURE_DISABLED",
-              message: "Monthly consolidation is disabled. Set ENABLE_MONTHLY_CONSOLIDATION=true in environment to enable.",
+              message:
+                "Monthly consolidation is disabled. Set ENABLE_MONTHLY_CONSOLIDATION=true in environment to enable.",
             },
           });
         }

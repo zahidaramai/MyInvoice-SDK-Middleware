@@ -182,10 +182,11 @@ describe("documentTypes (actual)", () => {
         ok: false,
         status: 500,
         headers: new Headers({ "x-correlation-id": "corr-500" }),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await getAllDocumentTypes(mockSession, { tokenManager: mockTokenManager });
@@ -337,13 +338,16 @@ describe("documentTypes (actual)", () => {
         ok: false,
         status: 404,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Document type not found",
-          code: "NOT_FOUND",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Document type not found",
+            code: "NOT_FOUND",
+          }),
       });
 
-      const result = await getDocumentTypeById(mockSession, 999, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeById(mockSession, 999, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -398,7 +402,9 @@ describe("documentTypes (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getDocumentTypeVersionById(mockSession, 1, 1, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeVersionById(mockSession, 1, 1, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -442,7 +448,9 @@ describe("documentTypes (actual)", () => {
         json: () => Promise.resolve(upstreamResponse),
       });
 
-      const result = await getDocumentTypeVersionById(mockSession, 1, 1, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeVersionById(mockSession, 1, 1, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -462,7 +470,9 @@ describe("documentTypes (actual)", () => {
         },
       });
 
-      const result = await getDocumentTypeVersionById(mockSession, 1, 1, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeVersionById(mockSession, 1, 1, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -475,13 +485,16 @@ describe("documentTypes (actual)", () => {
         ok: false,
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Invalid version ID",
-          code: "INVALID_VERSION",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Invalid version ID",
+            code: "INVALID_VERSION",
+          }),
       });
 
-      const result = await getDocumentTypeVersionById(mockSession, 1, 999, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeVersionById(mockSession, 1, 999, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -493,7 +506,9 @@ describe("documentTypes (actual)", () => {
     it("handles network error", async () => {
       mockFetch.mockRejectedValueOnce(new Error("DNS resolution failed"));
 
-      const result = await getDocumentTypeVersionById(mockSession, 1, 1, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeVersionById(mockSession, 1, 1, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -504,7 +519,9 @@ describe("documentTypes (actual)", () => {
     it("handles non-Error throw", async () => {
       mockFetch.mockRejectedValueOnce(null);
 
-      const result = await getDocumentTypeVersionById(mockSession, 1, 1, { tokenManager: mockTokenManager });
+      const result = await getDocumentTypeVersionById(mockSession, 1, 1, {
+        tokenManager: mockTokenManager,
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {

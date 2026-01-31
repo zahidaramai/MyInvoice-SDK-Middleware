@@ -91,10 +91,7 @@ describe("TST-14: Rate Limit Recovery Tests", () => {
 
   describe("Rate limit state tracking", () => {
     it("should track rate limit windows per client", () => {
-      const rateLimitState = new Map<
-        string,
-        { count: number; windowStart: number }
-      >();
+      const rateLimitState = new Map<string, { count: number; windowStart: number }>();
 
       const clientId = "client-123";
       const now = Date.now();

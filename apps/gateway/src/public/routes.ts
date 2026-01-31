@@ -4,11 +4,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import {
-  PublicInvoiceSubmitSchema,
-  RawPayloadSchema,
-  type PublicBuyerSubmit,
-} from "./schemas.js";
+import { PublicInvoiceSubmitSchema, RawPayloadSchema, type PublicBuyerSubmit } from "./schemas.js";
 import {
   findInvoiceByPosInvoiceIdWithCompany,
   updateInvoiceStatus,
@@ -16,11 +12,22 @@ import {
   type InvoiceStatus,
 } from "@myinvois/storage";
 import { transformToUBL, type CompanyInfo } from "../adapters/hashlhdn/transformer.js";
-import type { Invoice, InvoiceItem, Buyer, TaxCode, StateCode, IdType } from "../adapters/hashlhdn/schemas.js";
+import type {
+  Invoice,
+  InvoiceItem,
+  Buyer,
+  TaxCode,
+  StateCode,
+  IdType,
+} from "../adapters/hashlhdn/schemas.js";
 import { submitDocuments, createTokenManager } from "@myinvois/myinvois-client";
 import type { Environment, Mode } from "@myinvois/core";
 import crypto from "crypto";
-import { getSigningStatus, type SignableDocument, type SigningOptions } from "../middleware/signing.js";
+import {
+  getSigningStatus,
+  type SignableDocument,
+  type SigningOptions,
+} from "../middleware/signing.js";
 import { signDocument as signDocumentMiddleware } from "../middleware/signing.js";
 import type { DocumentVersion } from "@myinvois/signing";
 import { publicApiLogger } from "../lib/appLogger.js";
@@ -58,7 +65,11 @@ function getErpConfig(): { enabled: boolean; clientId: string; clientSecret: str
 
   if (!clientId || !clientSecret) {
     // P2-02: Use AppError instead of plain object
-    throw new AppError(500, "ERP mode is enabled but credentials not configured", "ERP_CONFIG_ERROR");
+    throw new AppError(
+      500,
+      "ERP mode is enabled but credentials not configured",
+      "ERP_CONFIG_ERROR"
+    );
   }
 
   return { enabled: true, clientId, clientSecret, env };
@@ -90,7 +101,9 @@ function parseRawPayload(rawPayload: string): {
 
     if (!parseResult.success) {
       const firstIssue = parseResult.error.issues[0];
-      publicApiLogger.warn(`Raw payload validation failed: ${firstIssue?.message || "unknown error"} - using empty items`);
+      publicApiLogger.warn(
+        `Raw payload validation failed: ${firstIssue?.message || "unknown error"} - using empty items`
+      );
       return { items: [] };
     }
 
@@ -136,7 +149,12 @@ function parseRawPayload(rawPayload: string): {
     }
 
     // Format 3: Nested in singular invoice object (POS draft format)
-    if (parsed.invoice && parsed.invoice.items && Array.isArray(parsed.invoice.items) && parsed.invoice.items.length > 0) {
+    if (
+      parsed.invoice &&
+      parsed.invoice.items &&
+      Array.isArray(parsed.invoice.items) &&
+      parsed.invoice.items.length > 0
+    ) {
       const invoice = parsed.invoice;
       const invoiceItems = invoice.items!; // Already checked above
       return {
@@ -192,16 +210,17 @@ async function submitToMyInvois(
     const documentBase64 = Buffer.from(documentJson).toString("base64");
 
     // Create document hash
-    const documentHash = crypto
-      .createHash("sha256")
-      .update(documentJson)
-      .digest("hex");
+    const documentHash = crypto.createHash("sha256").update(documentJson).digest("hex");
 
     // Submit to MyInvois
     const result = await submitDocuments(
       {
         sessionId: generateSessionId(),
-        env: erpConfig.enabled ? (erpConfig.env === "PROD" || erpConfig.env === "prod" ? "PROD" : "SANDBOX") as Environment : env,
+        env: erpConfig.enabled
+          ? ((erpConfig.env === "PROD" || erpConfig.env === "prod"
+              ? "PROD"
+              : "SANDBOX") as Environment)
+          : env,
         mode: erpConfig.enabled ? ("INTERMEDIARY" as Mode) : ("TAXPAYER" as Mode),
         clientId: erpConfig.enabled ? erpConfig.clientId : company.myinvoisClientId,
         clientSecret: erpConfig.enabled ? erpConfig.clientSecret : company.myinvoisClientSecret,
@@ -244,24 +263,30 @@ async function submitToMyInvois(
     const rejected = result.result.rejectedDocuments[0];
     if (rejected) {
       // P2-01: Use structured logger instead of console.error
-      publicApiLogger.error({
-        codeNumber: rejected.codeNumber,
-        errorCode: rejected.errorCode,
-        errorMessage: rejected.errorMessage,
-        errorDetails: rejected.errorDetails,
-      }, "Document rejected by MyInvois");
+      publicApiLogger.error(
+        {
+          codeNumber: rejected.codeNumber,
+          errorCode: rejected.errorCode,
+          errorMessage: rejected.errorMessage,
+          errorDetails: rejected.errorDetails,
+        },
+        "Document rejected by MyInvois"
+      );
 
       // Build detailed error message from errorDetails if available
       let detailedMessage = rejected.errorMessage || "Document rejected";
       if (rejected.errorDetails && rejected.errorDetails.length > 0) {
-        const details = rejected.errorDetails.map(d => {
-          const parts = [];
-          if (d.propertyName) parts.push(`Field: ${d.propertyName}`);
-          if (d.propertyPath) parts.push(`Path: ${d.propertyPath}`);
-          if (d.message) parts.push(`Error: ${d.message}`);
-          if (d.code) parts.push(`Code: ${d.code}`);
-          return parts.join(", ");
-        }).filter(Boolean).join("; ");
+        const details = rejected.errorDetails
+          .map((d) => {
+            const parts = [];
+            if (d.propertyName) parts.push(`Field: ${d.propertyName}`);
+            if (d.propertyPath) parts.push(`Path: ${d.propertyPath}`);
+            if (d.message) parts.push(`Error: ${d.message}`);
+            if (d.code) parts.push(`Code: ${d.code}`);
+            return parts.join(", ");
+          })
+          .filter(Boolean)
+          .join("; ");
         if (details) {
           detailedMessage = `${detailedMessage}. Details: ${details}`;
         }
@@ -358,10 +383,7 @@ export async function publicRoutes(fastify: FastifyInstance): Promise<void> {
         },
       },
     },
-    async (
-      request: FastifyRequest<{ Params: { invoiceId: string } }>,
-      reply: FastifyReply
-    ) => {
+    async (request: FastifyRequest<{ Params: { invoiceId: string } }>, reply: FastifyReply) => {
       const { invoiceId } = request.params;
 
       // Find invoice by POS invoice ID
@@ -548,9 +570,9 @@ export async function publicRoutes(fastify: FastifyInstance): Promise<void> {
         tin: buyer.tin || undefined,
         idType: buyer.idType as IdType,
         idValue: buyer.idValue,
-        address: [buyer.address1, buyer.address2, buyer.address3]
-          .filter(Boolean)
-          .join(", ") || buyer.address1,
+        address:
+          [buyer.address1, buyer.address2, buyer.address3].filter(Boolean).join(", ") ||
+          buyer.address1,
         city: buyer.city,
         state: buyer.state as StateCode,
         postalCode: buyer.postalCode,
@@ -571,7 +593,7 @@ export async function publicRoutes(fastify: FastifyInstance): Promise<void> {
         taxAmount: parseFloat(invoice.taxAmount),
         total: parseFloat(invoice.total),
         currency: "MYR",
-        items: items.map(item => ({
+        items: items.map((item) => ({
           ...item,
           taxCode: (item.taxCode || "02") as TaxCode,
         })),
@@ -628,7 +650,15 @@ export async function publicRoutes(fastify: FastifyInstance): Promise<void> {
       );
 
       // Debug log UBL document structure (key fields only)
-      const ublContent = (ublDocument as { Invoice?: Array<{ ID?: unknown; AccountingSupplierParty?: unknown; AccountingCustomerParty?: unknown }> }).Invoice?.[0];
+      const ublContent = (
+        ublDocument as {
+          Invoice?: Array<{
+            ID?: unknown;
+            AccountingSupplierParty?: unknown;
+            AccountingCustomerParty?: unknown;
+          }>;
+        }
+      ).Invoice?.[0];
       fastify.log.info({
         msg: "Public submission - UBL generated",
         invoiceId,
@@ -686,9 +716,7 @@ export async function publicRoutes(fastify: FastifyInstance): Promise<void> {
           myinvoisClientSecret: erpConfig.enabled
             ? erpConfig.clientSecret
             : invoice.company.myinvoisClientSecret || "",
-          myinvoisEnv: erpConfig.enabled
-            ? erpConfig.env
-            : invoice.company.myinvoisEnv,
+          myinvoisEnv: erpConfig.enabled ? erpConfig.env : invoice.company.myinvoisEnv,
           tin: invoice.company.tin,
         },
         invoice.invoiceNumber

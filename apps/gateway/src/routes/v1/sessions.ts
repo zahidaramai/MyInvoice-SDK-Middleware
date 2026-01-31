@@ -62,7 +62,11 @@ function validateCreateRequest(body: CreateSessionBody): void {
   }
 
   // Validate clientSecret
-  if (!body.clientSecret || typeof body.clientSecret !== "string" || body.clientSecret.trim() === "") {
+  if (
+    !body.clientSecret ||
+    typeof body.clientSecret !== "string" ||
+    body.clientSecret.trim() === ""
+  ) {
     throw new AppError(400, "clientSecret is required", "VALIDATION_ERROR", {
       propertyPath: "clientSecret",
     });
@@ -71,12 +75,9 @@ function validateCreateRequest(body: CreateSessionBody): void {
   // INTERMEDIARY mode requires onBehalfOf
   if (body.mode === "INTERMEDIARY") {
     if (!body.onBehalfOf || typeof body.onBehalfOf !== "string" || body.onBehalfOf.trim() === "") {
-      throw new AppError(
-        400,
-        "onBehalfOf is required for INTERMEDIARY mode",
-        "VALIDATION_ERROR",
-        { propertyPath: "onBehalfOf" }
-      );
+      throw new AppError(400, "onBehalfOf is required for INTERMEDIARY mode", "VALIDATION_ERROR", {
+        propertyPath: "onBehalfOf",
+      });
     }
 
     if (!isValidOnBehalfOf(body.onBehalfOf)) {
@@ -91,23 +92,17 @@ function validateCreateRequest(body: CreateSessionBody): void {
 
   // TAXPAYER mode should not have onBehalfOf
   if (body.mode === "TAXPAYER" && body.onBehalfOf) {
-    throw new AppError(
-      400,
-      "onBehalfOf is not allowed for TAXPAYER mode",
-      "VALIDATION_ERROR",
-      { propertyPath: "onBehalfOf" }
-    );
+    throw new AppError(400, "onBehalfOf is not allowed for TAXPAYER mode", "VALIDATION_ERROR", {
+      propertyPath: "onBehalfOf",
+    });
   }
 
   // Validate documentVersion if provided
   if (body.documentVersion !== undefined) {
     if (body.documentVersion !== "1.0" && body.documentVersion !== "1.1") {
-      throw new AppError(
-        400,
-        "documentVersion must be '1.0' or '1.1'",
-        "VALIDATION_ERROR",
-        { propertyPath: "documentVersion" }
-      );
+      throw new AppError(400, "documentVersion must be '1.0' or '1.1'", "VALIDATION_ERROR", {
+        propertyPath: "documentVersion",
+      });
     }
 
     // Check if v1.1 is requested but signing is not available
@@ -167,20 +162,16 @@ export const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
           // Delete the session on login failure
           sessionStore.delete(session.sessionId);
 
-          const statusCode = loginResult.error.status === 401 ? 401 :
-                            loginResult.error.status === 429 ? 429 : 400;
+          const statusCode =
+            loginResult.error.status === 401 ? 401 : loginResult.error.status === 429 ? 429 : 400;
 
-          const envelope = createErrorEnvelope(
-            statusCode,
-            loginResult.error.message,
-            {
-              correlationId,
-              errorCode: loginResult.error.code,
-              retryAfterSeconds: loginResult.error.meta?.rateLimitReset
-                ? loginResult.error.meta.rateLimitReset - Math.floor(Date.now() / 1000)
-                : undefined,
-            }
-          );
+          const envelope = createErrorEnvelope(statusCode, loginResult.error.message, {
+            correlationId,
+            errorCode: loginResult.error.code,
+            retryAfterSeconds: loginResult.error.meta?.rateLimitReset
+              ? loginResult.error.meta.rateLimitReset - Math.floor(Date.now() / 1000)
+              : undefined,
+          });
 
           return reply.status(statusCode).send(envelope);
         }

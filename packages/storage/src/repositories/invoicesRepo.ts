@@ -56,9 +56,7 @@ export async function findInvoiceById(id: string): Promise<Invoice | null> {
 /**
  * Find invoice by ID with company
  */
-export async function findInvoiceByIdWithCompany(
-  id: string
-): Promise<InvoiceWithCompany | null> {
+export async function findInvoiceByIdWithCompany(id: string): Promise<InvoiceWithCompany | null> {
   const prisma = getPrismaClient();
 
   return prisma.invoice.findUnique({
@@ -91,9 +89,7 @@ export async function findInvoiceByNumber(
 /**
  * Find invoice by tracking ID
  */
-export async function findInvoiceByTrackingId(
-  trackingId: string
-): Promise<Invoice | null> {
+export async function findInvoiceByTrackingId(trackingId: string): Promise<Invoice | null> {
   const prisma = getPrismaClient();
 
   return prisma.invoice.findFirst({
@@ -104,9 +100,7 @@ export async function findInvoiceByTrackingId(
 /**
  * Find invoice by MyInvois UUID
  */
-export async function findInvoiceByMyinvoisUuid(
-  myinvoisUuid: string
-): Promise<Invoice | null> {
+export async function findInvoiceByMyinvoisUuid(myinvoisUuid: string): Promise<Invoice | null> {
   const prisma = getPrismaClient();
 
   return prisma.invoice.findFirst({
@@ -117,9 +111,7 @@ export async function findInvoiceByMyinvoisUuid(
 /**
  * Find invoice by POS invoice ID (short ID for QR registration)
  */
-export async function findInvoiceByPosInvoiceId(
-  posInvoiceId: string
-): Promise<Invoice | null> {
+export async function findInvoiceByPosInvoiceId(posInvoiceId: string): Promise<Invoice | null> {
   const prisma = getPrismaClient();
 
   return prisma.invoice.findUnique({
@@ -146,10 +138,7 @@ export async function findInvoiceByPosInvoiceIdWithCompany(
 /**
  * Update invoice
  */
-export async function updateInvoice(
-  id: string,
-  input: UpdateInvoiceInput
-): Promise<Invoice> {
+export async function updateInvoice(id: string, input: UpdateInvoiceInput): Promise<Invoice> {
   const prisma = getPrismaClient();
 
   return prisma.invoice.update({
@@ -330,9 +319,7 @@ export async function listInvoices(
 /**
  * Count invoices by status for a company
  */
-export async function countInvoicesByStatus(
-  companyId: string
-): Promise<Record<string, number>> {
+export async function countInvoicesByStatus(companyId: string): Promise<Record<string, number>> {
   const prisma = getPrismaClient();
 
   const counts = await prisma.invoice.groupBy({

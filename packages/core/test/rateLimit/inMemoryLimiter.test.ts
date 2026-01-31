@@ -176,9 +176,9 @@ describe("inMemoryLimiter", () => {
       const limiter = createMockLimiter(100, 60000);
 
       const results = await Promise.all(
-        Array(50).fill(null).map(() =>
-          Promise.resolve(limiter.consume("client-1"))
-        )
+        Array(50)
+          .fill(null)
+          .map(() => Promise.resolve(limiter.consume("client-1")))
       );
 
       const allowed = results.filter((r) => r.allowed).length;

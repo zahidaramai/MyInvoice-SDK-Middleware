@@ -8,10 +8,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { readFileSync } from "fs";
 import { createHash } from "crypto";
-import {
-  SigningService,
-  loadPKCS12,
-} from "../packages/signing/src/index.js";
+import { SigningService, loadPKCS12 } from "../packages/signing/src/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenvConfig({ path: resolve(__dirname, "../.env") });
@@ -46,7 +43,7 @@ async function getToken(): Promise<string> {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      "onbehalfof": supplierTin,  // Intermediary mode
+      onbehalfof: supplierTin, // Intermediary mode
     },
     body,
   });
@@ -57,12 +54,15 @@ async function getToken(): Promise<string> {
     throw new Error(`Token request failed: ${response.status}`);
   }
 
-  const data = await response.json() as TokenResponse;
+  const data = (await response.json()) as TokenResponse;
   console.log("Token obtained successfully, expires in:", data.expires_in, "seconds");
   return data.access_token;
 }
 
-async function submitDocument(token: string, signedDocument: Record<string, unknown>): Promise<void> {
+async function submitDocument(
+  token: string,
+  signedDocument: Record<string, unknown>
+): Promise<void> {
   const url = `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`;
   const supplierTin = process.env.MYINVOIS_SUPPLIER_TIN!;
 
@@ -73,7 +73,7 @@ async function submitDocument(token: string, signedDocument: Record<string, unkn
 
   // Extract codeNumber from invoice
   const invoice = (signedDocument as any).Invoice?.[0];
-  const codeNumber = invoice?.ID?.[0]?._  || "UNKNOWN";
+  const codeNumber = invoice?.ID?.[0]?._ || "UNKNOWN";
 
   console.log("\nSubmitting document...");
   console.log("  Document hash:", documentHash);
@@ -81,12 +81,14 @@ async function submitDocument(token: string, signedDocument: Record<string, unkn
   console.log("  Document size:", documentJson.length, "bytes");
 
   const requestBody = {
-    documents: [{
-      format: "JSON",
-      document: documentBase64,
-      documentHash: documentHash,
-      codeNumber: codeNumber,
-    }],
+    documents: [
+      {
+        format: "JSON",
+        document: documentBase64,
+        documentHash: documentHash,
+        codeNumber: codeNumber,
+      },
+    ],
   };
 
   console.log("\nRequest details:");
@@ -96,10 +98,10 @@ async function submitDocument(token: string, signedDocument: Record<string, unkn
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      "Accept": "application/json",
-      "onbehalfof": supplierTin,  // Required for intermediary mode
+      Accept: "application/json",
+      onbehalfof: supplierTin, // Required for intermediary mode
     },
     body: JSON.stringify(requestBody),
   });
@@ -168,7 +170,6 @@ async function main() {
     // Get token and submit
     const token = await getToken();
     await submitDocument(token, signedDocument);
-
   } catch (error) {
     console.error("\nError:", error);
     process.exit(1);

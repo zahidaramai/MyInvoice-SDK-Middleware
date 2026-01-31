@@ -1,14 +1,14 @@
-import * as crypto from 'crypto';
-import type { VerificationResult, CertificateInfo } from './types.js';
-import { generateDocumentHash, canonicalizeDocument } from './hash.js';
-import { parseCertificate } from './certificate-loader.js';
-import { SIGNATURE_URIS } from './signer.js';
+import * as crypto from "crypto";
+import type { VerificationResult, CertificateInfo } from "./types.js";
+import { generateDocumentHash, canonicalizeDocument } from "./hash.js";
+import { parseCertificate } from "./certificate-loader.js";
+import { SIGNATURE_URIS } from "./signer.js";
 
 /**
  * Get UBLExtensions from a document element that could be either an object or array
  */
 function getUBLExtensions(element: unknown): Record<string, unknown> | null {
-  if (!element || typeof element !== 'object') {
+  if (!element || typeof element !== "object") {
     return null;
   }
 
@@ -20,7 +20,7 @@ function getUBLExtensions(element: unknown): Record<string, unknown> | null {
     if (Array.isArray(ublExt) && ublExt.length > 0) {
       return ublExt[0] as Record<string, unknown>;
     }
-    if (ublExt && typeof ublExt === 'object') {
+    if (ublExt && typeof ublExt === "object") {
       return ublExt as Record<string, unknown>;
     }
     return null;
@@ -32,7 +32,7 @@ function getUBLExtensions(element: unknown): Record<string, unknown> | null {
   if (Array.isArray(ublExt) && ublExt.length > 0) {
     return ublExt[0] as Record<string, unknown>;
   }
-  if (ublExt && typeof ublExt === 'object') {
+  if (ublExt && typeof ublExt === "object") {
     return ublExt as Record<string, unknown>;
   }
   return null;
@@ -72,7 +72,7 @@ export function extractSignature(document: Record<string, unknown>): {
       digestValue: null,
       signatureValue: null,
       certificatePem: null,
-      signedInfo: null
+      signedInfo: null,
     };
   }
 
@@ -84,7 +84,7 @@ export function extractSignature(document: Record<string, unknown>): {
       digestValue: null,
       signatureValue: null,
       certificatePem: null,
-      signedInfo: null
+      signedInfo: null,
     };
   }
 
@@ -95,7 +95,7 @@ export function extractSignature(document: Record<string, unknown>): {
   const extContentRaw = firstExtension.ExtensionContent;
   if (Array.isArray(extContentRaw) && extContentRaw.length > 0) {
     extensionContent = extContentRaw[0] as Record<string, unknown>;
-  } else if (extContentRaw && typeof extContentRaw === 'object') {
+  } else if (extContentRaw && typeof extContentRaw === "object") {
     extensionContent = extContentRaw as Record<string, unknown>;
   }
 
@@ -105,7 +105,7 @@ export function extractSignature(document: Record<string, unknown>): {
       digestValue: null,
       signatureValue: null,
       certificatePem: null,
-      signedInfo: null
+      signedInfo: null,
     };
   }
 
@@ -114,7 +114,7 @@ export function extractSignature(document: Record<string, unknown>): {
   const docSigsRaw = extensionContent.UBLDocumentSignatures;
   if (Array.isArray(docSigsRaw) && docSigsRaw.length > 0) {
     docSignatures = docSigsRaw[0] as Record<string, unknown>;
-  } else if (docSigsRaw && typeof docSigsRaw === 'object') {
+  } else if (docSigsRaw && typeof docSigsRaw === "object") {
     docSignatures = docSigsRaw as Record<string, unknown>;
   }
 
@@ -124,7 +124,7 @@ export function extractSignature(document: Record<string, unknown>): {
       digestValue: null,
       signatureValue: null,
       certificatePem: null,
-      signedInfo: null
+      signedInfo: null,
     };
   }
 
@@ -133,7 +133,7 @@ export function extractSignature(document: Record<string, unknown>): {
   const sigInfoRaw = docSignatures.SignatureInformation;
   if (Array.isArray(sigInfoRaw) && sigInfoRaw.length > 0) {
     sigInfo = sigInfoRaw[0] as Record<string, unknown>;
-  } else if (sigInfoRaw && typeof sigInfoRaw === 'object') {
+  } else if (sigInfoRaw && typeof sigInfoRaw === "object") {
     sigInfo = sigInfoRaw as Record<string, unknown>;
   }
 
@@ -143,7 +143,7 @@ export function extractSignature(document: Record<string, unknown>): {
       digestValue: null,
       signatureValue: null,
       certificatePem: null,
-      signedInfo: null
+      signedInfo: null,
     };
   }
 
@@ -152,7 +152,7 @@ export function extractSignature(document: Record<string, unknown>): {
   const sigRaw = sigInfo.Signature;
   if (Array.isArray(sigRaw) && sigRaw.length > 0) {
     signature = sigRaw[0] as Record<string, unknown>;
-  } else if (sigRaw && typeof sigRaw === 'object') {
+  } else if (sigRaw && typeof sigRaw === "object") {
     signature = sigRaw as Record<string, unknown>;
   }
 
@@ -162,7 +162,7 @@ export function extractSignature(document: Record<string, unknown>): {
       digestValue: null,
       signatureValue: null,
       certificatePem: null,
-      signedInfo: null
+      signedInfo: null,
     };
   }
 
@@ -171,7 +171,7 @@ export function extractSignature(document: Record<string, unknown>): {
   const signedInfoRaw = signature.SignedInfo;
   if (Array.isArray(signedInfoRaw) && signedInfoRaw.length > 0) {
     signedInfo = signedInfoRaw[0] as Record<string, unknown>;
-  } else if (signedInfoRaw && typeof signedInfoRaw === 'object') {
+  } else if (signedInfoRaw && typeof signedInfoRaw === "object") {
     signedInfo = signedInfoRaw as Record<string, unknown>;
   }
 
@@ -186,7 +186,7 @@ export function extractSignature(document: Record<string, unknown>): {
     } else if (sigValObj._) {
       signatureValue = sigValObj._ as string;
     }
-  } else if (typeof sigValRaw === 'string') {
+  } else if (typeof sigValRaw === "string") {
     signatureValue = sigValRaw;
   }
 
@@ -195,7 +195,7 @@ export function extractSignature(document: Record<string, unknown>): {
   const keyInfoRaw = signature.KeyInfo;
   if (Array.isArray(keyInfoRaw) && keyInfoRaw.length > 0) {
     keyInfo = keyInfoRaw[0] as Record<string, unknown>;
-  } else if (keyInfoRaw && typeof keyInfoRaw === 'object') {
+  } else if (keyInfoRaw && typeof keyInfoRaw === "object") {
     keyInfo = keyInfoRaw as Record<string, unknown>;
   }
 
@@ -212,8 +212,8 @@ export function extractSignature(document: Record<string, unknown>): {
 
       // If first reference is SignedProperties, use the second one for document digest
       if (referenceRaw.length > 1) {
-        const firstType = (reference.Type as string) || '';
-        if (firstType.includes('SignedProperties')) {
+        const firstType = (reference.Type as string) || "";
+        if (firstType.includes("SignedProperties")) {
           reference = referenceRaw[1] as Record<string, unknown>;
         }
       }
@@ -221,18 +221,18 @@ export function extractSignature(document: Record<string, unknown>): {
       const digestValRaw = reference.DigestValue;
       if (Array.isArray(digestValRaw) && digestValRaw.length > 0) {
         const digestObj = digestValRaw[0] as Record<string, unknown>;
-        digestValue = digestObj._ as string || null;
-      } else if (typeof digestValRaw === 'string') {
+        digestValue = (digestObj._ as string) || null;
+      } else if (typeof digestValRaw === "string") {
         digestValue = digestValRaw;
       }
-    } else if (referenceRaw && typeof referenceRaw === 'object') {
+    } else if (referenceRaw && typeof referenceRaw === "object") {
       // Old format: single Reference object
       const reference = referenceRaw as Record<string, unknown>;
       const digestValRaw = reference.DigestValue;
       if (Array.isArray(digestValRaw) && digestValRaw.length > 0) {
         const digestObj = digestValRaw[0] as Record<string, unknown>;
-        digestValue = digestObj._ as string || null;
-      } else if (typeof digestValRaw === 'string') {
+        digestValue = (digestObj._ as string) || null;
+      } else if (typeof digestValRaw === "string") {
         digestValue = digestValRaw;
       }
     }
@@ -245,7 +245,7 @@ export function extractSignature(document: Record<string, unknown>): {
     let x509Data: Record<string, unknown> | undefined;
     if (Array.isArray(x509DataRaw) && x509DataRaw.length > 0) {
       x509Data = x509DataRaw[0] as Record<string, unknown>;
-    } else if (x509DataRaw && typeof x509DataRaw === 'object') {
+    } else if (x509DataRaw && typeof x509DataRaw === "object") {
       x509Data = x509DataRaw as Record<string, unknown>;
     }
 
@@ -255,7 +255,7 @@ export function extractSignature(document: Record<string, unknown>): {
       if (Array.isArray(certRaw) && certRaw.length > 0) {
         const certObj = certRaw[0] as Record<string, unknown>;
         certContent = certObj._ as string;
-      } else if (typeof certRaw === 'string') {
+      } else if (typeof certRaw === "string") {
         certContent = certRaw;
       }
 
@@ -271,7 +271,7 @@ export function extractSignature(document: Record<string, unknown>): {
     digestValue,
     signatureValue,
     certificatePem,
-    signedInfo: signedInfo || null
+    signedInfo: signedInfo || null,
   };
 }
 
@@ -289,14 +289,14 @@ export function recalculateHash(document: Record<string, unknown>): string {
  * Both UBLExtensions and Signature must be removed for hash recalculation
  */
 function removeSignatureElementsFromElement(element: unknown): unknown {
-  if (!element || typeof element !== 'object') {
+  if (!element || typeof element !== "object") {
     return element;
   }
 
   // Handle array-wrapped documents (MyInvois format: Invoice: [{UBLExtensions: [...], ...}])
   if (Array.isArray(element)) {
     return element.map((item, index) => {
-      if (index === 0 && typeof item === 'object' && item !== null) {
+      if (index === 0 && typeof item === "object" && item !== null) {
         const obj = { ...(item as Record<string, unknown>) };
         delete obj.UBLExtensions;
         delete obj.Signature;
@@ -356,9 +356,9 @@ function verifySignature(
   try {
     // MyInvois signs the canonicalized document bytes (without UBLExtensions)
     const docBytes = canonicalizeDocument(document);
-    const verify = crypto.createVerify('RSA-SHA256');
-    verify.update(docBytes, 'utf8');
-    return verify.verify(publicKey, signatureValue, 'base64');
+    const verify = crypto.createVerify("RSA-SHA256");
+    verify.update(docBytes, "utf8");
+    return verify.verify(publicKey, signatureValue, "base64");
   } catch {
     return false;
   }
@@ -375,47 +375,47 @@ export function verify(document: Record<string, unknown>): VerificationResult {
 
   // Check if signature block exists
   if (!extracted.signatureBlock) {
-    errors.push('Missing signature block');
+    errors.push("Missing signature block");
     return {
       valid: false,
       document: {
         hashValid: false,
-        computedHash: '',
-        claimedHash: ''
+        computedHash: "",
+        claimedHash: "",
       },
       signature: {
         valid: false,
-        algorithm: SIGNATURE_URIS.SIGNATURE_METHOD
+        algorithm: SIGNATURE_URIS.SIGNATURE_METHOD,
       },
       certificate: {
         valid: false,
-        issuer: '',
-        subject: '',
+        issuer: "",
+        subject: "",
         expiresAt: new Date(0),
-        isExpired: true
+        isExpired: true,
       },
-      errors
+      errors,
     };
   }
 
   // Check digest value
   if (!extracted.digestValue) {
-    errors.push('Missing digest value in signature');
+    errors.push("Missing digest value in signature");
   }
 
   // Check signature value
   if (!extracted.signatureValue) {
-    errors.push('Missing signature value');
+    errors.push("Missing signature value");
   }
 
   // Check certificate
   if (!extracted.certificatePem) {
-    errors.push('Missing certificate in signature');
+    errors.push("Missing certificate in signature");
   }
 
   // Check signed info
   if (!extracted.signedInfo) {
-    errors.push('Missing SignedInfo in signature');
+    errors.push("Missing SignedInfo in signature");
   }
 
   // If we're missing critical components, return early
@@ -424,21 +424,21 @@ export function verify(document: Record<string, unknown>): VerificationResult {
       valid: false,
       document: {
         hashValid: false,
-        computedHash: '',
-        claimedHash: extracted.digestValue || ''
+        computedHash: "",
+        claimedHash: extracted.digestValue || "",
       },
       signature: {
         valid: false,
-        algorithm: SIGNATURE_URIS.SIGNATURE_METHOD
+        algorithm: SIGNATURE_URIS.SIGNATURE_METHOD,
       },
       certificate: {
         valid: false,
-        issuer: '',
-        subject: '',
+        issuer: "",
+        subject: "",
         expiresAt: new Date(0),
-        isExpired: true
+        isExpired: true,
       },
-      errors
+      errors,
     };
   }
 
@@ -447,7 +447,7 @@ export function verify(document: Record<string, unknown>): VerificationResult {
   const hashValid = computedHash === extracted.digestValue;
 
   if (!hashValid) {
-    errors.push('Document hash mismatch - document may have been tampered');
+    errors.push("Document hash mismatch - document may have been tampered");
   }
 
   // Parse certificate
@@ -465,41 +465,37 @@ export function verify(document: Record<string, unknown>): VerificationResult {
       document: {
         hashValid,
         computedHash,
-        claimedHash: extracted.digestValue!
+        claimedHash: extracted.digestValue!,
       },
       signature: {
         valid: false,
-        algorithm: SIGNATURE_URIS.SIGNATURE_METHOD
+        algorithm: SIGNATURE_URIS.SIGNATURE_METHOD,
       },
       certificate: {
         valid: false,
-        issuer: '',
-        subject: '',
+        issuer: "",
+        subject: "",
         expiresAt: new Date(0),
-        isExpired: true
+        isExpired: true,
       },
-      errors
+      errors,
     };
   }
 
   // Check certificate validity
   if (certInfo.isExpired) {
-    errors.push('Certificate has expired');
+    errors.push("Certificate has expired");
   }
 
   if (certInfo.isNotYetValid) {
-    errors.push('Certificate is not yet valid');
+    errors.push("Certificate is not yet valid");
   }
 
   // Verify cryptographic signature (MyInvois signs the canonicalized document)
-  const signatureValid = verifySignature(
-    document,
-    extracted.signatureValue!,
-    publicKey
-  );
+  const signatureValid = verifySignature(document, extracted.signatureValue!, publicKey);
 
   if (!signatureValid) {
-    errors.push('Invalid cryptographic signature');
+    errors.push("Invalid cryptographic signature");
   }
 
   return {
@@ -507,20 +503,20 @@ export function verify(document: Record<string, unknown>): VerificationResult {
     document: {
       hashValid,
       computedHash,
-      claimedHash: extracted.digestValue!
+      claimedHash: extracted.digestValue!,
     },
     signature: {
       valid: signatureValid,
-      algorithm: SIGNATURE_URIS.SIGNATURE_METHOD
+      algorithm: SIGNATURE_URIS.SIGNATURE_METHOD,
     },
     certificate: {
       valid: certInfo.isValid,
       issuer: certInfo.issuer.raw,
       subject: certInfo.subject.raw,
       expiresAt: certInfo.validTo,
-      isExpired: certInfo.isExpired
+      isExpired: certInfo.isExpired,
     },
-    errors
+    errors,
   };
 }
 

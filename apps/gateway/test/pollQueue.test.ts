@@ -22,11 +22,7 @@ vi.mock("bullmq", () => ({
 }));
 
 // Import after mock
-import {
-  calculatePollDelay,
-  MIN_POLL_INTERVAL_MS,
-  POLL_QUEUE_NAME,
-} from "../src/lib/pollQueue.js";
+import { calculatePollDelay, MIN_POLL_INTERVAL_MS, POLL_QUEUE_NAME } from "../src/lib/pollQueue.js";
 
 describe("TST-16: Poll Queue", () => {
   beforeEach(() => {

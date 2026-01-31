@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * HashLHDN MyInvois Middleware API
- * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ``` 
+ * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ```
  *
  * The version of the OpenAPI document: 1.1.1
  * Contact: hello@zahidaramai.com
@@ -12,346 +12,495 @@
  * Do not edit the class manually.
  */
 
-
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from '../common';
+import {
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
-import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
+import {
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  type RequestArgs,
+  BaseAPI,
+  RequiredError,
+  operationServerMap,
+} from "../base";
 // @ts-ignore
-import type { CancelDocument200Response } from '../models';
+import type { CancelDocument200Response } from "../models";
 // @ts-ignore
-import type { CancelDocumentRequest } from '../models';
+import type { CancelDocumentRequest } from "../models";
 // @ts-ignore
-import type { DocumentListResponse } from '../models';
+import type { DocumentListResponse } from "../models";
 // @ts-ignore
-import type { DocumentPdfResponse } from '../models';
+import type { DocumentPdfResponse } from "../models";
 // @ts-ignore
-import type { DocumentStatusResponse } from '../models';
+import type { DocumentStatusResponse } from "../models";
 // @ts-ignore
-import type { ErrorResponse } from '../models';
+import type { ErrorResponse } from "../models";
 /**
  * DocumentsApi - axios parameter creator
  * @export
  */
 export const DocumentsApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * Cancel a submitted document (within 72 hours)
-         * @summary Cancel document
-         * @param {string} uuid 
-         * @param {CancelDocumentRequest} cancelDocumentRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        cancelDocument: async (uuid: string, cancelDocumentRequest: CancelDocumentRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'uuid' is not null or undefined
-            assertParamExists('cancelDocument', 'uuid', uuid)
-            // verify required parameter 'cancelDocumentRequest' is not null or undefined
-            assertParamExists('cancelDocument', 'cancelDocumentRequest', cancelDocumentRequest)
-            const localVarPath = `/api/v1/documents/{uuid}/cancel`
-                .replace(`{${"uuid"}}`, encodeURIComponent(String(uuid)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+  return {
+    /**
+     * Cancel a submitted document (within 72 hours)
+     * @summary Cancel document
+     * @param {string} uuid
+     * @param {CancelDocumentRequest} cancelDocumentRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cancelDocument: async (
+      uuid: string,
+      cancelDocumentRequest: CancelDocumentRequest,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'uuid' is not null or undefined
+      assertParamExists("cancelDocument", "uuid", uuid);
+      // verify required parameter 'cancelDocumentRequest' is not null or undefined
+      assertParamExists("cancelDocument", "cancelDocumentRequest", cancelDocumentRequest);
+      const localVarPath = `/api/v1/documents/{uuid}/cancel`.replace(
+        `{${"uuid"}}`,
+        encodeURIComponent(String(uuid))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = { method: "POST", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        cancelDocumentRequest,
+        localVarRequestOptions,
+        configuration
+      );
 
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(cancelDocumentRequest, localVarRequestOptions, configuration)
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Download the PDF representation of a validated document from MyInvois
+     * @summary Download document PDF
+     * @param {string} uuid
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDocumentPdf: async (
+      uuid: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'uuid' is not null or undefined
+      assertParamExists("getDocumentPdf", "uuid", uuid);
+      const localVarPath = `/api/v1/documents/{uuid}/pdf`.replace(
+        `{${"uuid"}}`,
+        encodeURIComponent(String(uuid))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Download the PDF representation of a validated document from MyInvois
-         * @summary Download document PDF
-         * @param {string} uuid 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDocumentPdf: async (uuid: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'uuid' is not null or undefined
-            assertParamExists('getDocumentPdf', 'uuid', uuid)
-            const localVarPath = `/api/v1/documents/{uuid}/pdf`
-                .replace(`{${"uuid"}}`, encodeURIComponent(String(uuid)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      const localVarRequestOptions = { method: "GET", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get the current validation status of a submitted document from MyInvois
+     * @summary Get document status
+     * @param {string} uuid
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDocumentStatus: async (
+      uuid: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'uuid' is not null or undefined
+      assertParamExists("getDocumentStatus", "uuid", uuid);
+      const localVarPath = `/api/v1/documents/{uuid}/status`.replace(
+        `{${"uuid"}}`,
+        encodeURIComponent(String(uuid))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      const localVarRequestOptions = { method: "GET", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Get the current validation status of a submitted document from MyInvois
-         * @summary Get document status
-         * @param {string} uuid 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDocumentStatus: async (uuid: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'uuid' is not null or undefined
-            assertParamExists('getDocumentStatus', 'uuid', uuid)
-            const localVarPath = `/api/v1/documents/{uuid}/status`
-                .replace(`{${"uuid"}}`, encodeURIComponent(String(uuid)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List documents with optional filters
+     * @summary List documents
+     * @param {string} [companyId]
+     * @param {ListDocumentsStatusEnum} [status]
+     * @param {ListDocumentsInvoiceTypeEnum} [invoiceType]
+     * @param {string} [fromDate]
+     * @param {string} [toDate]
+     * @param {number} [page]
+     * @param {number} [limit]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listDocuments: async (
+      companyId?: string,
+      status?: ListDocumentsStatusEnum,
+      invoiceType?: ListDocumentsInvoiceTypeEnum,
+      fromDate?: string,
+      toDate?: string,
+      page?: number,
+      limit?: number,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1/documents`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
+      const localVarRequestOptions = { method: "GET", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * List documents with optional filters
-         * @summary List documents
-         * @param {string} [companyId] 
-         * @param {ListDocumentsStatusEnum} [status] 
-         * @param {ListDocumentsInvoiceTypeEnum} [invoiceType] 
-         * @param {string} [fromDate] 
-         * @param {string} [toDate] 
-         * @param {number} [page] 
-         * @param {number} [limit] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listDocuments: async (companyId?: string, status?: ListDocumentsStatusEnum, invoiceType?: ListDocumentsInvoiceTypeEnum, fromDate?: string, toDate?: string, page?: number, limit?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/documents`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      if (companyId !== undefined) {
+        localVarQueryParameter["companyId"] = companyId;
+      }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      if (status !== undefined) {
+        localVarQueryParameter["status"] = status;
+      }
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      if (invoiceType !== undefined) {
+        localVarQueryParameter["invoiceType"] = invoiceType;
+      }
 
-            if (companyId !== undefined) {
-                localVarQueryParameter['companyId'] = companyId;
-            }
+      if (fromDate !== undefined) {
+        localVarQueryParameter["fromDate"] =
+          (fromDate as any) instanceof Date
+            ? (fromDate as any).toISOString().substring(0, 10)
+            : fromDate;
+      }
 
-            if (status !== undefined) {
-                localVarQueryParameter['status'] = status;
-            }
+      if (toDate !== undefined) {
+        localVarQueryParameter["toDate"] =
+          (toDate as any) instanceof Date ? (toDate as any).toISOString().substring(0, 10) : toDate;
+      }
 
-            if (invoiceType !== undefined) {
-                localVarQueryParameter['invoiceType'] = invoiceType;
-            }
+      if (page !== undefined) {
+        localVarQueryParameter["page"] = page;
+      }
 
-            if (fromDate !== undefined) {
-                localVarQueryParameter['fromDate'] = (fromDate as any instanceof Date) ?
-                    (fromDate as any).toISOString().substring(0,10) :
-                    fromDate;
-            }
+      if (limit !== undefined) {
+        localVarQueryParameter["limit"] = limit;
+      }
 
-            if (toDate !== undefined) {
-                localVarQueryParameter['toDate'] = (toDate as any instanceof Date) ?
-                    (toDate as any).toISOString().substring(0,10) :
-                    toDate;
-            }
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (limit !== undefined) {
-                localVarQueryParameter['limit'] = limit;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
  * DocumentsApi - functional programming interface
  * @export
  */
-export const DocumentsApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = DocumentsApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * Cancel a submitted document (within 72 hours)
-         * @summary Cancel document
-         * @param {string} uuid 
-         * @param {CancelDocumentRequest} cancelDocumentRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async cancelDocument(uuid: string, cancelDocumentRequest: CancelDocumentRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CancelDocument200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.cancelDocument(uuid, cancelDocumentRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.cancelDocument']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Download the PDF representation of a validated document from MyInvois
-         * @summary Download document PDF
-         * @param {string} uuid 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getDocumentPdf(uuid: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DocumentPdfResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDocumentPdf(uuid, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.getDocumentPdf']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Get the current validation status of a submitted document from MyInvois
-         * @summary Get document status
-         * @param {string} uuid 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getDocumentStatus(uuid: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DocumentStatusResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDocumentStatus(uuid, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.getDocumentStatus']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * List documents with optional filters
-         * @summary List documents
-         * @param {string} [companyId] 
-         * @param {ListDocumentsStatusEnum} [status] 
-         * @param {ListDocumentsInvoiceTypeEnum} [invoiceType] 
-         * @param {string} [fromDate] 
-         * @param {string} [toDate] 
-         * @param {number} [page] 
-         * @param {number} [limit] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async listDocuments(companyId?: string, status?: ListDocumentsStatusEnum, invoiceType?: ListDocumentsInvoiceTypeEnum, fromDate?: string, toDate?: string, page?: number, limit?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DocumentListResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listDocuments(companyId, status, invoiceType, fromDate, toDate, page, limit, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DocumentsApi.listDocuments']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
+export const DocumentsApiFp = function (configuration?: Configuration) {
+  const localVarAxiosParamCreator = DocumentsApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Cancel a submitted document (within 72 hours)
+     * @summary Cancel document
+     * @param {string} uuid
+     * @param {CancelDocumentRequest} cancelDocumentRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async cancelDocument(
+      uuid: string,
+      cancelDocumentRequest: CancelDocumentRequest,
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<CancelDocument200Response>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.cancelDocument(
+        uuid,
+        cancelDocumentRequest,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["DocumentsApi.cancelDocument"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Download the PDF representation of a validated document from MyInvois
+     * @summary Download document PDF
+     * @param {string} uuid
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getDocumentPdf(
+      uuid: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DocumentPdfResponse>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getDocumentPdf(uuid, options);
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["DocumentsApi.getDocumentPdf"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Get the current validation status of a submitted document from MyInvois
+     * @summary Get document status
+     * @param {string} uuid
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getDocumentStatus(
+      uuid: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DocumentStatusResponse>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getDocumentStatus(uuid, options);
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["DocumentsApi.getDocumentStatus"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * List documents with optional filters
+     * @summary List documents
+     * @param {string} [companyId]
+     * @param {ListDocumentsStatusEnum} [status]
+     * @param {ListDocumentsInvoiceTypeEnum} [invoiceType]
+     * @param {string} [fromDate]
+     * @param {string} [toDate]
+     * @param {number} [page]
+     * @param {number} [limit]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listDocuments(
+      companyId?: string,
+      status?: ListDocumentsStatusEnum,
+      invoiceType?: ListDocumentsInvoiceTypeEnum,
+      fromDate?: string,
+      toDate?: string,
+      page?: number,
+      limit?: number,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DocumentListResponse>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.listDocuments(
+        companyId,
+        status,
+        invoiceType,
+        fromDate,
+        toDate,
+        page,
+        limit,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["DocumentsApi.listDocuments"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+  };
 };
 
 /**
  * DocumentsApi - factory interface
  * @export
  */
-export const DocumentsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = DocumentsApiFp(configuration)
-    return {
-        /**
-         * Cancel a submitted document (within 72 hours)
-         * @summary Cancel document
-         * @param {DocumentsApiCancelDocumentRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        cancelDocument(requestParameters: DocumentsApiCancelDocumentRequest, options?: RawAxiosRequestConfig): AxiosPromise<CancelDocument200Response> {
-            return localVarFp.cancelDocument(requestParameters.uuid, requestParameters.cancelDocumentRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Download the PDF representation of a validated document from MyInvois
-         * @summary Download document PDF
-         * @param {DocumentsApiGetDocumentPdfRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDocumentPdf(requestParameters: DocumentsApiGetDocumentPdfRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentPdfResponse> {
-            return localVarFp.getDocumentPdf(requestParameters.uuid, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Get the current validation status of a submitted document from MyInvois
-         * @summary Get document status
-         * @param {DocumentsApiGetDocumentStatusRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDocumentStatus(requestParameters: DocumentsApiGetDocumentStatusRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentStatusResponse> {
-            return localVarFp.getDocumentStatus(requestParameters.uuid, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * List documents with optional filters
-         * @summary List documents
-         * @param {DocumentsApiListDocumentsRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listDocuments(requestParameters: DocumentsApiListDocumentsRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<DocumentListResponse> {
-            return localVarFp.listDocuments(requestParameters.companyId, requestParameters.status, requestParameters.invoiceType, requestParameters.fromDate, requestParameters.toDate, requestParameters.page, requestParameters.limit, options).then((request) => request(axios, basePath));
-        },
-    };
+export const DocumentsApiFactory = function (
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
+) {
+  const localVarFp = DocumentsApiFp(configuration);
+  return {
+    /**
+     * Cancel a submitted document (within 72 hours)
+     * @summary Cancel document
+     * @param {DocumentsApiCancelDocumentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cancelDocument(
+      requestParameters: DocumentsApiCancelDocumentRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<CancelDocument200Response> {
+      return localVarFp
+        .cancelDocument(requestParameters.uuid, requestParameters.cancelDocumentRequest, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Download the PDF representation of a validated document from MyInvois
+     * @summary Download document PDF
+     * @param {DocumentsApiGetDocumentPdfRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDocumentPdf(
+      requestParameters: DocumentsApiGetDocumentPdfRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<DocumentPdfResponse> {
+      return localVarFp
+        .getDocumentPdf(requestParameters.uuid, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get the current validation status of a submitted document from MyInvois
+     * @summary Get document status
+     * @param {DocumentsApiGetDocumentStatusRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDocumentStatus(
+      requestParameters: DocumentsApiGetDocumentStatusRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<DocumentStatusResponse> {
+      return localVarFp
+        .getDocumentStatus(requestParameters.uuid, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List documents with optional filters
+     * @summary List documents
+     * @param {DocumentsApiListDocumentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listDocuments(
+      requestParameters: DocumentsApiListDocumentsRequest = {},
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<DocumentListResponse> {
+      return localVarFp
+        .listDocuments(
+          requestParameters.companyId,
+          requestParameters.status,
+          requestParameters.invoiceType,
+          requestParameters.fromDate,
+          requestParameters.toDate,
+          requestParameters.page,
+          requestParameters.limit,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -360,46 +509,57 @@ export const DocumentsApiFactory = function (configuration?: Configuration, base
  * @interface DocumentsApi
  */
 export interface DocumentsApiInterface {
-    /**
-     * Cancel a submitted document (within 72 hours)
-     * @summary Cancel document
-     * @param {DocumentsApiCancelDocumentRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApiInterface
-     */
-    cancelDocument(requestParameters: DocumentsApiCancelDocumentRequest, options?: RawAxiosRequestConfig): AxiosPromise<CancelDocument200Response>;
+  /**
+   * Cancel a submitted document (within 72 hours)
+   * @summary Cancel document
+   * @param {DocumentsApiCancelDocumentRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApiInterface
+   */
+  cancelDocument(
+    requestParameters: DocumentsApiCancelDocumentRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<CancelDocument200Response>;
 
-    /**
-     * Download the PDF representation of a validated document from MyInvois
-     * @summary Download document PDF
-     * @param {DocumentsApiGetDocumentPdfRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApiInterface
-     */
-    getDocumentPdf(requestParameters: DocumentsApiGetDocumentPdfRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentPdfResponse>;
+  /**
+   * Download the PDF representation of a validated document from MyInvois
+   * @summary Download document PDF
+   * @param {DocumentsApiGetDocumentPdfRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApiInterface
+   */
+  getDocumentPdf(
+    requestParameters: DocumentsApiGetDocumentPdfRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<DocumentPdfResponse>;
 
-    /**
-     * Get the current validation status of a submitted document from MyInvois
-     * @summary Get document status
-     * @param {DocumentsApiGetDocumentStatusRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApiInterface
-     */
-    getDocumentStatus(requestParameters: DocumentsApiGetDocumentStatusRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentStatusResponse>;
+  /**
+   * Get the current validation status of a submitted document from MyInvois
+   * @summary Get document status
+   * @param {DocumentsApiGetDocumentStatusRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApiInterface
+   */
+  getDocumentStatus(
+    requestParameters: DocumentsApiGetDocumentStatusRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<DocumentStatusResponse>;
 
-    /**
-     * List documents with optional filters
-     * @summary List documents
-     * @param {DocumentsApiListDocumentsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApiInterface
-     */
-    listDocuments(requestParameters?: DocumentsApiListDocumentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<DocumentListResponse>;
-
+  /**
+   * List documents with optional filters
+   * @summary List documents
+   * @param {DocumentsApiListDocumentsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApiInterface
+   */
+  listDocuments(
+    requestParameters?: DocumentsApiListDocumentsRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<DocumentListResponse>;
 }
 
 /**
@@ -408,19 +568,19 @@ export interface DocumentsApiInterface {
  * @interface DocumentsApiCancelDocumentRequest
  */
 export interface DocumentsApiCancelDocumentRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentsApiCancelDocument
-     */
-    readonly uuid: string
+  /**
+   *
+   * @type {string}
+   * @memberof DocumentsApiCancelDocument
+   */
+  readonly uuid: string;
 
-    /**
-     * 
-     * @type {CancelDocumentRequest}
-     * @memberof DocumentsApiCancelDocument
-     */
-    readonly cancelDocumentRequest: CancelDocumentRequest
+  /**
+   *
+   * @type {CancelDocumentRequest}
+   * @memberof DocumentsApiCancelDocument
+   */
+  readonly cancelDocumentRequest: CancelDocumentRequest;
 }
 
 /**
@@ -429,12 +589,12 @@ export interface DocumentsApiCancelDocumentRequest {
  * @interface DocumentsApiGetDocumentPdfRequest
  */
 export interface DocumentsApiGetDocumentPdfRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentsApiGetDocumentPdf
-     */
-    readonly uuid: string
+  /**
+   *
+   * @type {string}
+   * @memberof DocumentsApiGetDocumentPdf
+   */
+  readonly uuid: string;
 }
 
 /**
@@ -443,12 +603,12 @@ export interface DocumentsApiGetDocumentPdfRequest {
  * @interface DocumentsApiGetDocumentStatusRequest
  */
 export interface DocumentsApiGetDocumentStatusRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentsApiGetDocumentStatus
-     */
-    readonly uuid: string
+  /**
+   *
+   * @type {string}
+   * @memberof DocumentsApiGetDocumentStatus
+   */
+  readonly uuid: string;
 }
 
 /**
@@ -457,54 +617,54 @@ export interface DocumentsApiGetDocumentStatusRequest {
  * @interface DocumentsApiListDocumentsRequest
  */
 export interface DocumentsApiListDocumentsRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly companyId?: string
+  /**
+   *
+   * @type {string}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly companyId?: string;
 
-    /**
-     * 
-     * @type {'DRAFT' | 'SUBMITTED' | 'VALID' | 'INVALID' | 'CANCELLED'}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly status?: ListDocumentsStatusEnum
+  /**
+   *
+   * @type {'DRAFT' | 'SUBMITTED' | 'VALID' | 'INVALID' | 'CANCELLED'}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly status?: ListDocumentsStatusEnum;
 
-    /**
-     * 
-     * @type {'CONSOLIDATE' | 'JUSTSAVE' | 'BUYER' | 'PERSONAL'}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly invoiceType?: ListDocumentsInvoiceTypeEnum
+  /**
+   *
+   * @type {'CONSOLIDATE' | 'JUSTSAVE' | 'BUYER' | 'PERSONAL'}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly invoiceType?: ListDocumentsInvoiceTypeEnum;
 
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly fromDate?: string
+  /**
+   *
+   * @type {string}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly fromDate?: string;
 
-    /**
-     * 
-     * @type {string}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly toDate?: string
+  /**
+   *
+   * @type {string}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly toDate?: string;
 
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly page?: number
+  /**
+   *
+   * @type {number}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly page?: number;
 
-    /**
-     * 
-     * @type {number}
-     * @memberof DocumentsApiListDocuments
-     */
-    readonly limit?: number
+  /**
+   *
+   * @type {number}
+   * @memberof DocumentsApiListDocuments
+   */
+  readonly limit?: number;
 }
 
 /**
@@ -514,73 +674,104 @@ export interface DocumentsApiListDocumentsRequest {
  * @extends {BaseAPI}
  */
 export class DocumentsApi extends BaseAPI implements DocumentsApiInterface {
-    /**
-     * Cancel a submitted document (within 72 hours)
-     * @summary Cancel document
-     * @param {DocumentsApiCancelDocumentRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApi
-     */
-    public cancelDocument(requestParameters: DocumentsApiCancelDocumentRequest, options?: RawAxiosRequestConfig) {
-        return DocumentsApiFp(this.configuration).cancelDocument(requestParameters.uuid, requestParameters.cancelDocumentRequest, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Cancel a submitted document (within 72 hours)
+   * @summary Cancel document
+   * @param {DocumentsApiCancelDocumentRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApi
+   */
+  public cancelDocument(
+    requestParameters: DocumentsApiCancelDocumentRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return DocumentsApiFp(this.configuration)
+      .cancelDocument(requestParameters.uuid, requestParameters.cancelDocumentRequest, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Download the PDF representation of a validated document from MyInvois
-     * @summary Download document PDF
-     * @param {DocumentsApiGetDocumentPdfRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApi
-     */
-    public getDocumentPdf(requestParameters: DocumentsApiGetDocumentPdfRequest, options?: RawAxiosRequestConfig) {
-        return DocumentsApiFp(this.configuration).getDocumentPdf(requestParameters.uuid, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Download the PDF representation of a validated document from MyInvois
+   * @summary Download document PDF
+   * @param {DocumentsApiGetDocumentPdfRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApi
+   */
+  public getDocumentPdf(
+    requestParameters: DocumentsApiGetDocumentPdfRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return DocumentsApiFp(this.configuration)
+      .getDocumentPdf(requestParameters.uuid, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Get the current validation status of a submitted document from MyInvois
-     * @summary Get document status
-     * @param {DocumentsApiGetDocumentStatusRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApi
-     */
-    public getDocumentStatus(requestParameters: DocumentsApiGetDocumentStatusRequest, options?: RawAxiosRequestConfig) {
-        return DocumentsApiFp(this.configuration).getDocumentStatus(requestParameters.uuid, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Get the current validation status of a submitted document from MyInvois
+   * @summary Get document status
+   * @param {DocumentsApiGetDocumentStatusRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApi
+   */
+  public getDocumentStatus(
+    requestParameters: DocumentsApiGetDocumentStatusRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return DocumentsApiFp(this.configuration)
+      .getDocumentStatus(requestParameters.uuid, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * List documents with optional filters
-     * @summary List documents
-     * @param {DocumentsApiListDocumentsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DocumentsApi
-     */
-    public listDocuments(requestParameters: DocumentsApiListDocumentsRequest = {}, options?: RawAxiosRequestConfig) {
-        return DocumentsApiFp(this.configuration).listDocuments(requestParameters.companyId, requestParameters.status, requestParameters.invoiceType, requestParameters.fromDate, requestParameters.toDate, requestParameters.page, requestParameters.limit, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * List documents with optional filters
+   * @summary List documents
+   * @param {DocumentsApiListDocumentsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof DocumentsApi
+   */
+  public listDocuments(
+    requestParameters: DocumentsApiListDocumentsRequest = {},
+    options?: RawAxiosRequestConfig
+  ) {
+    return DocumentsApiFp(this.configuration)
+      .listDocuments(
+        requestParameters.companyId,
+        requestParameters.status,
+        requestParameters.invoiceType,
+        requestParameters.fromDate,
+        requestParameters.toDate,
+        requestParameters.page,
+        requestParameters.limit,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }
 
 /**
  * @export
  */
 export const ListDocumentsStatusEnum = {
-    Draft: 'DRAFT',
-    Submitted: 'SUBMITTED',
-    Valid: 'VALID',
-    Invalid: 'INVALID',
-    Cancelled: 'CANCELLED'
+  Draft: "DRAFT",
+  Submitted: "SUBMITTED",
+  Valid: "VALID",
+  Invalid: "INVALID",
+  Cancelled: "CANCELLED",
 } as const;
-export type ListDocumentsStatusEnum = typeof ListDocumentsStatusEnum[keyof typeof ListDocumentsStatusEnum];
+export type ListDocumentsStatusEnum =
+  (typeof ListDocumentsStatusEnum)[keyof typeof ListDocumentsStatusEnum];
 /**
  * @export
  */
 export const ListDocumentsInvoiceTypeEnum = {
-    Consolidate: 'CONSOLIDATE',
-    Justsave: 'JUSTSAVE',
-    Buyer: 'BUYER',
-    Personal: 'PERSONAL'
+  Consolidate: "CONSOLIDATE",
+  Justsave: "JUSTSAVE",
+  Buyer: "BUYER",
+  Personal: "PERSONAL",
 } as const;
-export type ListDocumentsInvoiceTypeEnum = typeof ListDocumentsInvoiceTypeEnum[keyof typeof ListDocumentsInvoiceTypeEnum];
+export type ListDocumentsInvoiceTypeEnum =
+  (typeof ListDocumentsInvoiceTypeEnum)[keyof typeof ListDocumentsInvoiceTypeEnum];

@@ -558,7 +558,18 @@ describe("normalizer", () => {
             taxAmount: 8,
             total: 108,
             currency: "MYR",
-            items: [{ description: "P", quantity: 1, unitPrice: 100, discount: 0, taxCode: "06" as const, taxRate: 0, taxAmount: 0, total: 100 }],
+            items: [
+              {
+                description: "P",
+                quantity: 1,
+                unitPrice: 100,
+                discount: 0,
+                taxCode: "06" as const,
+                taxRate: 0,
+                taxAmount: 0,
+                total: 100,
+              },
+            ],
           },
         ],
       };

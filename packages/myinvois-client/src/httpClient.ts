@@ -62,7 +62,12 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
  */
 export interface MetricsHooks {
   onUpstreamRequestStart?: (endpoint: string, method: string) => void;
-  onUpstreamRequestEnd?: (endpoint: string, method: string, status: number, durationMs: number) => void;
+  onUpstreamRequestEnd?: (
+    endpoint: string,
+    method: string,
+    status: number,
+    durationMs: number
+  ) => void;
   onUpstreamRateLimited?: (endpoint: string) => void;
   onTokenCacheHit?: () => void;
   onTokenCacheMiss?: () => void;
@@ -139,7 +144,10 @@ export class MyInvoisHttpClient {
   /**
    * Create AbortController with timeout
    */
-  private createTimeoutController(timeoutMs: number): { controller: AbortController; timeoutId: NodeJS.Timeout } {
+  private createTimeoutController(timeoutMs: number): {
+    controller: AbortController;
+    timeoutId: NodeJS.Timeout;
+  } {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     return { controller, timeoutId };
@@ -190,7 +198,8 @@ export class MyInvoisHttpClient {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       // Wait before retry (exponential backoff)
       if (attempt > 0) {
-        const backoffMs = this.retry.initialBackoffMs * Math.pow(this.retry.backoffMultiplier, attempt - 1);
+        const backoffMs =
+          this.retry.initialBackoffMs * Math.pow(this.retry.backoffMultiplier, attempt - 1);
         await sleep(backoffMs);
       }
 
@@ -271,7 +280,8 @@ export class MyInvoisHttpClient {
         const refreshResult = await this.tokenManager.refreshToken(session);
         if (refreshResult.ok) {
           // Retry with new token (single retry, new timeout)
-          const { controller: retryController, timeoutId: retryTimeoutId } = this.createTimeoutController(timeout);
+          const { controller: retryController, timeoutId: retryTimeoutId } =
+            this.createTimeoutController(timeout);
           const retryHeaders = { ...headers };
           retryHeaders["Authorization"] = `Bearer ${refreshResult.token.accessToken}`;
 
@@ -290,13 +300,19 @@ export class MyInvoisHttpClient {
             const retryDurationMs = performance.now() - retryStartTime;
             const retryMeta = extractUpstreamMeta(retryResponse.headers);
 
-            this.metricsHooks?.onUpstreamRequestEnd?.(endpoint, method, retryResponse.status, retryDurationMs);
+            this.metricsHooks?.onUpstreamRequestEnd?.(
+              endpoint,
+              method,
+              retryResponse.status,
+              retryDurationMs
+            );
 
             if (!retryResponse.ok) {
               return this.buildErrorResponse<T>(retryResponse, retryMeta);
             }
 
-            const retryData = retryResponse.status !== 204 ? (await retryResponse.json()) as T : undefined;
+            const retryData =
+              retryResponse.status !== 204 ? ((await retryResponse.json()) as T) : undefined;
             return {
               ok: true,
               status: retryResponse.status,
@@ -336,7 +352,7 @@ export class MyInvoisHttpClient {
         return this.buildErrorResponse<T>(response, meta);
       }
 
-      const data = response.status !== 204 ? (await response.json()) as T : undefined;
+      const data = response.status !== 204 ? ((await response.json()) as T) : undefined;
       return {
         ok: true,
         status: response.status,
@@ -385,7 +401,15 @@ export class MyInvoisHttpClient {
   ): Promise<MyInvoisResponse<T>> {
     let message = `Request failed with status ${response.status}`;
     let code = "UPSTREAM_ERROR";
-    let details: Array<{ code?: string; message?: string; target?: string; propertyName?: string; propertyPath?: string }> | undefined;
+    let details:
+      | Array<{
+          code?: string;
+          message?: string;
+          target?: string;
+          propertyName?: string;
+          propertyPath?: string;
+        }>
+      | undefined;
 
     try {
       const errorBody = (await response.json()) as Record<string, unknown>;
@@ -407,8 +431,10 @@ export class MyInvoisHttpClient {
           code: typeof errorBody.code === "string" ? errorBody.code : undefined,
           message: typeof errorBody.message === "string" ? errorBody.message : undefined,
           target: typeof errorBody.target === "string" ? errorBody.target : undefined,
-          propertyName: typeof errorBody.propertyName === "string" ? errorBody.propertyName : undefined,
-          propertyPath: typeof errorBody.propertyPath === "string" ? errorBody.propertyPath : undefined,
+          propertyName:
+            typeof errorBody.propertyName === "string" ? errorBody.propertyName : undefined,
+          propertyPath:
+            typeof errorBody.propertyPath === "string" ? errorBody.propertyPath : undefined,
         });
       }
 
@@ -420,8 +446,10 @@ export class MyInvoisHttpClient {
               code: typeof detail.code === "string" ? detail.code : undefined,
               message: typeof detail.message === "string" ? detail.message : undefined,
               target: typeof detail.target === "string" ? detail.target : undefined,
-              propertyName: typeof detail.propertyName === "string" ? detail.propertyName : undefined,
-              propertyPath: typeof detail.propertyPath === "string" ? detail.propertyPath : undefined,
+              propertyName:
+                typeof detail.propertyName === "string" ? detail.propertyName : undefined,
+              propertyPath:
+                typeof detail.propertyPath === "string" ? detail.propertyPath : undefined,
             });
           }
         }

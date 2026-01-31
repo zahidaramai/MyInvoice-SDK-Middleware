@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * HashLHDN MyInvois Middleware API
- * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ``` 
+ * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ```
  *
  * The version of the OpenAPI document: 1.1.1
  * Contact: hello@zahidaramai.com
@@ -12,42 +12,40 @@
  * Do not edit the class manually.
  */
 
-
 // May contain unused imports in some cases
 // @ts-ignore
-import type { SubmitBuyerRequestInvoice } from './submit-buyer-request-invoice';
+import type { SubmitBuyerRequestInvoice } from "./submit-buyer-request-invoice";
 
 /**
- * 
+ *
  * @export
  * @interface SubmitPersonalRequest
  */
 export interface SubmitPersonalRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof SubmitPersonalRequest
-     */
-    'companyId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SubmitPersonalRequest
-     */
-    'documentVersion'?: SubmitPersonalRequestDocumentVersionEnum;
-    /**
-     * 
-     * @type {SubmitBuyerRequestInvoice}
-     * @memberof SubmitPersonalRequest
-     */
-    'invoice': SubmitBuyerRequestInvoice;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmitPersonalRequest
+   */
+  companyId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmitPersonalRequest
+   */
+  documentVersion?: SubmitPersonalRequestDocumentVersionEnum;
+  /**
+   *
+   * @type {SubmitBuyerRequestInvoice}
+   * @memberof SubmitPersonalRequest
+   */
+  invoice: SubmitBuyerRequestInvoice;
 }
 
 export const SubmitPersonalRequestDocumentVersionEnum = {
-    _0: '1.0',
-    _1: '1.1'
+  _0: "1.0",
+  _1: "1.1",
 } as const;
 
-export type SubmitPersonalRequestDocumentVersionEnum = typeof SubmitPersonalRequestDocumentVersionEnum[keyof typeof SubmitPersonalRequestDocumentVersionEnum];
-
-
+export type SubmitPersonalRequestDocumentVersionEnum =
+  (typeof SubmitPersonalRequestDocumentVersionEnum)[keyof typeof SubmitPersonalRequestDocumentVersionEnum];

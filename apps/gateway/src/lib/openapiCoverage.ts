@@ -45,9 +45,7 @@ export function loadOpenAPIRoutes(specPath?: string): ExpectedRoute[] {
   return routes;
 }
 
-export function getRegisteredRoutes(
-  fastify: { printRoutes: () => string }
-): ExpectedRoute[] {
+export function getRegisteredRoutes(fastify: { printRoutes: () => string }): ExpectedRoute[] {
   const routeTree = fastify.printRoutes();
   const routes: ExpectedRoute[] = [];
   const lines = routeTree.split("\n");
@@ -69,9 +67,7 @@ export function findMissingRoutes(
   expected: ExpectedRoute[],
   registered: ExpectedRoute[]
 ): ExpectedRoute[] {
-  const registeredSet = new Set(
-    registered.map((r) => `${r.method}:${r.path}`)
-  );
+  const registeredSet = new Set(registered.map((r) => `${r.method}:${r.path}`));
 
   return expected.filter((e) => !registeredSet.has(`${e.method}:${e.path}`));
 }

@@ -8,11 +8,7 @@
  */
 
 import { getPrismaClient } from "../prisma.js";
-import type {
-  GetTinCacheInput,
-  SetTinCacheInput,
-  TinValidateCacheRecord,
-} from "../types.js";
+import type { GetTinCacheInput, SetTinCacheInput, TinValidateCacheRecord } from "../types.js";
 
 /**
  * Get TIN validation result from cache
@@ -109,9 +105,7 @@ export async function cleanupExpiredTinCache(): Promise<number> {
 /**
  * Delete all TIN cache entries for a session
  */
-export async function deleteTinCacheForSession(
-  sessionId: string
-): Promise<number> {
+export async function deleteTinCacheForSession(sessionId: string): Promise<number> {
   const prisma = getPrismaClient();
 
   const result = await prisma.tinValidateCache.deleteMany({

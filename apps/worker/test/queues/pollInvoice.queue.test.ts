@@ -174,11 +174,7 @@ describe("pollInvoice.queue", () => {
     });
 
     it("allows same invoice different attempts", () => {
-      const ids = [
-        "poll-inv-1-0",
-        "poll-inv-1-1",
-        "poll-inv-1-2",
-      ];
+      const ids = ["poll-inv-1-0", "poll-inv-1-1", "poll-inv-1-2"];
 
       const uniqueIds = new Set(ids);
       expect(uniqueIds.size).toBe(3);
@@ -219,9 +215,9 @@ describe("pollInvoice.queue", () => {
         add: vi.fn().mockRejectedValue(new Error("Connection refused")),
       };
 
-      await expect(
-        queue.add("poll-invoice", { invoiceId: "inv-1" })
-      ).rejects.toThrow("Connection refused");
+      await expect(queue.add("poll-invoice", { invoiceId: "inv-1" })).rejects.toThrow(
+        "Connection refused"
+      );
     });
 
     it("handles job processing error", () => {

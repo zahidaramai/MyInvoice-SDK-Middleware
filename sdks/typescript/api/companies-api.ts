@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * HashLHDN MyInvois Middleware API
- * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ``` 
+ * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ```
  *
  * The version of the OpenAPI document: 1.1.1
  * Contact: hello@zahidaramai.com
@@ -12,619 +12,858 @@
  * Do not edit the class manually.
  */
 
-
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from '../common';
+import {
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
-import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
+import {
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  type RequestArgs,
+  BaseAPI,
+  RequiredError,
+  operationServerMap,
+} from "../base";
 // @ts-ignore
-import type { Company } from '../models';
+import type { Company } from "../models";
 // @ts-ignore
-import type { CompanyListResponse } from '../models';
+import type { CompanyListResponse } from "../models";
 // @ts-ignore
-import type { CreateCompanyRequest } from '../models';
+import type { CreateCompanyRequest } from "../models";
 // @ts-ignore
-import type { ErrorResponse } from '../models';
+import type { ErrorResponse } from "../models";
 // @ts-ignore
-import type { ListAllCompanies200Response } from '../models';
+import type { ListAllCompanies200Response } from "../models";
 // @ts-ignore
-import type { UpdateCompanyRequest } from '../models';
+import type { UpdateCompanyRequest } from "../models";
 // @ts-ignore
-import type { UpdateCredentialsRequest } from '../models';
+import type { UpdateCredentialsRequest } from "../models";
 /**
  * CompaniesApi - axios parameter creator
  * @export
  */
 export const CompaniesApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * Grant a user access to a company
-         * @summary Add user to company
-         * @param {string} id 
-         * @param {string} userId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        addUserToCompany: async (id: string, userId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('addUserToCompany', 'id', id)
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('addUserToCompany', 'userId', userId)
-            const localVarPath = `/api/v1/companies/{id}/users/{userId}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
-                .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+  return {
+    /**
+     * Grant a user access to a company
+     * @summary Add user to company
+     * @param {string} id
+     * @param {string} userId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    addUserToCompany: async (
+      id: string,
+      userId: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("addUserToCompany", "id", id);
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists("addUserToCompany", "userId", userId);
+      const localVarPath = `/api/v1/companies/{id}/users/{userId}`
+        .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+        .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = { method: "POST", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Create a new company with TIN and business registration details
+     * @summary Create company
+     * @param {CreateCompanyRequest} createCompanyRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createCompany: async (
+      createCompanyRequest: CreateCompanyRequest,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'createCompanyRequest' is not null or undefined
+      assertParamExists("createCompany", "createCompanyRequest", createCompanyRequest);
+      const localVarPath = `/api/v1/companies`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Create a new company with TIN and business registration details
-         * @summary Create company
-         * @param {CreateCompanyRequest} createCompanyRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createCompany: async (createCompanyRequest: CreateCompanyRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'createCompanyRequest' is not null or undefined
-            assertParamExists('createCompany', 'createCompanyRequest', createCompanyRequest)
-            const localVarPath = `/api/v1/companies`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      const localVarRequestOptions = { method: "POST", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        createCompanyRequest,
+        localVarRequestOptions,
+        configuration
+      );
 
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Permanently delete a company and all associated data
+     * @summary Delete company
+     * @param {string} id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteCompany: async (
+      id: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("deleteCompany", "id", id);
+      const localVarPath = `/api/v1/companies/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(createCompanyRequest, localVarRequestOptions, configuration)
+      const localVarRequestOptions = { method: "DELETE", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Permanently delete a company and all associated data
-         * @summary Delete company
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteCompany: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteCompany', 'id', id)
-            const localVarPath = `/api/v1/companies/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Retrieve company details including TIN and MyInvois configuration
+     * @summary Get company by ID
+     * @param {string} id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getCompany: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getCompany", "id", id);
+      const localVarPath = `/api/v1/companies/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
+      const localVarRequestOptions = { method: "GET", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retrieve company details including TIN and MyInvois configuration
-         * @summary Get company by ID
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getCompany: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getCompany', 'id', id)
-            const localVarPath = `/api/v1/companies/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Returns all companies without pagination for dropdowns and selectors
+     * @summary List all companies (no pagination)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listAllCompanies: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1/companies/all`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      const localVarRequestOptions = { method: "GET", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Returns all companies without pagination for dropdowns and selectors
-         * @summary List all companies (no pagination)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listAllCompanies: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/companies/all`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List all companies with pagination
+     * @summary List companies
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listCompanies: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1/companies`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = { method: "GET", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Revoke a user\'s access to a company
+     * @summary Remove user from company
+     * @param {string} id
+     * @param {string} userId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    removeUserFromCompany: async (
+      id: string,
+      userId: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("removeUserFromCompany", "id", id);
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists("removeUserFromCompany", "userId", userId);
+      const localVarPath = `/api/v1/companies/{id}/users/{userId}`
+        .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+        .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * List all companies with pagination
-         * @summary List companies
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listCompanies: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/companies`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      const localVarRequestOptions = { method: "DELETE", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update company details such as name, address, or contact information
+     * @summary Update company
+     * @param {string} id
+     * @param {UpdateCompanyRequest} updateCompanyRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateCompany: async (
+      id: string,
+      updateCompanyRequest: UpdateCompanyRequest,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("updateCompany", "id", id);
+      // verify required parameter 'updateCompanyRequest' is not null or undefined
+      assertParamExists("updateCompany", "updateCompanyRequest", updateCompanyRequest);
+      const localVarPath = `/api/v1/companies/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      const localVarRequestOptions = { method: "PUT", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Revoke a user\'s access to a company
-         * @summary Remove user from company
-         * @param {string} id 
-         * @param {string} userId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        removeUserFromCompany: async (id: string, userId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('removeUserFromCompany', 'id', id)
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('removeUserFromCompany', 'userId', userId)
-            const localVarPath = `/api/v1/companies/{id}/users/{userId}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
-                .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        updateCompanyRequest,
+        localVarRequestOptions,
+        configuration
+      );
 
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Configure the company\'s MyInvois API credentials
+     * @summary Set MyInvois credentials
+     * @param {string} id
+     * @param {UpdateCredentialsRequest} updateCredentialsRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateCompanyCredentials: async (
+      id: string,
+      updateCredentialsRequest: UpdateCredentialsRequest,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("updateCompanyCredentials", "id", id);
+      // verify required parameter 'updateCredentialsRequest' is not null or undefined
+      assertParamExists(
+        "updateCompanyCredentials",
+        "updateCredentialsRequest",
+        updateCredentialsRequest
+      );
+      const localVarPath = `/api/v1/companies/{id}/credentials`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+      const localVarRequestOptions = { method: "PUT", ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Update company details such as name, address, or contact information
-         * @summary Update company
-         * @param {string} id 
-         * @param {UpdateCompanyRequest} updateCompanyRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateCompany: async (id: string, updateCompanyRequest: UpdateCompanyRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateCompany', 'id', id)
-            // verify required parameter 'updateCompanyRequest' is not null or undefined
-            assertParamExists('updateCompany', 'updateCompanyRequest', updateCompanyRequest)
-            const localVarPath = `/api/v1/companies/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      // authentication bearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        updateCredentialsRequest,
+        localVarRequestOptions,
+        configuration
+      );
 
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(updateCompanyRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Configure the company\'s MyInvois API credentials
-         * @summary Set MyInvois credentials
-         * @param {string} id 
-         * @param {UpdateCredentialsRequest} updateCredentialsRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateCompanyCredentials: async (id: string, updateCredentialsRequest: UpdateCredentialsRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateCompanyCredentials', 'id', id)
-            // verify required parameter 'updateCredentialsRequest' is not null or undefined
-            assertParamExists('updateCompanyCredentials', 'updateCredentialsRequest', updateCredentialsRequest)
-            const localVarPath = `/api/v1/companies/{id}/credentials`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(updateCredentialsRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
  * CompaniesApi - functional programming interface
  * @export
  */
-export const CompaniesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = CompaniesApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * Grant a user access to a company
-         * @summary Add user to company
-         * @param {string} id 
-         * @param {string} userId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async addUserToCompany(id: string, userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addUserToCompany(id, userId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.addUserToCompany']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Create a new company with TIN and business registration details
-         * @summary Create company
-         * @param {CreateCompanyRequest} createCompanyRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createCompany(createCompanyRequest: CreateCompanyRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createCompany(createCompanyRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.createCompany']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Permanently delete a company and all associated data
-         * @summary Delete company
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteCompany(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteCompany(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.deleteCompany']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retrieve company details including TIN and MyInvois configuration
-         * @summary Get company by ID
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getCompany(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getCompany(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.getCompany']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Returns all companies without pagination for dropdowns and selectors
-         * @summary List all companies (no pagination)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async listAllCompanies(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListAllCompanies200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listAllCompanies(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.listAllCompanies']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * List all companies with pagination
-         * @summary List companies
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async listCompanies(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyListResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listCompanies(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.listCompanies']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Revoke a user\'s access to a company
-         * @summary Remove user from company
-         * @param {string} id 
-         * @param {string} userId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async removeUserFromCompany(id: string, userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeUserFromCompany(id, userId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.removeUserFromCompany']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Update company details such as name, address, or contact information
-         * @summary Update company
-         * @param {string} id 
-         * @param {UpdateCompanyRequest} updateCompanyRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateCompany(id: string, updateCompanyRequest: UpdateCompanyRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateCompany(id, updateCompanyRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.updateCompany']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Configure the company\'s MyInvois API credentials
-         * @summary Set MyInvois credentials
-         * @param {string} id 
-         * @param {UpdateCredentialsRequest} updateCredentialsRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateCompanyCredentials(id: string, updateCredentialsRequest: UpdateCredentialsRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateCompanyCredentials(id, updateCredentialsRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompaniesApi.updateCompanyCredentials']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
+export const CompaniesApiFp = function (configuration?: Configuration) {
+  const localVarAxiosParamCreator = CompaniesApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Grant a user access to a company
+     * @summary Add user to company
+     * @param {string} id
+     * @param {string} userId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async addUserToCompany(
+      id: string,
+      userId: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.addUserToCompany(
+        id,
+        userId,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.addUserToCompany"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Create a new company with TIN and business registration details
+     * @summary Create company
+     * @param {CreateCompanyRequest} createCompanyRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async createCompany(
+      createCompanyRequest: CreateCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.createCompany(
+        createCompanyRequest,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.createCompany"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Permanently delete a company and all associated data
+     * @summary Delete company
+     * @param {string} id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteCompany(
+      id: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteCompany(id, options);
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.deleteCompany"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Retrieve company details including TIN and MyInvois configuration
+     * @summary Get company by ID
+     * @param {string} id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getCompany(
+      id: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getCompany(id, options);
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.getCompany"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Returns all companies without pagination for dropdowns and selectors
+     * @summary List all companies (no pagination)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listAllCompanies(
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListAllCompanies200Response>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.listAllCompanies(options);
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.listAllCompanies"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * List all companies with pagination
+     * @summary List companies
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listCompanies(
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyListResponse>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.listCompanies(options);
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.listCompanies"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Revoke a user\'s access to a company
+     * @summary Remove user from company
+     * @param {string} id
+     * @param {string} userId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async removeUserFromCompany(
+      id: string,
+      userId: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.removeUserFromCompany(
+        id,
+        userId,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.removeUserFromCompany"]?.[localVarOperationServerIndex]
+          ?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Update company details such as name, address, or contact information
+     * @summary Update company
+     * @param {string} id
+     * @param {UpdateCompanyRequest} updateCompanyRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateCompany(
+      id: string,
+      updateCompanyRequest: UpdateCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.updateCompany(
+        id,
+        updateCompanyRequest,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.updateCompany"]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Configure the company\'s MyInvois API credentials
+     * @summary Set MyInvois credentials
+     * @param {string} id
+     * @param {UpdateCredentialsRequest} updateCredentialsRequest
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateCompanyCredentials(
+      id: string,
+      updateCredentialsRequest: UpdateCredentialsRequest,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Company>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.updateCompanyCredentials(
+        id,
+        updateCredentialsRequest,
+        options
+      );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap["CompaniesApi.updateCompanyCredentials"]?.[localVarOperationServerIndex]
+          ?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+  };
 };
 
 /**
  * CompaniesApi - factory interface
  * @export
  */
-export const CompaniesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = CompaniesApiFp(configuration)
-    return {
-        /**
-         * Grant a user access to a company
-         * @summary Add user to company
-         * @param {CompaniesApiAddUserToCompanyRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        addUserToCompany(requestParameters: CompaniesApiAddUserToCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.addUserToCompany(requestParameters.id, requestParameters.userId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Create a new company with TIN and business registration details
-         * @summary Create company
-         * @param {CompaniesApiCreateCompanyRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createCompany(requestParameters: CompaniesApiCreateCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company> {
-            return localVarFp.createCompany(requestParameters.createCompanyRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Permanently delete a company and all associated data
-         * @summary Delete company
-         * @param {CompaniesApiDeleteCompanyRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteCompany(requestParameters: CompaniesApiDeleteCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteCompany(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retrieve company details including TIN and MyInvois configuration
-         * @summary Get company by ID
-         * @param {CompaniesApiGetCompanyRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getCompany(requestParameters: CompaniesApiGetCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company> {
-            return localVarFp.getCompany(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Returns all companies without pagination for dropdowns and selectors
-         * @summary List all companies (no pagination)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listAllCompanies(options?: RawAxiosRequestConfig): AxiosPromise<ListAllCompanies200Response> {
-            return localVarFp.listAllCompanies(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * List all companies with pagination
-         * @summary List companies
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listCompanies(options?: RawAxiosRequestConfig): AxiosPromise<CompanyListResponse> {
-            return localVarFp.listCompanies(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Revoke a user\'s access to a company
-         * @summary Remove user from company
-         * @param {CompaniesApiRemoveUserFromCompanyRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        removeUserFromCompany(requestParameters: CompaniesApiRemoveUserFromCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.removeUserFromCompany(requestParameters.id, requestParameters.userId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Update company details such as name, address, or contact information
-         * @summary Update company
-         * @param {CompaniesApiUpdateCompanyRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateCompany(requestParameters: CompaniesApiUpdateCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company> {
-            return localVarFp.updateCompany(requestParameters.id, requestParameters.updateCompanyRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Configure the company\'s MyInvois API credentials
-         * @summary Set MyInvois credentials
-         * @param {CompaniesApiUpdateCompanyCredentialsRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateCompanyCredentials(requestParameters: CompaniesApiUpdateCompanyCredentialsRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company> {
-            return localVarFp.updateCompanyCredentials(requestParameters.id, requestParameters.updateCredentialsRequest, options).then((request) => request(axios, basePath));
-        },
-    };
+export const CompaniesApiFactory = function (
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
+) {
+  const localVarFp = CompaniesApiFp(configuration);
+  return {
+    /**
+     * Grant a user access to a company
+     * @summary Add user to company
+     * @param {CompaniesApiAddUserToCompanyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    addUserToCompany(
+      requestParameters: CompaniesApiAddUserToCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .addUserToCompany(requestParameters.id, requestParameters.userId, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Create a new company with TIN and business registration details
+     * @summary Create company
+     * @param {CompaniesApiCreateCompanyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createCompany(
+      requestParameters: CompaniesApiCreateCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<Company> {
+      return localVarFp
+        .createCompany(requestParameters.createCompanyRequest, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Permanently delete a company and all associated data
+     * @summary Delete company
+     * @param {CompaniesApiDeleteCompanyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteCompany(
+      requestParameters: CompaniesApiDeleteCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deleteCompany(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Retrieve company details including TIN and MyInvois configuration
+     * @summary Get company by ID
+     * @param {CompaniesApiGetCompanyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getCompany(
+      requestParameters: CompaniesApiGetCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<Company> {
+      return localVarFp
+        .getCompany(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Returns all companies without pagination for dropdowns and selectors
+     * @summary List all companies (no pagination)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listAllCompanies(options?: RawAxiosRequestConfig): AxiosPromise<ListAllCompanies200Response> {
+      return localVarFp.listAllCompanies(options).then((request) => request(axios, basePath));
+    },
+    /**
+     * List all companies with pagination
+     * @summary List companies
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listCompanies(options?: RawAxiosRequestConfig): AxiosPromise<CompanyListResponse> {
+      return localVarFp.listCompanies(options).then((request) => request(axios, basePath));
+    },
+    /**
+     * Revoke a user\'s access to a company
+     * @summary Remove user from company
+     * @param {CompaniesApiRemoveUserFromCompanyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    removeUserFromCompany(
+      requestParameters: CompaniesApiRemoveUserFromCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .removeUserFromCompany(requestParameters.id, requestParameters.userId, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update company details such as name, address, or contact information
+     * @summary Update company
+     * @param {CompaniesApiUpdateCompanyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateCompany(
+      requestParameters: CompaniesApiUpdateCompanyRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<Company> {
+      return localVarFp
+        .updateCompany(requestParameters.id, requestParameters.updateCompanyRequest, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Configure the company\'s MyInvois API credentials
+     * @summary Set MyInvois credentials
+     * @param {CompaniesApiUpdateCompanyCredentialsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateCompanyCredentials(
+      requestParameters: CompaniesApiUpdateCompanyCredentialsRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<Company> {
+      return localVarFp
+        .updateCompanyCredentials(
+          requestParameters.id,
+          requestParameters.updateCredentialsRequest,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -633,94 +872,114 @@ export const CompaniesApiFactory = function (configuration?: Configuration, base
  * @interface CompaniesApi
  */
 export interface CompaniesApiInterface {
-    /**
-     * Grant a user access to a company
-     * @summary Add user to company
-     * @param {CompaniesApiAddUserToCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    addUserToCompany(requestParameters: CompaniesApiAddUserToCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<void>;
+  /**
+   * Grant a user access to a company
+   * @summary Add user to company
+   * @param {CompaniesApiAddUserToCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  addUserToCompany(
+    requestParameters: CompaniesApiAddUserToCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<void>;
 
-    /**
-     * Create a new company with TIN and business registration details
-     * @summary Create company
-     * @param {CompaniesApiCreateCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    createCompany(requestParameters: CompaniesApiCreateCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company>;
+  /**
+   * Create a new company with TIN and business registration details
+   * @summary Create company
+   * @param {CompaniesApiCreateCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  createCompany(
+    requestParameters: CompaniesApiCreateCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<Company>;
 
-    /**
-     * Permanently delete a company and all associated data
-     * @summary Delete company
-     * @param {CompaniesApiDeleteCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    deleteCompany(requestParameters: CompaniesApiDeleteCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<void>;
+  /**
+   * Permanently delete a company and all associated data
+   * @summary Delete company
+   * @param {CompaniesApiDeleteCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  deleteCompany(
+    requestParameters: CompaniesApiDeleteCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<void>;
 
-    /**
-     * Retrieve company details including TIN and MyInvois configuration
-     * @summary Get company by ID
-     * @param {CompaniesApiGetCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    getCompany(requestParameters: CompaniesApiGetCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company>;
+  /**
+   * Retrieve company details including TIN and MyInvois configuration
+   * @summary Get company by ID
+   * @param {CompaniesApiGetCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  getCompany(
+    requestParameters: CompaniesApiGetCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<Company>;
 
-    /**
-     * Returns all companies without pagination for dropdowns and selectors
-     * @summary List all companies (no pagination)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    listAllCompanies(options?: RawAxiosRequestConfig): AxiosPromise<ListAllCompanies200Response>;
+  /**
+   * Returns all companies without pagination for dropdowns and selectors
+   * @summary List all companies (no pagination)
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  listAllCompanies(options?: RawAxiosRequestConfig): AxiosPromise<ListAllCompanies200Response>;
 
-    /**
-     * List all companies with pagination
-     * @summary List companies
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    listCompanies(options?: RawAxiosRequestConfig): AxiosPromise<CompanyListResponse>;
+  /**
+   * List all companies with pagination
+   * @summary List companies
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  listCompanies(options?: RawAxiosRequestConfig): AxiosPromise<CompanyListResponse>;
 
-    /**
-     * Revoke a user\'s access to a company
-     * @summary Remove user from company
-     * @param {CompaniesApiRemoveUserFromCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    removeUserFromCompany(requestParameters: CompaniesApiRemoveUserFromCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<void>;
+  /**
+   * Revoke a user\'s access to a company
+   * @summary Remove user from company
+   * @param {CompaniesApiRemoveUserFromCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  removeUserFromCompany(
+    requestParameters: CompaniesApiRemoveUserFromCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<void>;
 
-    /**
-     * Update company details such as name, address, or contact information
-     * @summary Update company
-     * @param {CompaniesApiUpdateCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    updateCompany(requestParameters: CompaniesApiUpdateCompanyRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company>;
+  /**
+   * Update company details such as name, address, or contact information
+   * @summary Update company
+   * @param {CompaniesApiUpdateCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  updateCompany(
+    requestParameters: CompaniesApiUpdateCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<Company>;
 
-    /**
-     * Configure the company\'s MyInvois API credentials
-     * @summary Set MyInvois credentials
-     * @param {CompaniesApiUpdateCompanyCredentialsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApiInterface
-     */
-    updateCompanyCredentials(requestParameters: CompaniesApiUpdateCompanyCredentialsRequest, options?: RawAxiosRequestConfig): AxiosPromise<Company>;
-
+  /**
+   * Configure the company\'s MyInvois API credentials
+   * @summary Set MyInvois credentials
+   * @param {CompaniesApiUpdateCompanyCredentialsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApiInterface
+   */
+  updateCompanyCredentials(
+    requestParameters: CompaniesApiUpdateCompanyCredentialsRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<Company>;
 }
 
 /**
@@ -729,19 +988,19 @@ export interface CompaniesApiInterface {
  * @interface CompaniesApiAddUserToCompanyRequest
  */
 export interface CompaniesApiAddUserToCompanyRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiAddUserToCompany
-     */
-    readonly id: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiAddUserToCompany
+   */
+  readonly id: string;
 
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiAddUserToCompany
-     */
-    readonly userId: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiAddUserToCompany
+   */
+  readonly userId: string;
 }
 
 /**
@@ -750,12 +1009,12 @@ export interface CompaniesApiAddUserToCompanyRequest {
  * @interface CompaniesApiCreateCompanyRequest
  */
 export interface CompaniesApiCreateCompanyRequest {
-    /**
-     * 
-     * @type {CreateCompanyRequest}
-     * @memberof CompaniesApiCreateCompany
-     */
-    readonly createCompanyRequest: CreateCompanyRequest
+  /**
+   *
+   * @type {CreateCompanyRequest}
+   * @memberof CompaniesApiCreateCompany
+   */
+  readonly createCompanyRequest: CreateCompanyRequest;
 }
 
 /**
@@ -764,12 +1023,12 @@ export interface CompaniesApiCreateCompanyRequest {
  * @interface CompaniesApiDeleteCompanyRequest
  */
 export interface CompaniesApiDeleteCompanyRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiDeleteCompany
-     */
-    readonly id: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiDeleteCompany
+   */
+  readonly id: string;
 }
 
 /**
@@ -778,12 +1037,12 @@ export interface CompaniesApiDeleteCompanyRequest {
  * @interface CompaniesApiGetCompanyRequest
  */
 export interface CompaniesApiGetCompanyRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiGetCompany
-     */
-    readonly id: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiGetCompany
+   */
+  readonly id: string;
 }
 
 /**
@@ -792,19 +1051,19 @@ export interface CompaniesApiGetCompanyRequest {
  * @interface CompaniesApiRemoveUserFromCompanyRequest
  */
 export interface CompaniesApiRemoveUserFromCompanyRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiRemoveUserFromCompany
-     */
-    readonly id: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiRemoveUserFromCompany
+   */
+  readonly id: string;
 
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiRemoveUserFromCompany
-     */
-    readonly userId: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiRemoveUserFromCompany
+   */
+  readonly userId: string;
 }
 
 /**
@@ -813,19 +1072,19 @@ export interface CompaniesApiRemoveUserFromCompanyRequest {
  * @interface CompaniesApiUpdateCompanyRequest
  */
 export interface CompaniesApiUpdateCompanyRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiUpdateCompany
-     */
-    readonly id: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiUpdateCompany
+   */
+  readonly id: string;
 
-    /**
-     * 
-     * @type {UpdateCompanyRequest}
-     * @memberof CompaniesApiUpdateCompany
-     */
-    readonly updateCompanyRequest: UpdateCompanyRequest
+  /**
+   *
+   * @type {UpdateCompanyRequest}
+   * @memberof CompaniesApiUpdateCompany
+   */
+  readonly updateCompanyRequest: UpdateCompanyRequest;
 }
 
 /**
@@ -834,19 +1093,19 @@ export interface CompaniesApiUpdateCompanyRequest {
  * @interface CompaniesApiUpdateCompanyCredentialsRequest
  */
 export interface CompaniesApiUpdateCompanyCredentialsRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof CompaniesApiUpdateCompanyCredentials
-     */
-    readonly id: string
+  /**
+   *
+   * @type {string}
+   * @memberof CompaniesApiUpdateCompanyCredentials
+   */
+  readonly id: string;
 
-    /**
-     * 
-     * @type {UpdateCredentialsRequest}
-     * @memberof CompaniesApiUpdateCompanyCredentials
-     */
-    readonly updateCredentialsRequest: UpdateCredentialsRequest
+  /**
+   *
+   * @type {UpdateCredentialsRequest}
+   * @memberof CompaniesApiUpdateCompanyCredentials
+   */
+  readonly updateCredentialsRequest: UpdateCredentialsRequest;
 }
 
 /**
@@ -856,110 +1115,152 @@ export interface CompaniesApiUpdateCompanyCredentialsRequest {
  * @extends {BaseAPI}
  */
 export class CompaniesApi extends BaseAPI implements CompaniesApiInterface {
-    /**
-     * Grant a user access to a company
-     * @summary Add user to company
-     * @param {CompaniesApiAddUserToCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public addUserToCompany(requestParameters: CompaniesApiAddUserToCompanyRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).addUserToCompany(requestParameters.id, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Grant a user access to a company
+   * @summary Add user to company
+   * @param {CompaniesApiAddUserToCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public addUserToCompany(
+    requestParameters: CompaniesApiAddUserToCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .addUserToCompany(requestParameters.id, requestParameters.userId, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Create a new company with TIN and business registration details
-     * @summary Create company
-     * @param {CompaniesApiCreateCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public createCompany(requestParameters: CompaniesApiCreateCompanyRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).createCompany(requestParameters.createCompanyRequest, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Create a new company with TIN and business registration details
+   * @summary Create company
+   * @param {CompaniesApiCreateCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public createCompany(
+    requestParameters: CompaniesApiCreateCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .createCompany(requestParameters.createCompanyRequest, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Permanently delete a company and all associated data
-     * @summary Delete company
-     * @param {CompaniesApiDeleteCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public deleteCompany(requestParameters: CompaniesApiDeleteCompanyRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).deleteCompany(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Permanently delete a company and all associated data
+   * @summary Delete company
+   * @param {CompaniesApiDeleteCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public deleteCompany(
+    requestParameters: CompaniesApiDeleteCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .deleteCompany(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Retrieve company details including TIN and MyInvois configuration
-     * @summary Get company by ID
-     * @param {CompaniesApiGetCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public getCompany(requestParameters: CompaniesApiGetCompanyRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).getCompany(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Retrieve company details including TIN and MyInvois configuration
+   * @summary Get company by ID
+   * @param {CompaniesApiGetCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public getCompany(
+    requestParameters: CompaniesApiGetCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .getCompany(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Returns all companies without pagination for dropdowns and selectors
-     * @summary List all companies (no pagination)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public listAllCompanies(options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).listAllCompanies(options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Returns all companies without pagination for dropdowns and selectors
+   * @summary List all companies (no pagination)
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public listAllCompanies(options?: RawAxiosRequestConfig) {
+    return CompaniesApiFp(this.configuration)
+      .listAllCompanies(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * List all companies with pagination
-     * @summary List companies
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public listCompanies(options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).listCompanies(options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * List all companies with pagination
+   * @summary List companies
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public listCompanies(options?: RawAxiosRequestConfig) {
+    return CompaniesApiFp(this.configuration)
+      .listCompanies(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Revoke a user\'s access to a company
-     * @summary Remove user from company
-     * @param {CompaniesApiRemoveUserFromCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public removeUserFromCompany(requestParameters: CompaniesApiRemoveUserFromCompanyRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).removeUserFromCompany(requestParameters.id, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Revoke a user\'s access to a company
+   * @summary Remove user from company
+   * @param {CompaniesApiRemoveUserFromCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public removeUserFromCompany(
+    requestParameters: CompaniesApiRemoveUserFromCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .removeUserFromCompany(requestParameters.id, requestParameters.userId, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Update company details such as name, address, or contact information
-     * @summary Update company
-     * @param {CompaniesApiUpdateCompanyRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public updateCompany(requestParameters: CompaniesApiUpdateCompanyRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).updateCompany(requestParameters.id, requestParameters.updateCompanyRequest, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Update company details such as name, address, or contact information
+   * @summary Update company
+   * @param {CompaniesApiUpdateCompanyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public updateCompany(
+    requestParameters: CompaniesApiUpdateCompanyRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .updateCompany(requestParameters.id, requestParameters.updateCompanyRequest, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-    /**
-     * Configure the company\'s MyInvois API credentials
-     * @summary Set MyInvois credentials
-     * @param {CompaniesApiUpdateCompanyCredentialsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CompaniesApi
-     */
-    public updateCompanyCredentials(requestParameters: CompaniesApiUpdateCompanyCredentialsRequest, options?: RawAxiosRequestConfig) {
-        return CompaniesApiFp(this.configuration).updateCompanyCredentials(requestParameters.id, requestParameters.updateCredentialsRequest, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   * Configure the company\'s MyInvois API credentials
+   * @summary Set MyInvois credentials
+   * @param {CompaniesApiUpdateCompanyCredentialsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof CompaniesApi
+   */
+  public updateCompanyCredentials(
+    requestParameters: CompaniesApiUpdateCompanyCredentialsRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return CompaniesApiFp(this.configuration)
+      .updateCompanyCredentials(
+        requestParameters.id,
+        requestParameters.updateCredentialsRequest,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }
-

@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * HashLHDN MyInvois Middleware API
- * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ``` 
+ * API middleware gateway for Malaysia\'s MyInvois e-invoicing system (LHDN).  **Client:** Hashmato | **Version:** 1.1.1  ## Features - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal) - JWT Authentication with Access & Refresh Tokens - User/Role/Company Management - Document Operations (List, Status, PDF, Cancel) - Digital Signing v1.1 (XAdES signatures) - Background Status Polling  ## Authentication All endpoints except `/api/v1/auth/login` require JWT authentication. Include the access token in the Authorization header: ``` Authorization: Bearer <access_token> ```
  *
  * The version of the OpenAPI document: 1.1.1
  * Contact: hello@zahidaramai.com
@@ -12,73 +12,71 @@
  * Do not edit the class manually.
  */
 
-
 // May contain unused imports in some cases
 // @ts-ignore
-import type { BuyerInfo } from './buyer-info';
+import type { BuyerInfo } from "./buyer-info";
 // May contain unused imports in some cases
 // @ts-ignore
-import type { InvoiceItem } from './invoice-item';
+import type { InvoiceItem } from "./invoice-item";
 
 /**
- * 
+ *
  * @export
  * @interface Invoice
  */
 export interface Invoice {
-    /**
-     * 
-     * @type {string}
-     * @memberof Invoice
-     */
-    'invoiceNumber': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Invoice
-     */
-    'invoiceDate': string;
-    /**
-     * 
-     * @type {number}
-     * @memberof Invoice
-     */
-    'amount': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Invoice
-     */
-    'discount': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Invoice
-     */
-    'rounding': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Invoice
-     */
-    'taxAmount': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Invoice
-     */
-    'total': number;
-    /**
-     * 
-     * @type {BuyerInfo}
-     * @memberof Invoice
-     */
-    'buyer'?: BuyerInfo;
-    /**
-     * 
-     * @type {Array<InvoiceItem>}
-     * @memberof Invoice
-     */
-    'items': Array<InvoiceItem>;
+  /**
+   *
+   * @type {string}
+   * @memberof Invoice
+   */
+  invoiceNumber: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Invoice
+   */
+  invoiceDate: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Invoice
+   */
+  amount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Invoice
+   */
+  discount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Invoice
+   */
+  rounding: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Invoice
+   */
+  taxAmount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Invoice
+   */
+  total: number;
+  /**
+   *
+   * @type {BuyerInfo}
+   * @memberof Invoice
+   */
+  buyer?: BuyerInfo;
+  /**
+   *
+   * @type {Array<InvoiceItem>}
+   * @memberof Invoice
+   */
+  items: Array<InvoiceItem>;
 }
-

@@ -144,10 +144,7 @@ describe("usersRepo", () => {
         passwordHash: "hashed-password",
         roleId: "role-user",
         companies: {
-          create: [
-            { companyId: "company-1" },
-            { companyId: "company-2" },
-          ],
+          create: [{ companyId: "company-1" }, { companyId: "company-2" }],
         },
       };
 
@@ -254,9 +251,7 @@ describe("usersRepo", () => {
     });
 
     it("returns users with pagination", async () => {
-      const mockUsers = [
-        { id: "user-2", email: "user2@example.com", name: "User 2" },
-      ];
+      const mockUsers = [{ id: "user-2", email: "user2@example.com", name: "User 2" }];
 
       mockPrismaClient.user.findMany.mockResolvedValueOnce(mockUsers);
 
@@ -270,9 +265,7 @@ describe("usersRepo", () => {
     });
 
     it("returns users filtered by role", async () => {
-      const mockUsers = [
-        { id: "user-1", roleId: "role-admin", name: "Admin User" },
-      ];
+      const mockUsers = [{ id: "user-1", roleId: "role-admin", name: "Admin User" }];
 
       mockPrismaClient.user.findMany.mockResolvedValueOnce(mockUsers);
 
@@ -322,12 +315,7 @@ describe("usersRepo", () => {
     });
 
     it("rejects invalid email format", () => {
-      const invalidEmails = [
-        "userexample.com",
-        "@example.com",
-        "user@",
-        "user @example.com",
-      ];
+      const invalidEmails = ["userexample.com", "@example.com", "user@", "user @example.com"];
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -380,9 +368,7 @@ describe("usersRepo", () => {
     });
 
     it("filters users by company", async () => {
-      const mockUsers = [
-        { id: "user-1", email: "user1@example.com" },
-      ];
+      const mockUsers = [{ id: "user-1", email: "user1@example.com" }];
 
       mockPrismaClient.user.findMany.mockResolvedValueOnce(mockUsers);
 

@@ -9,9 +9,7 @@ import type { RefreshToken } from "@prisma/client";
 /**
  * Create a new refresh token
  */
-export async function createRefreshToken(
-  input: CreateRefreshTokenInput
-): Promise<RefreshToken> {
+export async function createRefreshToken(input: CreateRefreshTokenInput): Promise<RefreshToken> {
   const prisma = getPrismaClient();
 
   return prisma.refreshToken.create({
@@ -28,9 +26,7 @@ export async function createRefreshToken(
 /**
  * Find refresh token by hash
  */
-export async function findRefreshTokenByHash(
-  tokenHash: string
-): Promise<RefreshToken | null> {
+export async function findRefreshTokenByHash(tokenHash: string): Promise<RefreshToken | null> {
   const prisma = getPrismaClient();
 
   return prisma.refreshToken.findUnique({
@@ -41,9 +37,7 @@ export async function findRefreshTokenByHash(
 /**
  * Find valid (non-revoked, non-expired) refresh token by hash
  */
-export async function findValidRefreshToken(
-  tokenHash: string
-): Promise<RefreshToken | null> {
+export async function findValidRefreshToken(tokenHash: string): Promise<RefreshToken | null> {
   const prisma = getPrismaClient();
 
   return prisma.refreshToken.findFirst({

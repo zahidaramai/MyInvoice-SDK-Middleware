@@ -58,9 +58,7 @@ export async function findCompanyById(id: string): Promise<Company | null> {
 /**
  * Find company by ID with users
  */
-export async function findCompanyByIdWithUsers(
-  id: string
-): Promise<CompanyWithUsers | null> {
+export async function findCompanyByIdWithUsers(id: string): Promise<CompanyWithUsers | null> {
   const prisma = getPrismaClient();
 
   return prisma.company.findUnique({
@@ -101,10 +99,7 @@ export async function findCompanyByTinIdValue(
 /**
  * Update company
  */
-export async function updateCompany(
-  id: string,
-  input: UpdateCompanyInput
-): Promise<Company> {
+export async function updateCompany(id: string, input: UpdateCompanyInput): Promise<Company> {
   const prisma = getPrismaClient();
 
   return prisma.company.update({
@@ -254,10 +249,7 @@ export async function tinIdValueExists(
 /**
  * Check if user is linked to company
  */
-export async function isUserLinkedToCompany(
-  userId: string,
-  companyId: string
-): Promise<boolean> {
+export async function isUserLinkedToCompany(userId: string, companyId: string): Promise<boolean> {
   const prisma = getPrismaClient();
 
   const count = await prisma.userCompany.count({

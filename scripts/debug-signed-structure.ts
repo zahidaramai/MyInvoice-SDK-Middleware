@@ -2,10 +2,7 @@ import { config as dotenvConfig } from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import * as fs from "fs";
-import {
-  SigningService,
-  loadPKCS12,
-} from "../packages/signing/dist/index.js";
+import { SigningService, loadPKCS12 } from "../packages/signing/dist/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenvConfig({ path: resolve(__dirname, "../.env") });
@@ -14,18 +11,20 @@ const invoice = {
   _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
   _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
   _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-  Invoice: [{
-    ID: [{ _: "TEST-INV" }],
-    IssueDate: [{ _: "2026-01-13" }],
-    InvoiceTypeCode: [{ _: "01", listVersionID: "1.1" }],
-    DocumentCurrencyCode: [{ _: "MYR" }],
-    LegalMonetaryTotal: [{ PayableAmount: [{ _: 1.00, currencyID: "MYR" }] }]
-  }]
+  Invoice: [
+    {
+      ID: [{ _: "TEST-INV" }],
+      IssueDate: [{ _: "2026-01-13" }],
+      InvoiceTypeCode: [{ _: "01", listVersionID: "1.1" }],
+      DocumentCurrencyCode: [{ _: "MYR" }],
+      LegalMonetaryTotal: [{ PayableAmount: [{ _: 1.0, currencyID: "MYR" }] }],
+    },
+  ],
 };
 
 const p12 = loadPKCS12({
   path: process.env.SIGNING_PKCS12_PATH!,
-  passphrase: process.env.SIGNING_PKCS12_PASSPHRASE!
+  passphrase: process.env.SIGNING_PKCS12_PASSPHRASE!,
 });
 
 const signer = new SigningService(p12.privateKey, p12.certPem, p12.certInfo);

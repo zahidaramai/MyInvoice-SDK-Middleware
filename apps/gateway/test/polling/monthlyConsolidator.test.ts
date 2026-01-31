@@ -67,11 +67,14 @@ describe("monthlyConsolidator", () => {
         { id: "inv-3", companyId: "company-b", status: "DRAFT" },
       ];
 
-      const grouped = invoices.reduce((acc, inv) => {
-        if (!acc[inv.companyId]) acc[inv.companyId] = [];
-        acc[inv.companyId].push(inv);
-        return acc;
-      }, {} as Record<string, typeof invoices>);
+      const grouped = invoices.reduce(
+        (acc, inv) => {
+          if (!acc[inv.companyId]) acc[inv.companyId] = [];
+          acc[inv.companyId].push(inv);
+          return acc;
+        },
+        {} as Record<string, typeof invoices>
+      );
 
       expect(Object.keys(grouped)).toHaveLength(2);
       expect(grouped["company-a"]).toHaveLength(2);
@@ -94,9 +97,9 @@ describe("monthlyConsolidator", () => {
 
     it("calculates consolidated totals", () => {
       const invoices = [
-        { amount: 100.00, taxAmount: 6.00, total: 106.00 },
-        { amount: 200.00, taxAmount: 12.00, total: 212.00 },
-        { amount: 50.00, taxAmount: 3.00, total: 53.00 },
+        { amount: 100.0, taxAmount: 6.0, total: 106.0 },
+        { amount: 200.0, taxAmount: 12.0, total: 212.0 },
+        { amount: 50.0, taxAmount: 3.0, total: 53.0 },
       ];
 
       const totals = invoices.reduce(
@@ -108,16 +111,16 @@ describe("monthlyConsolidator", () => {
         { amount: 0, taxAmount: 0, total: 0 }
       );
 
-      expect(totals.amount).toBe(350.00);
-      expect(totals.taxAmount).toBe(21.00);
-      expect(totals.total).toBe(371.00);
+      expect(totals.amount).toBe(350.0);
+      expect(totals.taxAmount).toBe(21.0);
+      expect(totals.total).toBe(371.0);
     });
 
     it("handles decimal precision in totals", () => {
       const invoices = [
-        { amount: 10.01, taxAmount: 0.60, total: 10.61 },
-        { amount: 10.02, taxAmount: 0.60, total: 10.62 },
-        { amount: 10.03, taxAmount: 0.60, total: 10.63 },
+        { amount: 10.01, taxAmount: 0.6, total: 10.61 },
+        { amount: 10.02, taxAmount: 0.6, total: 10.62 },
+        { amount: 10.03, taxAmount: 0.6, total: 10.63 },
       ];
 
       const totals = invoices.reduce(
@@ -130,7 +133,7 @@ describe("monthlyConsolidator", () => {
       );
 
       expect(totals.amount).toBe(30.06);
-      expect(totals.taxAmount).toBe(1.80);
+      expect(totals.taxAmount).toBe(1.8);
       expect(totals.total).toBe(31.86);
     });
   });
@@ -225,9 +228,7 @@ describe("monthlyConsolidator", () => {
         { id: "company-3", myinvoisClientId: "client-id", myinvoisClientSecret: "secret" },
       ];
 
-      const validCompanies = companies.filter(
-        (c) => c.myinvoisClientId && c.myinvoisClientSecret
-      );
+      const validCompanies = companies.filter((c) => c.myinvoisClientId && c.myinvoisClientSecret);
 
       expect(validCompanies).toHaveLength(2);
     });

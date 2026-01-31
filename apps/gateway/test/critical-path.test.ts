@@ -38,22 +38,22 @@ const testCompany: CompanyInfo = {
 const testInvoice: Invoice = {
   invoiceNumber: "TEST-001",
   invoiceDate: "2026-01-27T10:00:00+08:00",
-  amount: 100.00,
+  amount: 100.0,
   discount: 0,
   rounding: 0,
-  taxAmount: 6.00,
-  total: 106.00,
+  taxAmount: 6.0,
+  total: 106.0,
   currency: "MYR",
   items: [
     {
       description: "Test Item",
       quantity: 1,
-      unitPrice: 100.00,
+      unitPrice: 100.0,
       discount: 0,
       taxCode: "02",
       taxRate: 6,
-      taxAmount: 6.00,
-      total: 106.00,
+      taxAmount: 6.0,
+      total: 106.0,
     },
   ],
 };
@@ -67,12 +67,12 @@ describe("Critical Path: UBL Transformation", () => {
           {
             description: "Coffee",
             quantity: 2,
-            unitPrice: 10.00,
+            unitPrice: 10.0,
             discount: 0,
             taxCode: "02",
             taxRate: 6,
-            taxAmount: 1.20,
-            total: 21.20, // This includes tax!
+            taxAmount: 1.2,
+            total: 21.2, // This includes tax!
           },
         ],
       };
@@ -84,8 +84,8 @@ describe("Critical Path: UBL Transformation", () => {
       // ItemPriceExtension should be qty * unitPrice = 2 * 10 = 20.00
       // NOT item.total which is 21.20 (includes tax)
       const itemPriceExtension = invoiceLine?.ItemPriceExtension?.[0]?.Amount?.[0]?._;
-      expect(Number(itemPriceExtension)).toBe(20.00);
-      expect(Number(itemPriceExtension)).not.toBe(21.20);
+      expect(Number(itemPriceExtension)).toBe(20.0);
+      expect(Number(itemPriceExtension)).not.toBe(21.2);
     });
 
     it("should match LineExtensionAmount", () => {
@@ -95,12 +95,12 @@ describe("Critical Path: UBL Transformation", () => {
           {
             description: "Item with discount",
             quantity: 5,
-            unitPrice: 20.00,
-            discount: 10.00, // 10 discount
+            unitPrice: 20.0,
+            discount: 10.0, // 10 discount
             taxCode: "02",
             taxRate: 6,
-            taxAmount: 5.40,
-            total: 95.40,
+            taxAmount: 5.4,
+            total: 95.4,
           },
         ],
       };
@@ -113,8 +113,8 @@ describe("Critical Path: UBL Transformation", () => {
       const lineExtension = invoiceLine?.LineExtensionAmount?.[0]?._;
       const itemPriceExtension = invoiceLine?.ItemPriceExtension?.[0]?.Amount?.[0]?._;
 
-      expect(Number(lineExtension)).toBe(90.00);
-      expect(Number(itemPriceExtension)).toBe(90.00);
+      expect(Number(lineExtension)).toBe(90.0);
+      expect(Number(itemPriceExtension)).toBe(90.0);
       expect(lineExtension).toBe(itemPriceExtension);
     });
   });
@@ -193,24 +193,24 @@ describe("Critical Path: Tax Calculations", () => {
     const invoiceContent = (ubl as any).Invoice?.[0];
     const taxTotal = invoiceContent?.TaxTotal?.[0]?.TaxAmount?.[0]?._;
 
-    expect(Number(taxTotal)).toBe(6.00);
+    expect(Number(taxTotal)).toBe(6.0);
   });
 
   it("should calculate LegalMonetaryTotal correctly", () => {
     const invoice: Invoice = {
       ...testInvoice,
-      amount: 100.00,
-      discount: 5.00,
-      taxAmount: 5.70,
-      total: 100.70,
+      amount: 100.0,
+      discount: 5.0,
+      taxAmount: 5.7,
+      total: 100.7,
     };
 
     const ubl = transformToUBL([invoice], testCompany, false, "1.1");
     const invoiceContent = (ubl as any).Invoice?.[0];
     const monetaryTotal = invoiceContent?.LegalMonetaryTotal?.[0];
 
-    expect(Number(monetaryTotal?.TaxExclusiveAmount?.[0]?._)).toBe(95.00); // 100 - 5
-    expect(Number(monetaryTotal?.PayableAmount?.[0]?._)).toBe(100.70);
+    expect(Number(monetaryTotal?.TaxExclusiveAmount?.[0]?._)).toBe(95.0); // 100 - 5
+    expect(Number(monetaryTotal?.PayableAmount?.[0]?._)).toBe(100.7);
   });
 });
 

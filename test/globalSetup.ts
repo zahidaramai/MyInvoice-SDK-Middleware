@@ -49,10 +49,7 @@ export async function setup(): Promise<void> {
 
   // Write env to a file for test processes
   const envFile = resolve(__dirname, ".env.test");
-  writeFileSync(
-    envFile,
-    `DATABASE_URL=${databaseUrl}\nREDIS_URL=${redisUrl}\nNODE_ENV=test\n`
-  );
+  writeFileSync(envFile, `DATABASE_URL=${databaseUrl}\nREDIS_URL=${redisUrl}\nNODE_ENV=test\n`);
 
   // Run Prisma migrations
   console.log("[GlobalSetup] Running Prisma migrations...");
@@ -85,8 +82,10 @@ export async function teardown(): Promise<void> {
 
   console.log("[GlobalTeardown] Stopping containers...");
 
-  const pg = (globalThis as Record<string, unknown>).__POSTGRES_CONTAINER__ as typeof postgresContainer;
-  const redis = (globalThis as Record<string, unknown>).__REDIS_CONTAINER__ as typeof redisContainer;
+  const pg = (globalThis as Record<string, unknown>)
+    .__POSTGRES_CONTAINER__ as typeof postgresContainer;
+  const redis = (globalThis as Record<string, unknown>)
+    .__REDIS_CONTAINER__ as typeof redisContainer;
 
   if (pg) {
     await pg.stop();

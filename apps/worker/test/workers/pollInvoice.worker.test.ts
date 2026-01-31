@@ -65,11 +65,11 @@ describe("pollInvoice.worker", () => {
   describe("status mapping", () => {
     it("maps Valid to VALID", () => {
       const statusMap: Record<string, string> = {
-        "Valid": "VALID",
-        "Invalid": "INVALID",
-        "Submitted": "SUBMITTED",
-        "Cancelled": "CANCELLED",
-        "Rejected": "REJECTED",
+        Valid: "VALID",
+        Invalid: "INVALID",
+        Submitted: "SUBMITTED",
+        Cancelled: "CANCELLED",
+        Rejected: "REJECTED",
       };
 
       expect(statusMap["Valid"]).toBe("VALID");
@@ -77,8 +77,8 @@ describe("pollInvoice.worker", () => {
 
     it("maps Invalid to INVALID", () => {
       const statusMap: Record<string, string> = {
-        "Valid": "VALID",
-        "Invalid": "INVALID",
+        Valid: "VALID",
+        Invalid: "INVALID",
       };
 
       expect(statusMap["Invalid"]).toBe("INVALID");
@@ -86,7 +86,7 @@ describe("pollInvoice.worker", () => {
 
     it("maps Submitted to SUBMITTED", () => {
       const statusMap: Record<string, string> = {
-        "Submitted": "SUBMITTED",
+        Submitted: "SUBMITTED",
       };
 
       expect(statusMap["Submitted"]).toBe("SUBMITTED");
@@ -94,7 +94,7 @@ describe("pollInvoice.worker", () => {
 
     it("maps Cancelled to CANCELLED", () => {
       const statusMap: Record<string, string> = {
-        "Cancelled": "CANCELLED",
+        Cancelled: "CANCELLED",
       };
 
       expect(statusMap["Cancelled"]).toBe("CANCELLED");
@@ -102,7 +102,7 @@ describe("pollInvoice.worker", () => {
 
     it("maps Rejected to REJECTED", () => {
       const statusMap: Record<string, string> = {
-        "Rejected": "REJECTED",
+        Rejected: "REJECTED",
       };
 
       expect(statusMap["Rejected"]).toBe("REJECTED");
@@ -111,11 +111,11 @@ describe("pollInvoice.worker", () => {
     it("handles unknown status by uppercasing", () => {
       const mapStatus = (status: string) => {
         const statusMap: Record<string, string> = {
-          "Valid": "VALID",
-          "Invalid": "INVALID",
-          "Submitted": "SUBMITTED",
-          "Cancelled": "CANCELLED",
-          "Rejected": "REJECTED",
+          Valid: "VALID",
+          Invalid: "INVALID",
+          Submitted: "SUBMITTED",
+          Cancelled: "CANCELLED",
+          Rejected: "REJECTED",
         };
         return statusMap[status] || status.toUpperCase();
       };
@@ -273,13 +273,15 @@ describe("pollInvoice.worker", () => {
     it("returns SANDBOX URLs for non-PROD environment", () => {
       const env = "SANDBOX";
 
-      const baseUrl = env === "PROD"
-        ? "https://api.myinvois.hasil.gov.my"
-        : "https://preprod-api.myinvois.hasil.gov.my";
+      const baseUrl =
+        env === "PROD"
+          ? "https://api.myinvois.hasil.gov.my"
+          : "https://preprod-api.myinvois.hasil.gov.my";
 
-      const identityUrl = env === "PROD"
-        ? "https://identity.myinvois.hasil.gov.my"
-        : "https://preprod-identity.myinvois.hasil.gov.my";
+      const identityUrl =
+        env === "PROD"
+          ? "https://identity.myinvois.hasil.gov.my"
+          : "https://preprod-identity.myinvois.hasil.gov.my";
 
       expect(baseUrl).toBe("https://preprod-api.myinvois.hasil.gov.my");
       expect(identityUrl).toBe("https://preprod-identity.myinvois.hasil.gov.my");
@@ -288,13 +290,15 @@ describe("pollInvoice.worker", () => {
     it("returns PROD URLs for PROD environment", () => {
       const env = "PROD";
 
-      const baseUrl = env === "PROD"
-        ? "https://api.myinvois.hasil.gov.my"
-        : "https://preprod-api.myinvois.hasil.gov.my";
+      const baseUrl =
+        env === "PROD"
+          ? "https://api.myinvois.hasil.gov.my"
+          : "https://preprod-api.myinvois.hasil.gov.my";
 
-      const identityUrl = env === "PROD"
-        ? "https://identity.myinvois.hasil.gov.my"
-        : "https://preprod-identity.myinvois.hasil.gov.my";
+      const identityUrl =
+        env === "PROD"
+          ? "https://identity.myinvois.hasil.gov.my"
+          : "https://preprod-identity.myinvois.hasil.gov.my";
 
       expect(baseUrl).toBe("https://api.myinvois.hasil.gov.my");
       expect(identityUrl).toBe("https://identity.myinvois.hasil.gov.my");

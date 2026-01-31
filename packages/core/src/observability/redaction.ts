@@ -94,9 +94,7 @@ export const PARTIAL_REDACT_FIELDS = [
  * Create safe log context by stripping sensitive fields
  * Use this for manual object sanitization before logging
  */
-export function createSafeLogContext(
-  context: Record<string, unknown>
-): Record<string, unknown> {
+export function createSafeLogContext(context: Record<string, unknown>): Record<string, unknown> {
   const sensitiveKeys = new Set([
     "clientSecret",
     "client_secret",

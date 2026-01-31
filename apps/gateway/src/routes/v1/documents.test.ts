@@ -689,7 +689,7 @@ describe("Document Routes", () => {
               dateTimeIssued: "2024-01-15T10:30:00Z",
               dateTimeReceived: "2024-01-15T10:31:00Z",
               dateTimeValidated: "2024-01-15T10:32:00Z",
-              totalPayableAmount: 1000.50,
+              totalPayableAmount: 1000.5,
               status: "valid",
             }),
           } as Response;

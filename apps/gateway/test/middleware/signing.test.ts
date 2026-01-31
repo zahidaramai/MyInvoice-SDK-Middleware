@@ -167,7 +167,8 @@ describe("signing middleware", () => {
       };
 
       const defaultVersion = "1.0";
-      const version = (request.body as { documentVersion?: string }).documentVersion || defaultVersion;
+      const version =
+        (request.body as { documentVersion?: string }).documentVersion || defaultVersion;
       expect(version).toBe("1.0");
     });
   });
@@ -208,10 +209,7 @@ describe("signing middleware", () => {
 
     it("includes certificate chain", () => {
       const signature = {
-        certificates: [
-          "base64-issuer-cert",
-          "base64-intermediate-cert",
-        ],
+        certificates: ["base64-issuer-cert", "base64-intermediate-cert"],
       };
 
       expect(signature.certificates.length).toBeGreaterThanOrEqual(1);

@@ -57,11 +57,7 @@ async function main() {
     create: {
       name: "Invoice Manager",
       description: "Can submit and manage invoices",
-      permissions: JSON.stringify([
-        "submit:invoice",
-        "read:documents",
-        "cancel:documents",
-      ]),
+      permissions: JSON.stringify(["submit:invoice", "read:documents", "cancel:documents"]),
     },
   });
   console.log(`Created/updated role: ${invoiceManagerRole.name} (${invoiceManagerRole.id})`);
@@ -73,9 +69,7 @@ async function main() {
     create: {
       name: "Viewer",
       description: "Read-only access to documents",
-      permissions: JSON.stringify([
-        "read:documents",
-      ]),
+      permissions: JSON.stringify(["read:documents"]),
     },
   });
   console.log(`Created/updated role: ${viewerRole.name} (${viewerRole.id})`);

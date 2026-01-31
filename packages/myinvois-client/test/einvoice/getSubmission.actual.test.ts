@@ -63,7 +63,7 @@ describe("getSubmission (actual)", () => {
             issuerName: "Test Company",
             receiverId: "C98765432100",
             receiverName: "Buyer",
-            totalPayableAmount: 106.00,
+            totalPayableAmount: 106.0,
           },
         ],
       };
@@ -334,10 +334,11 @@ describe("getSubmission (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await getSubmission(
@@ -357,9 +358,10 @@ describe("getSubmission (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "Something went wrong",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "Something went wrong",
+          }),
       });
 
       const result = await getSubmission(
@@ -406,12 +408,13 @@ describe("getSubmission (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          submissionUid: "test",
-          overallStatus: "valid",
-          documentCount: 0,
-          dateTimeReceived: new Date().toISOString(),
-        }),
+        json: () =>
+          Promise.resolve({
+            submissionUid: "test",
+            overallStatus: "valid",
+            documentCount: 0,
+            dateTimeReceived: new Date().toISOString(),
+          }),
       });
 
       await getSubmission(
@@ -436,12 +439,13 @@ describe("getSubmission (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          submissionUid: "test",
-          overallStatus: "valid",
-          documentCount: 0,
-          dateTimeReceived: new Date().toISOString(),
-        }),
+        json: () =>
+          Promise.resolve({
+            submissionUid: "test",
+            overallStatus: "valid",
+            documentCount: 0,
+            dateTimeReceived: new Date().toISOString(),
+          }),
       });
 
       await getSubmission(
@@ -464,12 +468,13 @@ describe("getSubmission (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          submissionUid: "test",
-          overallStatus: "valid",
-          documentCount: 0,
-          dateTimeReceived: new Date().toISOString(),
-        }),
+        json: () =>
+          Promise.resolve({
+            submissionUid: "test",
+            overallStatus: "valid",
+            documentCount: 0,
+            dateTimeReceived: new Date().toISOString(),
+          }),
       });
 
       await getSubmission(

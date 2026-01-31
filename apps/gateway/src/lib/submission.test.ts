@@ -71,9 +71,7 @@ describe("prepareDocument", () => {
     expect(result.codeNumber).toBe("INV-001");
     expect(result.document).toBe(encodeBase64(input.rawDocument));
     expect(result.documentHash).toBe(hashDocument(input.rawDocument));
-    expect(result.estimatedSizeBytes).toBe(
-      Buffer.byteLength(input.rawDocument, "utf-8")
-    );
+    expect(result.estimatedSizeBytes).toBe(Buffer.byteLength(input.rawDocument, "utf-8"));
   });
 
   it("prepares document from pre-encoded base64", () => {

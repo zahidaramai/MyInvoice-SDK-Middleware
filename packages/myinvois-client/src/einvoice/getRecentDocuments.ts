@@ -188,7 +188,8 @@ function normalizeDocument(doc: RecentDocumentUpstream): RecentDocument {
     dateTimeIssued: parseDate(doc.dateTimeIssued),
     dateTimeReceived: parseDate(doc.dateTimeReceived),
     dateTimeValidated: parseDate(doc.dateTimeValidated),
-    totalPayableAmount: doc.totalPayableAmount !== undefined ? doc.totalPayableAmount.toString() : null,
+    totalPayableAmount:
+      doc.totalPayableAmount !== undefined ? doc.totalPayableAmount.toString() : null,
     status: doc.status,
     cancelDateTime: parseDate(doc.cancelDateTime),
     rejectDateTime: parseDate(doc.rejectDateTime),

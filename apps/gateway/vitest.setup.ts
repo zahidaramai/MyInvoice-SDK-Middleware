@@ -8,8 +8,7 @@
 if (!process.env.DATABASE_URL) {
   // Default to local Docker PostgreSQL for development
   // CI will override this with the service container URL
-  process.env.DATABASE_URL =
-    "postgresql://myinvois:myinvois_dev@localhost:5432/myinvois";
+  process.env.DATABASE_URL = "postgresql://myinvois:myinvois_dev@localhost:5432/myinvois";
 }
 
 // Set JWT secrets for testing (TST-01: Auth API tests)

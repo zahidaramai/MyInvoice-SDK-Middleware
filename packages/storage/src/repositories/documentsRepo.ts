@@ -13,9 +13,7 @@ import type {
 /**
  * Get document by UUID
  */
-export async function getDocumentByUuid(
-  uuid: string
-): Promise<DocumentRecordWithActions | null> {
+export async function getDocumentByUuid(uuid: string): Promise<DocumentRecordWithActions | null> {
   const prisma = getPrismaClient();
 
   const doc = await prisma.submissionDocument.findFirst({

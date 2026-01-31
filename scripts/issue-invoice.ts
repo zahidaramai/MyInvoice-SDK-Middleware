@@ -15,9 +15,10 @@ dotenvConfig({ path: resolve(__dirname, "../.env") });
 
 // Environment-based configuration
 const MYINVOIS_ENV = process.env.MYINVOIS_ENV || "SANDBOX";
-const BASE_URL = MYINVOIS_ENV === "PROD"
-  ? "https://api.myinvois.hasil.gov.my"
-  : "https://preprod-api.myinvois.hasil.gov.my";
+const BASE_URL =
+  MYINVOIS_ENV === "PROD"
+    ? "https://api.myinvois.hasil.gov.my"
+    : "https://preprod-api.myinvois.hasil.gov.my";
 
 const CLIENT_ID = process.env.MYINVOIS_CLIENT_ID!;
 const CLIENT_SECRET = process.env.MYINVOIS_CLIENT_SECRET_1!;
@@ -33,122 +34,184 @@ function createInvoice(invNum: string, invoiceAmount: number) {
   const timeNow = new Date().toISOString().split("T")[1].substring(0, 8) + "Z";
 
   return {
-    "_D": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
-    "_A": "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
-    "_B": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-    "Invoice": [{
-      "ID": [{ "_": invNum }],
-      "IssueDate": [{ "_": today }],
-      "IssueTime": [{ "_": timeNow }],
-      "InvoiceTypeCode": [{ "_": "01", "listVersionID": "1.1" }],
-      "DocumentCurrencyCode": [{ "_": "MYR" }],
-      "AccountingSupplierParty": [{
-        "Party": [{
-          "IndustryClassificationCode": [{ "_": "62010", "name": "Computer programming activities" }],
-          "PartyIdentification": [{
-            "ID": [{ "_": SUPPLIER_TIN, "schemeID": "TIN" }]
-          }, {
-            "ID": [{ "_": SUPPLIER_ID_VALUE, "schemeID": SUPPLIER_ID_TYPE }]
-          }],
-          "PartyLegalEntity": [{
-            "RegistrationName": [{ "_": "SUPPLIER COMPANY" }]
-          }],
-          "PostalAddress": [{
-            "AddressLine": [{ "Line": [{ "_": "Address Line 1" }] }],
-            "CityName": [{ "_": "Kuala Lumpur" }],
-            "PostalZone": [{ "_": "50000" }],
-            "CountrySubentityCode": [{ "_": "14" }],
-            "Country": [{
-              "IdentificationCode": [{ "_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6" }]
-            }]
-          }],
-          "Contact": [{
-            "Telephone": [{ "_": "+60300000000" }],
-            "ElectronicMail": [{ "_": "supplier@example.com" }]
-          }]
-        }]
-      }],
-      "AccountingCustomerParty": [{
-        "Party": [{
-          "PartyIdentification": [{
-            "ID": [{ "_": "EI00000000010", "schemeID": "TIN" }]
-          }, {
-            "ID": [{ "_": "000000000000", "schemeID": "NRIC" }]
-          }],
-          "PartyLegalEntity": [{
-            "RegistrationName": [{ "_": "GENERAL PUBLIC" }]
-          }],
-          "PostalAddress": [{
-            "AddressLine": [{ "Line": [{ "_": "Customer Address" }] }],
-            "CityName": [{ "_": "Kuala Lumpur" }],
-            "PostalZone": [{ "_": "50000" }],
-            "CountrySubentityCode": [{ "_": "14" }],
-            "Country": [{
-              "IdentificationCode": [{ "_": "MYS", "listID": "ISO3166-1", "listAgencyID": "6" }]
-            }]
-          }],
-          "Contact": [{
-            "Telephone": [{ "_": "+60300000001" }]
-          }]
-        }]
-      }],
-      "LegalMonetaryTotal": [{
-        "LineExtensionAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }],
-        "TaxExclusiveAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }],
-        "TaxInclusiveAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }],
-        "PayableAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }]
-      }],
-      "TaxTotal": [{
-        "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-        "TaxSubtotal": [{
-          "TaxableAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }],
-          "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-          "TaxCategory": [{
-            "ID": [{ "_": "E" }],
-            "TaxExemptionReason": [{ "_": "Exempt New Means of Transport" }],
-            "TaxScheme": [{
-              "ID": [{ "_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6" }]
-            }]
-          }]
-        }]
-      }],
-      "InvoiceLine": [{
-        "ID": [{ "_": "1" }],
-        "InvoicedQuantity": [{ "_": 1, "unitCode": "C62" }],
-        "LineExtensionAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }],
-        "TaxTotal": [{
-          "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-          "TaxSubtotal": [{
-            "TaxableAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }],
-            "TaxAmount": [{ "_": 0.00, "currencyID": "MYR" }],
-            "TaxCategory": [{
-              "ID": [{ "_": "E" }],
-              "TaxExemptionReason": [{ "_": "Exempt New Means of Transport" }],
-              "TaxScheme": [{
-                "ID": [{ "_": "OTH", "schemeID": "UN/ECE 5153", "schemeAgencyID": "6" }]
-              }]
-            }]
-          }]
-        }],
-        "Item": [{
-          "Description": [{ "_": `Service Item RM${invoiceAmount.toFixed(2)}` }],
-          "CommodityClassification": [{
-            "ItemClassificationCode": [{ "_": "001", "listID": "CLASS" }]
-          }]
-        }],
-        "Price": [{
-          "PriceAmount": [{ "_": invoiceAmount, "currencyID": "MYR" }]
-        }],
-        "ItemPriceExtension": [{
-          "Amount": [{ "_": invoiceAmount, "currencyID": "MYR" }]
-        }]
-      }]
-    }]
+    _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+    _A: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+    _B: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+    Invoice: [
+      {
+        ID: [{ _: invNum }],
+        IssueDate: [{ _: today }],
+        IssueTime: [{ _: timeNow }],
+        InvoiceTypeCode: [{ _: "01", listVersionID: "1.1" }],
+        DocumentCurrencyCode: [{ _: "MYR" }],
+        AccountingSupplierParty: [
+          {
+            Party: [
+              {
+                IndustryClassificationCode: [
+                  { _: "62010", name: "Computer programming activities" },
+                ],
+                PartyIdentification: [
+                  {
+                    ID: [{ _: SUPPLIER_TIN, schemeID: "TIN" }],
+                  },
+                  {
+                    ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }],
+                  },
+                ],
+                PartyLegalEntity: [
+                  {
+                    RegistrationName: [{ _: "SUPPLIER COMPANY" }],
+                  },
+                ],
+                PostalAddress: [
+                  {
+                    AddressLine: [{ Line: [{ _: "Address Line 1" }] }],
+                    CityName: [{ _: "Kuala Lumpur" }],
+                    PostalZone: [{ _: "50000" }],
+                    CountrySubentityCode: [{ _: "14" }],
+                    Country: [
+                      {
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+                Contact: [
+                  {
+                    Telephone: [{ _: "+60300000000" }],
+                    ElectronicMail: [{ _: "supplier@example.com" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        AccountingCustomerParty: [
+          {
+            Party: [
+              {
+                PartyIdentification: [
+                  {
+                    ID: [{ _: "EI00000000010", schemeID: "TIN" }],
+                  },
+                  {
+                    ID: [{ _: "000000000000", schemeID: "NRIC" }],
+                  },
+                ],
+                PartyLegalEntity: [
+                  {
+                    RegistrationName: [{ _: "GENERAL PUBLIC" }],
+                  },
+                ],
+                PostalAddress: [
+                  {
+                    AddressLine: [{ Line: [{ _: "Customer Address" }] }],
+                    CityName: [{ _: "Kuala Lumpur" }],
+                    PostalZone: [{ _: "50000" }],
+                    CountrySubentityCode: [{ _: "14" }],
+                    Country: [
+                      {
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+                Contact: [
+                  {
+                    Telephone: [{ _: "+60300000001" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        LegalMonetaryTotal: [
+          {
+            LineExtensionAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+            TaxExclusiveAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+            TaxInclusiveAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+            PayableAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+          },
+        ],
+        TaxTotal: [
+          {
+            TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+            TaxSubtotal: [
+              {
+                TaxableAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+                TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+                TaxCategory: [
+                  {
+                    ID: [{ _: "E" }],
+                    TaxExemptionReason: [{ _: "Exempt New Means of Transport" }],
+                    TaxScheme: [
+                      {
+                        ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        InvoiceLine: [
+          {
+            ID: [{ _: "1" }],
+            InvoicedQuantity: [{ _: 1, unitCode: "C62" }],
+            LineExtensionAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+            TaxTotal: [
+              {
+                TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+                TaxSubtotal: [
+                  {
+                    TaxableAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+                    TaxAmount: [{ _: 0.0, currencyID: "MYR" }],
+                    TaxCategory: [
+                      {
+                        ID: [{ _: "E" }],
+                        TaxExemptionReason: [{ _: "Exempt New Means of Transport" }],
+                        TaxScheme: [
+                          {
+                            ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            Item: [
+              {
+                Description: [{ _: `Service Item RM${invoiceAmount.toFixed(2)}` }],
+                CommodityClassification: [
+                  {
+                    ItemClassificationCode: [{ _: "001", listID: "CLASS" }],
+                  },
+                ],
+              },
+            ],
+            Price: [
+              {
+                PriceAmount: [{ _: invoiceAmount, currencyID: "MYR" }],
+              },
+            ],
+            ItemPriceExtension: [
+              {
+                Amount: [{ _: invoiceAmount, currencyID: "MYR" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   };
 }
 
 async function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function getToken(): Promise<string> {
@@ -160,11 +223,11 @@ async function getToken(): Promise<string> {
       grant_type: "client_credentials",
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
-      scope: "InvoicingAPI"
-    })
+      scope: "InvoicingAPI",
+    }),
   });
 
-  const data = await resp.json() as any;
+  const data = (await resp.json()) as any;
   if (!data.access_token) {
     console.error("Token error:", data);
     throw new Error("Failed to get token");
@@ -180,12 +243,12 @@ async function pollSubmission(token: string, submissionUid: string): Promise<str
 
     const resp = await fetch(`${BASE_URL}/api/v1.0/documentsubmissions/${submissionUid}`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/json"
-      }
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
     });
 
-    const data = await resp.json() as any;
+    const data = (await resp.json()) as any;
     const status = data.overallStatus?.toLowerCase();
 
     process.stdout.write(`  Poll ${i + 1}: ${data.overallStatus}\r`);
@@ -261,20 +324,22 @@ async function main() {
   const submitResp = await fetch(`${BASE_URL}/api/v1.0/documentsubmissions/`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json"
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      documents: [{
-        format: "JSON",
-        document: signedDocBase64,
-        documentHash: docHash,
-        codeNumber: invNum
-      }]
-    })
+      documents: [
+        {
+          format: "JSON",
+          document: signedDocBase64,
+          documentHash: docHash,
+          codeNumber: invNum,
+        },
+      ],
+    }),
   });
 
-  const submitData = await submitResp.json() as any;
+  const submitData = (await submitResp.json()) as any;
 
   if (submitResp.status !== 202) {
     console.error("Submission failed:", submitResp.status);
@@ -295,11 +360,11 @@ async function main() {
   if (docUuid && finalStatus === "Valid") {
     const detailsResp = await fetch(`${BASE_URL}/api/v1.0/documents/${docUuid}/details`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/json"
-      }
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
     });
-    const details = await detailsResp.json() as any;
+    const details = (await detailsResp.json()) as any;
 
     console.log("\n" + "=".repeat(50));
     console.log("  INVOICE ISSUED SUCCESSFULLY");
@@ -317,7 +382,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("Error:", err.message);
   process.exit(1);
 });

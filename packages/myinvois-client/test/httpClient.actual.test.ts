@@ -263,10 +263,11 @@ describe("MyInvoisHttpClient (actual)", () => {
         ok: false,
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Invalid request body",
-          code: "INVALID_BODY",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Invalid request body",
+            code: "INVALID_BODY",
+          }),
       });
 
       const result = await client.request(mockSession, {
@@ -287,9 +288,10 @@ describe("MyInvoisHttpClient (actual)", () => {
         ok: false,
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "Something went wrong",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "Something went wrong",
+          }),
       });
 
       const result = await client.request(mockSession, {
@@ -309,14 +311,15 @@ describe("MyInvoisHttpClient (actual)", () => {
         ok: false,
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Validation failed",
-          code: "VALIDATION_ERROR",
-          details: [
-            { code: "Error1", message: "First error", propertyPath: "field1" },
-            { code: "Error2", message: "Second error", target: "value2" },
-          ],
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Validation failed",
+            code: "VALIDATION_ERROR",
+            details: [
+              { code: "Error1", message: "First error", propertyPath: "field1" },
+              { code: "Error2", message: "Second error", target: "value2" },
+            ],
+          }),
       });
 
       const result = await client.request(mockSession, {
@@ -336,12 +339,11 @@ describe("MyInvoisHttpClient (actual)", () => {
         ok: false,
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Error",
-          innerError: [
-            { code: "Inner1", message: "Inner error" },
-          ],
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Error",
+            innerError: [{ code: "Inner1", message: "Inner error" }],
+          }),
       });
 
       const result = await client.request(mockSession, {
@@ -361,12 +363,13 @@ describe("MyInvoisHttpClient (actual)", () => {
         ok: false,
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Field error",
-          propertyName: "TaxTotal",
-          propertyPath: "Invoice/TaxTotal",
-          target: "100.00",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Field error",
+            propertyName: "TaxTotal",
+            propertyPath: "Invoice/TaxTotal",
+            target: "100.00",
+          }),
       });
 
       const result = await client.request(mockSession, {

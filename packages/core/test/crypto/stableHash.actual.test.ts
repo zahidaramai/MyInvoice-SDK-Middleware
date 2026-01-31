@@ -133,14 +133,16 @@ describe("stableHash (actual)", () => {
 
     it("handles complex JSON", () => {
       const complexJson = JSON.stringify({
-        Invoice: [{
-          ID: [{ _: "INV001" }],
-          TaxTotal: [{ TaxAmount: [{ _: 8.00, currencyID: "MYR" }] }],
-          InvoiceLine: [
-            { ID: [{ _: "1" }], Item: [{ Description: [{ _: "Product A" }] }] },
-            { ID: [{ _: "2" }], Item: [{ Description: [{ _: "Product B" }] }] },
-          ],
-        }],
+        Invoice: [
+          {
+            ID: [{ _: "INV001" }],
+            TaxTotal: [{ TaxAmount: [{ _: 8.0, currencyID: "MYR" }] }],
+            InvoiceLine: [
+              { ID: [{ _: "1" }], Item: [{ Description: [{ _: "Product A" }] }] },
+              { ID: [{ _: "2" }], Item: [{ Description: [{ _: "Product B" }] }] },
+            ],
+          },
+        ],
       });
 
       const hash = computeDocumentHash(complexJson);
@@ -202,23 +204,27 @@ describe("stableHash (actual)", () => {
     it("handles complex nested document", () => {
       const signedDoc = {
         _D: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
-        Invoice: [{
-          ID: [{ _: "INV001" }],
-          IssueDate: [{ _: "2024-01-15" }],
-          AccountingSupplierParty: [{
-            Party: [{
-              PartyIdentification: [
-                { ID: [{ _: "C12345", schemeID: "TIN" }] },
-              ],
-            }],
-          }],
-          InvoiceLine: [
-            {
-              ID: [{ _: "1" }],
-              LineExtensionAmount: [{ _: 100, currencyID: "MYR" }],
-            },
-          ],
-        }],
+        Invoice: [
+          {
+            ID: [{ _: "INV001" }],
+            IssueDate: [{ _: "2024-01-15" }],
+            AccountingSupplierParty: [
+              {
+                Party: [
+                  {
+                    PartyIdentification: [{ ID: [{ _: "C12345", schemeID: "TIN" }] }],
+                  },
+                ],
+              },
+            ],
+            InvoiceLine: [
+              {
+                ID: [{ _: "1" }],
+                LineExtensionAmount: [{ _: 100, currencyID: "MYR" }],
+              },
+            ],
+          },
+        ],
       };
 
       const result = prepareDocumentForSubmission(signedDoc);

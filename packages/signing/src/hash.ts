@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import * as crypto from "crypto";
 
 /**
  * Sort object keys recursively for deterministic JSON serialization
@@ -12,7 +12,7 @@ function sortKeysRecursively(obj: unknown): unknown {
     return obj.map(sortKeysRecursively);
   }
 
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     const sorted: Record<string, unknown> = {};
     const keys = Object.keys(obj as Record<string, unknown>).sort();
 
@@ -34,14 +34,14 @@ function sortKeysRecursively(obj: unknown): unknown {
  * hash calculation as they are added during the signing process.
  */
 function removeSignatureElementsFromElement(element: unknown): unknown {
-  if (!element || typeof element !== 'object') {
+  if (!element || typeof element !== "object") {
     return element;
   }
 
   // Handle array-wrapped documents (MyInvois format: Invoice: [{UBLExtensions: [...], ...}])
   if (Array.isArray(element)) {
     return element.map((item, index) => {
-      if (index === 0 && typeof item === 'object' && item !== null) {
+      if (index === 0 && typeof item === "object" && item !== null) {
         const obj = { ...(item as Record<string, unknown>) };
         delete obj.UBLExtensions;
         delete obj.Signature;
@@ -124,8 +124,8 @@ export function canonicalizeDocument(document: Record<string, unknown>): string 
  */
 export function generateDocumentHash(document: Record<string, unknown>): string {
   const canonicalized = canonicalizeDocument(document);
-  const hash = crypto.createHash('sha256').update(canonicalized, 'utf8').digest();
-  return hash.toString('base64');
+  const hash = crypto.createHash("sha256").update(canonicalized, "utf8").digest();
+  return hash.toString("base64");
 }
 
 /**
@@ -135,8 +135,8 @@ export function generateDocumentHash(document: Record<string, unknown>): string 
  * @returns Base64-encoded SHA-256 hash
  */
 export function hashString(data: string): string {
-  const hash = crypto.createHash('sha256').update(data, 'utf8').digest();
-  return hash.toString('base64');
+  const hash = crypto.createHash("sha256").update(data, "utf8").digest();
+  return hash.toString("base64");
 }
 
 /**
@@ -147,8 +147,8 @@ export function hashString(data: string): string {
  */
 export function generateDocumentHashHex(document: Record<string, unknown>): string {
   const canonicalized = canonicalizeDocument(document);
-  const hash = crypto.createHash('sha256').update(canonicalized, 'utf8').digest();
-  return hash.toString('hex');
+  const hash = crypto.createHash("sha256").update(canonicalized, "utf8").digest();
+  return hash.toString("hex");
 }
 
 /**

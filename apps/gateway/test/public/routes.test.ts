@@ -33,11 +33,7 @@ describe("public routes", () => {
     });
 
     it("validates longId format", () => {
-      const validLongIds = [
-        "ABC123XYZ789",
-        "LONGIDASDF1234567890",
-        "0123456789ABCDEFGHIJ",
-      ];
+      const validLongIds = ["ABC123XYZ789", "LONGIDASDF1234567890", "0123456789ABCDEFGHIJ"];
 
       const invalidLongIds = ["", "ab", "has space"];
 
@@ -236,8 +232,7 @@ describe("public routes", () => {
         companyIds: ["company-1", "company-2"],
       };
 
-      const hasAccess = (companyId: string) =>
-        user.companyIds.includes(companyId);
+      const hasAccess = (companyId: string) => user.companyIds.includes(companyId);
 
       expect(hasAccess("company-1")).toBe(true);
       expect(hasAccess("company-3")).toBe(false);

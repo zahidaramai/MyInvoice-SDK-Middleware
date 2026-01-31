@@ -177,8 +177,7 @@ describe("metrics", () => {
     });
 
     it("validates label values", () => {
-      const isValidLabel = (value: string) =>
-        /^[a-zA-Z0-9_-]+$/.test(value);
+      const isValidLabel = (value: string) => /^[a-zA-Z0-9_-]+$/.test(value);
 
       expect(isValidLabel("success")).toBe(true);
       expect(isValidLabel("error-code")).toBe(true);

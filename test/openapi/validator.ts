@@ -284,9 +284,7 @@ export function validateResponse(options: {
 }): void {
   const result = assertConforms(options);
   if (!result.valid) {
-    const errorMessages = result.errors
-      .map((e) => `  ${e.path}: ${e.message}`)
-      .join("\n");
+    const errorMessages = result.errors.map((e) => `  ${e.path}: ${e.message}`).join("\n");
     throw new Error(
       `Response does not conform to OpenAPI spec for ${options.method} ${options.path} ${options.status}:\n${errorMessages}`
     );

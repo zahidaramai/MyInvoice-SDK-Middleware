@@ -73,7 +73,10 @@ const InvoiceTypeCodes = {
  */
 function generateDocumentNumber(prefix: string): string {
   const now = new Date();
-  const ts = now.toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  const ts = now
+    .toISOString()
+    .replace(/[-:.TZ]/g, "")
+    .slice(0, 14);
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `${prefix}-${ts}-${rand}`;
 }
@@ -99,7 +102,10 @@ function createSupplierParty(tin: string): object {
     Party: [
       {
         IndustryClassificationCode: [
-          { _: "46510", name: "Wholesale of computers, computer peripheral equipment and software" },
+          {
+            _: "46510",
+            name: "Wholesale of computers, computer peripheral equipment and software",
+          },
         ],
         PartyIdentification: [
           { ID: [{ _: tin, schemeID: "TIN" }] },
@@ -115,7 +121,9 @@ function createSupplierParty(tin: string): object {
               { Line: [{ _: "Bangunan Merdeka" }] },
               { Line: [{ _: "Persiaran Jaya" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Test Supplier Sdn Bhd" }] }],
@@ -153,7 +161,9 @@ function createCustomerParty(): object {
               { Line: [{ _: "Business Park" }] },
               { Line: [{ _: "-" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Test Buyer Sdn Bhd" }] }],
@@ -319,7 +329,9 @@ function createInvoice(invoiceNumber: string, issuerTin: string, lineItems: obje
                 TaxCategory: [
                   {
                     ID: [{ _: "E" }],
-                    TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                    TaxScheme: [
+                      { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                    ],
                   },
                 ],
               },
@@ -398,7 +410,9 @@ function createCreditNote(
                 TaxCategory: [
                   {
                     ID: [{ _: "E" }],
-                    TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                    TaxScheme: [
+                      { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                    ],
                   },
                 ],
               },
@@ -464,56 +478,82 @@ function createSelfBilledCreditNote(
         ],
         // For self-billed: Supplier is the vendor (not authenticated party)
         // Use supplier's own TIN for testing (self-transaction is valid in sandbox)
-        AccountingSupplierParty: [{
-          Party: [{
-            IndustryClassificationCode: [{ _: "46510", name: "Wholesale of computers" }],
-            PartyIdentification: [
-              { ID: [{ _: SUPPLIER_TIN, schemeID: "TIN" }] },
-              { ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }] }
+        AccountingSupplierParty: [
+          {
+            Party: [
+              {
+                IndustryClassificationCode: [{ _: "46510", name: "Wholesale of computers" }],
+                PartyIdentification: [
+                  { ID: [{ _: SUPPLIER_TIN, schemeID: "TIN" }] },
+                  { ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }] },
+                ],
+                PostalAddress: [
+                  {
+                    CityName: [{ _: "Kuala Lumpur" }],
+                    PostalZone: [{ _: "50480" }],
+                    CountrySubentityCode: [{ _: "14" }],
+                    AddressLine: [
+                      { Line: [{ _: "Supplier Address Line 1" }] },
+                      { Line: [{ _: "Supplier Address Line 2" }] },
+                      { Line: [{ _: "-" }] },
+                    ],
+                    Country: [
+                      {
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+                PartyLegalEntity: [{ RegistrationName: [{ _: "Vendor Company Sdn Bhd" }] }],
+                Contact: [
+                  {
+                    Telephone: [{ _: "+60111111111" }],
+                    ElectronicMail: [{ _: "vendor@example.com" }],
+                  },
+                ],
+              },
             ],
-            PostalAddress: [{
-              CityName: [{ _: "Kuala Lumpur" }],
-              PostalZone: [{ _: "50480" }],
-              CountrySubentityCode: [{ _: "14" }],
-              AddressLine: [
-                { Line: [{ _: "Supplier Address Line 1" }] },
-                { Line: [{ _: "Supplier Address Line 2" }] },
-                { Line: [{ _: "-" }] }
-              ],
-              Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }]
-            }],
-            PartyLegalEntity: [{ RegistrationName: [{ _: "Vendor Company Sdn Bhd" }] }],
-            Contact: [{
-              Telephone: [{ _: "+60111111111" }],
-              ElectronicMail: [{ _: "vendor@example.com" }]
-            }]
-          }]
-        }],
+          },
+        ],
         // For self-billed: Customer is the authenticated party (buyer with our TIN)
-        AccountingCustomerParty: [{
-          Party: [{
-            PartyIdentification: [
-              { ID: [{ _: buyerTin, schemeID: "TIN" }] },
-              { ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }] }
+        AccountingCustomerParty: [
+          {
+            Party: [
+              {
+                PartyIdentification: [
+                  { ID: [{ _: buyerTin, schemeID: "TIN" }] },
+                  { ID: [{ _: SUPPLIER_ID_VALUE, schemeID: SUPPLIER_ID_TYPE }] },
+                ],
+                PostalAddress: [
+                  {
+                    CityName: [{ _: "Kuala Lumpur" }],
+                    PostalZone: [{ _: "50480" }],
+                    CountrySubentityCode: [{ _: "14" }],
+                    AddressLine: [
+                      { Line: [{ _: "Lot 66" }] },
+                      { Line: [{ _: "Bangunan Merdeka" }] },
+                      { Line: [{ _: "Persiaran Jaya" }] },
+                    ],
+                    Country: [
+                      {
+                        IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }],
+                      },
+                    ],
+                  },
+                ],
+                PartyLegalEntity: [
+                  { RegistrationName: [{ _: "Test Buyer (Self-billing) Sdn Bhd" }] },
+                ],
+                Contact: [
+                  {
+                    Telephone: [{ _: "+60123456789" }],
+                    ElectronicMail: [{ _: "buyer@test.com" }],
+                  },
+                ],
+              },
             ],
-            PostalAddress: [{
-              CityName: [{ _: "Kuala Lumpur" }],
-              PostalZone: [{ _: "50480" }],
-              CountrySubentityCode: [{ _: "14" }],
-              AddressLine: [
-                { Line: [{ _: "Lot 66" }] },
-                { Line: [{ _: "Bangunan Merdeka" }] },
-                { Line: [{ _: "Persiaran Jaya" }] }
-              ],
-              Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }]
-            }],
-            PartyLegalEntity: [{ RegistrationName: [{ _: "Test Buyer (Self-billing) Sdn Bhd" }] }],
-            Contact: [{
-              Telephone: [{ _: "+60123456789" }],
-              ElectronicMail: [{ _: "buyer@test.com" }]
-            }]
-          }]
-        }],
+          },
+        ],
         PaymentMeans: [
           {
             PaymentMeansCode: [{ _: "01" }],
@@ -531,7 +571,9 @@ function createSelfBilledCreditNote(
                 TaxCategory: [
                   {
                     ID: [{ _: "E" }],
-                    TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                    TaxScheme: [
+                      { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                    ],
                   },
                 ],
               },
@@ -559,7 +601,11 @@ function createSelfBilledCreditNote(
  * Create a Refund Note (using Invoice schema with type 04)
  * Note: Refund in MyInvois context uses Invoice structure with specific type code
  */
-function createRefundNote(refundNumber: string, issuerTin: string, originalInvoiceRef: string): object {
+function createRefundNote(
+  refundNumber: string,
+  issuerTin: string,
+  originalInvoiceRef: string
+): object {
   const { date, time } = getDocumentDateTime();
   const refundAmount = 25.0;
 
@@ -605,7 +651,9 @@ function createRefundNote(refundNumber: string, issuerTin: string, originalInvoi
                 TaxCategory: [
                   {
                     ID: [{ _: "E" }],
-                    TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                    TaxScheme: [
+                      { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                    ],
                   },
                 ],
               },
@@ -646,7 +694,9 @@ function createRefundNote(refundNumber: string, issuerTin: string, originalInvoi
                       {
                         ID: [{ _: "E" }],
                         TaxExemptionReason: [{ _: "Refund - Exempt" }],
-                        TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                        TaxScheme: [
+                          { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                        ],
                       },
                     ],
                   },
@@ -655,7 +705,9 @@ function createRefundNote(refundNumber: string, issuerTin: string, originalInvoi
             ],
             Item: [
               {
-                CommodityClassification: [{ ItemClassificationCode: [{ _: "001", listID: "CLASS" }] }],
+                CommodityClassification: [
+                  { ItemClassificationCode: [{ _: "001", listID: "CLASS" }] },
+                ],
                 Description: [{ _: "Refund for order cancellation" }],
               },
             ],
@@ -704,7 +756,9 @@ function createConsolidatedInvoice(invoiceNumber: string, issuerTin: string): ob
             Description: [{ _: "Consolidated Monthly Invoice" }],
           },
         ],
-        BillingReference: [{ AdditionalDocumentReference: [{ ID: [{ _: "CONSOLIDATED-REF-001" }] }] }],
+        BillingReference: [
+          { AdditionalDocumentReference: [{ ID: [{ _: "CONSOLIDATED-REF-001" }] }] },
+        ],
         AccountingSupplierParty: [createSupplierParty(issuerTin)],
         AccountingCustomerParty: [createCustomerParty()],
         PaymentMeans: [
@@ -724,7 +778,9 @@ function createConsolidatedInvoice(invoiceNumber: string, issuerTin: string): ob
                 TaxCategory: [
                   {
                     ID: [{ _: "E" }],
-                    TaxScheme: [{ ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] }],
+                    TaxScheme: [
+                      { ID: [{ _: "OTH", schemeID: "UN/ECE 5153", schemeAgencyID: "6" }] },
+                    ],
                   },
                 ],
               },
@@ -794,7 +850,8 @@ async function submitDocument(
     }),
   });
 
-  const correlationId = response.headers.get("correlationid") || response.headers.get("x-correlation-id");
+  const correlationId =
+    response.headers.get("correlationid") || response.headers.get("x-correlation-id");
   const responseBody = await response.json();
 
   console.log(`   Response Status: ${response.status}`);
@@ -929,7 +986,12 @@ describe.skipIf(SKIP_REAL_TESTS)("Document Types Integration Tests", () => {
       // Use InvoiceLine for credit notes (MyInvois uses Invoice schema for all document types)
       const lineItems = [createInvoiceLine("1", "Credit for returned goods", 1, 50.0, 0)];
 
-      const creditNote = createCreditNote(creditNoteNumber, SUPPLIER_TIN, originalInvoiceRef, lineItems);
+      const creditNote = createCreditNote(
+        creditNoteNumber,
+        SUPPLIER_TIN,
+        originalInvoiceRef,
+        lineItems
+      );
       const result = await submitDocument(token, creditNoteNumber, creditNote);
 
       expect(result.status).toBeLessThan(500);
@@ -1026,12 +1088,16 @@ describe.skipIf(SKIP_REAL_TESTS)("Document Types Integration Tests", () => {
       expect(response.status).toBe(200);
 
       const documentTypes = await response.json();
-      console.log(`   Available document types: ${Array.isArray(documentTypes) ? documentTypes.length : "N/A"}`);
+      console.log(
+        `   Available document types: ${Array.isArray(documentTypes) ? documentTypes.length : "N/A"}`
+      );
 
       if (Array.isArray(documentTypes)) {
-        documentTypes.forEach((dt: { id: number; invoiceTypeCode: number; description: string }) => {
-          console.log(`     - ${dt.invoiceTypeCode}: ${dt.description}`);
-        });
+        documentTypes.forEach(
+          (dt: { id: number; invoiceTypeCode: number; description: string }) => {
+            console.log(`     - ${dt.invoiceTypeCode}: ${dt.description}`);
+          }
+        );
       }
     });
   });

@@ -156,9 +156,8 @@ export async function getDocumentDetails(
           dateTimeIssued: parseDate(body.dateTimeIssued),
           dateTimeReceived: parseDate(body.dateTimeReceived),
           dateTimeValidated: parseDate(body.dateTimeValidated),
-          totalPayableAmount: body.totalPayableAmount !== undefined
-            ? body.totalPayableAmount.toString()
-            : null,
+          totalPayableAmount:
+            body.totalPayableAmount !== undefined ? body.totalPayableAmount.toString() : null,
           status: body.status,
           cancelDateTime: parseDate(body.cancelDateTime),
           rejectDateTime: parseDate(body.rejectDateTime),
@@ -212,9 +211,8 @@ export async function getDocumentDetails(
               dateTimeIssued: parseDate(body.dateTimeIssued),
               dateTimeReceived: parseDate(body.dateTimeReceived),
               dateTimeValidated: parseDate(body.dateTimeValidated),
-              totalPayableAmount: body.totalPayableAmount !== undefined
-                ? body.totalPayableAmount.toString()
-                : null,
+              totalPayableAmount:
+                body.totalPayableAmount !== undefined ? body.totalPayableAmount.toString() : null,
               status: body.status,
               cancelDateTime: parseDate(body.cancelDateTime),
               rejectDateTime: parseDate(body.rejectDateTime),

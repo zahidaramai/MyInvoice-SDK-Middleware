@@ -97,15 +97,11 @@ export async function enqueueInvoicePoll(
   const queue = getPollInvoiceQueue();
   const delay = delayMs ?? calculateInvoicePollDelay(data.attempt ?? 0);
 
-  const job = await queue.add(
-    "poll-invoice",
-    data,
-    {
-      // Use invoiceId as jobId for idempotency
-      jobId: `invoice-${data.invoiceId}-${Date.now()}`,
-      delay,
-    }
-  );
+  const job = await queue.add("poll-invoice", data, {
+    // Use invoiceId as jobId for idempotency
+    jobId: `invoice-${data.invoiceId}-${Date.now()}`,
+    delay,
+  });
 
   return job.id || data.invoiceId;
 }
@@ -113,9 +109,7 @@ export async function enqueueInvoicePoll(
 /**
  * Enqueue immediate invoice poll (for manual trigger)
  */
-export async function enqueueImmediateInvoicePoll(
-  data: PollInvoiceJobData
-): Promise<string> {
+export async function enqueueImmediateInvoicePoll(data: PollInvoiceJobData): Promise<string> {
   return enqueueInvoicePoll(data, 0);
 }
 

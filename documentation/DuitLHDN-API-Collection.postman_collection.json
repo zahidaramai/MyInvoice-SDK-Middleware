@@ -1468,9 +1468,7 @@
               "raw": "{{baseUrl}}/api/v1/hashlhdn/invoices/share-link?id={{trackingId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "hashlhdn", "invoices", "share-link"],
-              "query": [
-                { "key": "id", "value": "{{trackingId}}" }
-              ]
+              "query": [{ "key": "id", "value": "{{trackingId}}" }]
             },
             "description": "Get MyInvois share link by any ID.\n\n**Query param `id` accepts:**\n- `trackingId`\n- `myinvoisUuid`\n- `posInvoiceId`\n\n**Only available for VALID documents.**"
           },

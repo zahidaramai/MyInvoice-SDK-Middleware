@@ -60,7 +60,7 @@ describe("getDocumentDetails (actual)", () => {
         dateTimeIssued: "2024-01-15T10:00:00Z",
         dateTimeReceived: "2024-01-15T10:05:00Z",
         dateTimeValidated: "2024-01-15T10:10:00Z",
-        totalPayableAmount: 106.00,
+        totalPayableAmount: 106.0,
         status: "Valid",
       };
 
@@ -436,10 +436,11 @@ describe("getDocumentDetails (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await getDocumentDetails(
@@ -459,9 +460,10 @@ describe("getDocumentDetails (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "Something went wrong",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "Something went wrong",
+          }),
       });
 
       const result = await getDocumentDetails(
@@ -508,14 +510,15 @@ describe("getDocumentDetails (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          uuid: "test-uuid",
-          submissionUid: "sub-123",
-          internalId: "INV001",
-          typeName: "invoice",
-          issuerTin: "C12345678901",
-          status: "Valid",
-        }),
+        json: () =>
+          Promise.resolve({
+            uuid: "test-uuid",
+            submissionUid: "sub-123",
+            internalId: "INV001",
+            typeName: "invoice",
+            issuerTin: "C12345678901",
+            status: "Valid",
+          }),
       });
 
       await getDocumentDetails(
@@ -540,14 +543,15 @@ describe("getDocumentDetails (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          uuid: "abc-123",
-          submissionUid: "sub-123",
-          internalId: "INV001",
-          typeName: "invoice",
-          issuerTin: "C12345678901",
-          status: "Valid",
-        }),
+        json: () =>
+          Promise.resolve({
+            uuid: "abc-123",
+            submissionUid: "sub-123",
+            internalId: "INV001",
+            typeName: "invoice",
+            issuerTin: "C12345678901",
+            status: "Valid",
+          }),
       });
 
       await getDocumentDetails(

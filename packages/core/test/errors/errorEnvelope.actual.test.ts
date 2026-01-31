@@ -78,11 +78,7 @@ describe("errorEnvelope (actual)", () => {
 
   describe("createErrorEnvelope", () => {
     it("creates basic error envelope with required fields", () => {
-      const envelope = createErrorEnvelope(
-        ErrorCodes.VALIDATION_ERROR,
-        "Validation failed",
-        400
-      );
+      const envelope = createErrorEnvelope(ErrorCodes.VALIDATION_ERROR, "Validation failed", 400);
 
       expect(envelope.code).toBe("VALIDATION_ERROR");
       expect(envelope.messageEN).toBe("Validation failed");
@@ -91,12 +87,9 @@ describe("errorEnvelope (actual)", () => {
     });
 
     it("creates error envelope with custom retryable flag", () => {
-      const envelope = createErrorEnvelope(
-        ErrorCodes.UPSTREAM_TIMEOUT,
-        "Request timed out",
-        504,
-        { retryable: true }
-      );
+      const envelope = createErrorEnvelope(ErrorCodes.UPSTREAM_TIMEOUT, "Request timed out", 504, {
+        retryable: true,
+      });
 
       expect(envelope.code).toBe("UPSTREAM_TIMEOUT");
       expect(envelope.httpStatus).toBe(504);
@@ -104,35 +97,30 @@ describe("errorEnvelope (actual)", () => {
     });
 
     it("creates error envelope with all optional fields", () => {
-      const envelope = createErrorEnvelope(
-        ErrorCodes.INVALID_TAXPAYER,
-        "TIN not registered",
-        400,
-        {
-          retryable: false,
-          upstream: {
-            source: "MYINVOIS",
-            status: 400,
-            errorCode: "ERR045",
-            errorName: "Step05-Taxpayer Profile Validator",
-            path: "/api/v1.0/documentsubmissions",
-            method: "POST",
+      const envelope = createErrorEnvelope(ErrorCodes.INVALID_TAXPAYER, "TIN not registered", 400, {
+        retryable: false,
+        upstream: {
+          source: "MYINVOIS",
+          status: 400,
+          errorCode: "ERR045",
+          errorName: "Step05-Taxpayer Profile Validator",
+          path: "/api/v1.0/documentsubmissions",
+          method: "POST",
+        },
+        field: "Customer.TIN",
+        propertyPath: "documents[0].Customer.TIN",
+        correlationId: "corr-123",
+        trackingId: "track-456",
+        retryAfterSeconds: 60,
+        details: [
+          {
+            code: "TIN_NOT_FOUND",
+            messageEN: "TIN is not registered with LHDN",
+            field: "TIN",
+            propertyPath: "documents[0].TIN",
           },
-          field: "Customer.TIN",
-          propertyPath: "documents[0].Customer.TIN",
-          correlationId: "corr-123",
-          trackingId: "track-456",
-          retryAfterSeconds: 60,
-          details: [
-            {
-              code: "TIN_NOT_FOUND",
-              messageEN: "TIN is not registered with LHDN",
-              field: "TIN",
-              propertyPath: "documents[0].TIN",
-            },
-          ],
-        }
-      );
+        ],
+      });
 
       expect(envelope.code).toBe("INVALID_TAXPAYER");
       expect(envelope.upstream?.source).toBe("MYINVOIS");
@@ -148,22 +136,15 @@ describe("errorEnvelope (actual)", () => {
     });
 
     it("allows custom error codes as strings", () => {
-      const envelope = createErrorEnvelope(
-        "CUSTOM_ERROR_CODE",
-        "Custom error occurred",
-        500
-      );
+      const envelope = createErrorEnvelope("CUSTOM_ERROR_CODE", "Custom error occurred", 500);
 
       expect(envelope.code).toBe("CUSTOM_ERROR_CODE");
     });
 
     it("preserves retryable default when options provided without retryable", () => {
-      const envelope = createErrorEnvelope(
-        ErrorCodes.NOT_FOUND,
-        "Document not found",
-        404,
-        { correlationId: "corr-123" }
-      );
+      const envelope = createErrorEnvelope(ErrorCodes.NOT_FOUND, "Document not found", 404, {
+        correlationId: "corr-123",
+      });
 
       expect(envelope.retryable).toBe(false);
       expect(envelope.correlationId).toBe("corr-123");
@@ -172,11 +153,7 @@ describe("errorEnvelope (actual)", () => {
 
   describe("createErrorEnvelopeResponse", () => {
     it("wraps envelope in error property", () => {
-      const envelope = createErrorEnvelope(
-        ErrorCodes.BAD_REQUEST,
-        "Invalid request",
-        400
-      );
+      const envelope = createErrorEnvelope(ErrorCodes.BAD_REQUEST, "Invalid request", 400);
 
       const response = createErrorEnvelopeResponse(envelope);
 

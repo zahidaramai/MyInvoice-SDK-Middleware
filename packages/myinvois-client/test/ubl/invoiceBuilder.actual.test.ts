@@ -168,8 +168,12 @@ describe("invoiceBuilder (actual)", () => {
           .buildV1_0();
 
         expect(invoice._D).toBe("urn:oasis:names:specification:ubl:schema:xsd:Invoice-2");
-        expect(invoice._A).toBe("urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2");
-        expect(invoice._B).toBe("urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2");
+        expect(invoice._A).toBe(
+          "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+        );
+        expect(invoice._B).toBe(
+          "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+        );
 
         const content = invoice.Invoice[0];
         expect(content.ID[0]._).toBe("INV001");
@@ -251,7 +255,9 @@ describe("invoiceBuilder (actual)", () => {
         const party = supplierParty.Party[0];
         expect(party.PartyIdentification).toHaveLength(4); // TIN, BRN, SST, TTX
         expect(party.IndustryClassificationCode?.[0]._).toBe("47111");
-        expect(party.IndustryClassificationCode?.[0].name).toBe("Retail sale in non-specialized stores");
+        expect(party.IndustryClassificationCode?.[0].name).toBe(
+          "Retail sale in non-specialized stores"
+        );
       });
 
       it("builds customer party correctly", () => {
@@ -325,7 +331,9 @@ describe("invoiceBuilder (actual)", () => {
           .setLines([line])
           .buildV1_0();
 
-        expect(invoice.Invoice[0].InvoiceLine[0].AllowanceCharge?.[0].AllowanceChargeReason[0]._).toBe("Discount");
+        expect(
+          invoice.Invoice[0].InvoiceLine[0].AllowanceCharge?.[0].AllowanceChargeReason[0]._
+        ).toBe("Discount");
       });
 
       it("does not add allowance charge when discount is 0", () => {
@@ -425,11 +433,11 @@ describe("invoiceBuilder (actual)", () => {
         expect(taxTotal.TaxAmount[0]._).toBe(16); // 8 + 8 + 0
         expect(taxTotal.TaxSubtotal).toHaveLength(2); // 01 and E
 
-        const subtotal01 = taxTotal.TaxSubtotal.find(s => s.TaxCategory[0].ID[0]._ === "01");
+        const subtotal01 = taxTotal.TaxSubtotal.find((s) => s.TaxCategory[0].ID[0]._ === "01");
         expect(subtotal01?.TaxableAmount[0]._).toBe(200);
         expect(subtotal01?.TaxAmount[0]._).toBe(16);
 
-        const subtotalE = taxTotal.TaxSubtotal.find(s => s.TaxCategory[0].ID[0]._ === "E");
+        const subtotalE = taxTotal.TaxSubtotal.find((s) => s.TaxCategory[0].ID[0]._ === "E");
         expect(subtotalE?.TaxableAmount[0]._).toBe(50);
         expect(subtotalE?.TaxCategory[0].TaxExemptionReason?.[0]._).toBe("Exempt item");
       });
@@ -461,7 +469,9 @@ describe("invoiceBuilder (actual)", () => {
           .setBillingReferenceId("REF001")
           .buildV1_0();
 
-        expect(invoice.Invoice[0].BillingReference?.[0].AdditionalDocumentReference[0].ID[0]._).toBe("REF001");
+        expect(
+          invoice.Invoice[0].BillingReference?.[0].AdditionalDocumentReference[0].ID[0]._
+        ).toBe("REF001");
       });
 
       it("includes payment means when set", () => {

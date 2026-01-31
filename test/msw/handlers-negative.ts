@@ -238,25 +238,22 @@ export const upstream429Handler = http.post(
  * Simulate upstream 429 with custom Retry-After value
  */
 export function createRateLimitHandler(retryAfterSeconds: number) {
-  return http.post(
-    `${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`,
-    async () => {
-      return HttpResponse.json(
-        {
-          message: "Rate limit exceeded",
-          code: "RateLimitExceeded",
+  return http.post(`${SANDBOX_BASE_URL}/api/v1.0/documentsubmissions/`, async () => {
+    return HttpResponse.json(
+      {
+        message: "Rate limit exceeded",
+        code: "RateLimitExceeded",
+      },
+      {
+        status: 429,
+        headers: {
+          ...correlationHeaders(),
+          "retry-after": String(retryAfterSeconds),
+          "x-rate-limit-reset": String(Math.floor(Date.now() / 1000) + retryAfterSeconds),
         },
-        {
-          status: 429,
-          headers: {
-            ...correlationHeaders(),
-            "retry-after": String(retryAfterSeconds),
-            "x-rate-limit-reset": String(Math.floor(Date.now() / 1000) + retryAfterSeconds),
-          },
-        }
-      );
-    }
-  );
+      }
+    );
+  });
 }
 
 // ============================================================================
@@ -266,18 +263,15 @@ export function createRateLimitHandler(retryAfterSeconds: number) {
 /**
  * Simulate invalid client credentials (invalid_client)
  */
-export const invalidClientHandler = http.post(
-  `${SANDBOX_BASE_URL}/connect/token`,
-  async () => {
-    return HttpResponse.json(
-      {
-        error: "invalid_client",
-        error_description: "Invalid client credentials",
-      },
-      { status: 401, headers: correlationHeaders() }
-    );
-  }
-);
+export const invalidClientHandler = http.post(`${SANDBOX_BASE_URL}/connect/token`, async () => {
+  return HttpResponse.json(
+    {
+      error: "invalid_client",
+      error_description: "Invalid client credentials",
+    },
+    { status: 401, headers: correlationHeaders() }
+  );
+});
 
 /**
  * Simulate invalid credentials (400 response)
@@ -314,32 +308,23 @@ export const expiredTokenHandler = http.post(
 /**
  * Simulate token endpoint unavailable (503)
  */
-export const tokenUnavailableHandler = http.post(
-  `${SANDBOX_BASE_URL}/connect/token`,
-  async () => {
-    return HttpResponse.json(
-      {
-        error: "service_unavailable",
-        error_description: "Authentication service is temporarily unavailable",
-      },
-      { status: 503, headers: correlationHeaders() }
-    );
-  }
-);
+export const tokenUnavailableHandler = http.post(`${SANDBOX_BASE_URL}/connect/token`, async () => {
+  return HttpResponse.json(
+    {
+      error: "service_unavailable",
+      error_description: "Authentication service is temporarily unavailable",
+    },
+    { status: 503, headers: correlationHeaders() }
+  );
+});
 
 /**
  * Simulate token endpoint timeout
  */
-export const tokenTimeoutHandler = http.post(
-  `${SANDBOX_BASE_URL}/connect/token`,
-  async () => {
-    await delay(30000);
-    return HttpResponse.json(
-      { message: "This should never be received" },
-      { status: 200 }
-    );
-  }
-);
+export const tokenTimeoutHandler = http.post(`${SANDBOX_BASE_URL}/connect/token`, async () => {
+  await delay(30000);
+  return HttpResponse.json({ message: "This should never be received" }, { status: 200 });
+});
 
 // ============================================================================
 // Submission Status Handlers (for polling tests)
@@ -618,9 +603,7 @@ export function createCustomErrorHandler(
   body: unknown,
   headers?: Record<string, string>
 ) {
-  const baseUrl = path.startsWith("/connect")
-    ? SANDBOX_BASE_URL
-    : SANDBOX_BASE_URL;
+  const baseUrl = path.startsWith("/connect") ? SANDBOX_BASE_URL : SANDBOX_BASE_URL;
 
   const httpMethod = {
     GET: http.get,
@@ -645,9 +628,7 @@ export function createTimeoutHandler(
   method: "GET" | "POST" | "PUT" | "DELETE",
   delayMs: number
 ) {
-  const baseUrl = path.startsWith("/connect")
-    ? SANDBOX_BASE_URL
-    : SANDBOX_BASE_URL;
+  const baseUrl = path.startsWith("/connect") ? SANDBOX_BASE_URL : SANDBOX_BASE_URL;
 
   const httpMethod = {
     GET: http.get,

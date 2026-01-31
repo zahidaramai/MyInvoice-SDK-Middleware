@@ -2,14 +2,8 @@
  * MyInvois client wiring for the gateway
  */
 
-import {
-  createTokenManager,
-  type TokenManager,
-} from "@myinvois/myinvois-client";
-import {
-  InMemoryRateLimiter,
-  type RateLimiter,
-} from "@myinvois/core";
+import { createTokenManager, type TokenManager } from "@myinvois/myinvois-client";
+import { InMemoryRateLimiter, type RateLimiter } from "@myinvois/core";
 
 let tokenManagerInstance: TokenManager | undefined;
 let rateLimiterInstance: RateLimiter | undefined;
@@ -29,10 +23,7 @@ export function getRateLimiter(): RateLimiter {
  */
 export function getTokenManager(): TokenManager {
   if (!tokenManagerInstance) {
-    const renewSkewMs = parseInt(
-      process.env.TOKEN_RENEW_SKEW_MS || "30000",
-      10
-    );
+    const renewSkewMs = parseInt(process.env.TOKEN_RENEW_SKEW_MS || "30000", 10);
     tokenManagerInstance = createTokenManager({
       rateLimiter: getRateLimiter(),
       renewSkewMs,

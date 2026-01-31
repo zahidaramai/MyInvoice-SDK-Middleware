@@ -75,7 +75,10 @@ const B2B_THRESHOLD = 10000.0; // RM 10,000
 
 function generateDocumentNumber(prefix: string): string {
   const now = new Date();
-  const ts = now.toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  const ts = now
+    .toISOString()
+    .replace(/[-:.TZ]/g, "")
+    .slice(0, 14);
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `${prefix}-${ts}-${rand}`;
 }
@@ -127,7 +130,9 @@ function createSupplierParty(tin: string, sstRegistration?: string): object {
               { Line: [{ _: "Bangunan Merdeka" }] },
               { Line: [{ _: "Persiaran Jaya" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Test Supplier Sdn Bhd" }] }],
@@ -166,7 +171,9 @@ function createB2BCustomerParty(): object {
               { Line: [{ _: "Damansara Business Park" }] },
               { Line: [{ _: "-" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Buyer Company Sdn Bhd" }] }],
@@ -208,7 +215,9 @@ function createB2CCustomerParty(): object {
               { Line: [{ _: "-" }] },
               { Line: [{ _: "-" }] },
             ],
-            Country: [{ IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] }],
+            Country: [
+              { IdentificationCode: [{ _: "MYS", listID: "ISO3166-1", listAgencyID: "6" }] },
+            ],
           },
         ],
         PartyLegalEntity: [{ RegistrationName: [{ _: "Test Buyer (Sandbox Self-Transaction)" }] }],
@@ -437,7 +446,10 @@ interface SubmissionResult {
   status: number;
   submissionUid?: string;
   acceptedDocuments?: Array<{ uuid: string; invoiceCodeNumber: string }>;
-  rejectedDocuments?: Array<{ invoiceCodeNumber: string; error: { message: string; code?: string } }>;
+  rejectedDocuments?: Array<{
+    invoiceCodeNumber: string;
+    error: { message: string; code?: string };
+  }>;
   error?: string;
   correlationId?: string;
 }
@@ -473,7 +485,8 @@ async function submitDocument(
     }),
   });
 
-  const correlationId = response.headers.get("correlationid") || response.headers.get("x-correlation-id");
+  const correlationId =
+    response.headers.get("correlationid") || response.headers.get("x-correlation-id");
   const responseBody = await response.json();
 
   console.log(`   Response Status: ${response.status}`);
@@ -627,7 +640,12 @@ describe.skipIf(SKIP_REAL_TESTS)("Regulation Compliance Tests", () => {
       console.log(`   Service Tax (8%): RM ${totals.taxAmount.toFixed(2)}`);
       console.log(`   Total: RM ${totals.payable.toFixed(2)}`);
 
-      const invoice = createInvoiceWithSST(invoiceNumber, SUPPLIER_TIN, items, createB2BCustomerParty());
+      const invoice = createInvoiceWithSST(
+        invoiceNumber,
+        SUPPLIER_TIN,
+        items,
+        createB2BCustomerParty()
+      );
       const result = await submitDocument(token, invoiceNumber, invoice);
 
       expect(result.status).toBeLessThan(500);
@@ -674,7 +692,12 @@ describe.skipIf(SKIP_REAL_TESTS)("Regulation Compliance Tests", () => {
       console.log(`   Total Tax: RM ${totals.taxAmount.toFixed(2)}`);
       console.log(`   Total: RM ${totals.payable.toFixed(2)}`);
 
-      const invoice = createInvoiceWithSST(invoiceNumber, SUPPLIER_TIN, items, createB2BCustomerParty());
+      const invoice = createInvoiceWithSST(
+        invoiceNumber,
+        SUPPLIER_TIN,
+        items,
+        createB2BCustomerParty()
+      );
       const result = await submitDocument(token, invoiceNumber, invoice);
 
       expect(result.status).toBeLessThan(500);
@@ -806,7 +829,12 @@ describe.skipIf(SKIP_REAL_TESTS)("Regulation Compliance Tests", () => {
       console.log(`   Type: B2B (at threshold, using company buyer)`);
 
       // At exactly RM10,000, can still be B2C, but we use B2B to be safe
-      const invoice = createInvoiceWithSST(invoiceNumber, SUPPLIER_TIN, items, createB2BCustomerParty());
+      const invoice = createInvoiceWithSST(
+        invoiceNumber,
+        SUPPLIER_TIN,
+        items,
+        createB2BCustomerParty()
+      );
       const result = await submitDocument(token, invoiceNumber, invoice);
 
       expect(result.status).toBeLessThan(500);
@@ -864,7 +892,12 @@ describe.skipIf(SKIP_REAL_TESTS)("Regulation Compliance Tests", () => {
 
       expect(totals.payable).toBeGreaterThan(B2B_THRESHOLD);
 
-      const invoice = createInvoiceWithSST(invoiceNumber, SUPPLIER_TIN, items, createB2BCustomerParty());
+      const invoice = createInvoiceWithSST(
+        invoiceNumber,
+        SUPPLIER_TIN,
+        items,
+        createB2BCustomerParty()
+      );
       const result = await submitDocument(token, invoiceNumber, invoice);
 
       expect(result.status).toBeLessThan(500);

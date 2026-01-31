@@ -165,9 +165,7 @@ export function createErrorEnvelope(
 /**
  * Create an error envelope response (wrapped in { error: ... })
  */
-export function createErrorEnvelopeResponse(
-  envelope: ErrorEnvelope
-): ErrorEnvelopeResponse {
+export function createErrorEnvelopeResponse(envelope: ErrorEnvelope): ErrorEnvelopeResponse {
   return { error: envelope };
 }
 

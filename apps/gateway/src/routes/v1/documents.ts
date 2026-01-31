@@ -7,10 +7,7 @@ import { AppError, createErrorEnvelope } from "../../lib/errors.js";
 import { sessionStore } from "../../lib/sessionStore.js";
 import { getTokenManager, getRateLimiter } from "../../lib/myinvois.js";
 import { isValidSessionId, isValidUuid } from "../../lib/validation.js";
-import {
-  changeDocumentState,
-  getDocumentDetails,
-} from "@myinvois/myinvois-client";
+import { changeDocumentState, getDocumentDetails } from "@myinvois/myinvois-client";
 import {
   recordDocumentAction,
   recordDocumentActionError,
@@ -146,7 +143,11 @@ async function handleDocumentStateChange(
 
   const actionVerb = action === "CANCEL" ? "cancelled" : "rejected";
   request.log.info(
-    { correlationId: result.result.meta.correlationId || correlationId, uuid, status: result.result.status },
+    {
+      correlationId: result.result.meta.correlationId || correlationId,
+      uuid,
+      status: result.result.status,
+    },
     `Document ${actionVerb}`
   );
 

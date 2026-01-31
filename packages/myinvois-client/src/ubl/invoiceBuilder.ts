@@ -190,9 +190,7 @@ function buildParty(
   };
 
   if (industryCode && industryName) {
-    party.IndustryClassificationCode = [
-      { _: industryCode, name: industryName },
-    ];
+    party.IndustryClassificationCode = [{ _: industryCode, name: industryName }];
   }
 
   return party;
@@ -238,10 +236,7 @@ function buildTaxTotal(taxes: TaxInput[], currencyCode: CurrencyCode): UBLJsonTa
   };
 }
 
-function buildInvoiceLine(
-  line: InvoiceLineInput,
-  currencyCode: CurrencyCode
-): UBLJsonInvoiceLine {
+function buildInvoiceLine(line: InvoiceLineInput, currencyCode: CurrencyCode): UBLJsonInvoiceLine {
   const invoiceLine: UBLJsonInvoiceLine = {
     ID: [{ _: line.id }],
     InvoicedQuantity: [{ _: line.quantity, unitCode: line.unitCode || "C62" }],
@@ -251,9 +246,7 @@ function buildInvoiceLine(
       {
         CommodityClassification: [
           {
-            ItemClassificationCode: [
-              { _: line.classificationCode, listID: "CLASS" },
-            ],
+            ItemClassificationCode: [{ _: line.classificationCode, listID: "CLASS" }],
           },
         ],
         Description: [{ _: line.description }],
@@ -489,9 +482,7 @@ export class InvoiceBuilder {
     if (this.input.billingReferenceId) {
       content.BillingReference = [
         {
-          AdditionalDocumentReference: [
-            { ID: [{ _: this.input.billingReferenceId }] },
-          ],
+          AdditionalDocumentReference: [{ ID: [{ _: this.input.billingReferenceId }] }],
         },
       ];
     }

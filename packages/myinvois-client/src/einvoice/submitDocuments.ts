@@ -25,7 +25,10 @@ const DEFAULT_TIMEOUT_MS = parseInt(process.env.UPSTREAM_TIMEOUT_POST_MS || "200
 /**
  * Create AbortController with timeout
  */
-function createTimeoutController(timeoutMs: number): { controller: AbortController; timeoutId: NodeJS.Timeout } {
+function createTimeoutController(timeoutMs: number): {
+  controller: AbortController;
+  timeoutId: NodeJS.Timeout;
+} {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   return { controller, timeoutId };
@@ -70,7 +73,13 @@ function normalizeRejected(
 ): NormalizedRejectedDocument[] {
   return docs.map((d) => {
     // Collect all available error details
-    const errorDetails: Array<{ code?: string; message?: string; target?: string; propertyName?: string; propertyPath?: string }> = [];
+    const errorDetails: Array<{
+      code?: string;
+      message?: string;
+      target?: string;
+      propertyName?: string;
+      propertyPath?: string;
+    }> = [];
 
     // Include base error info if it has details beyond code/message
     if (d.error?.target || d.error?.propertyName || d.error?.propertyPath) {
@@ -272,7 +281,8 @@ export async function submitDocuments(
         }
 
         // Retry with new token and fresh timeout
-        const { controller: retryController, timeoutId: retryTimeoutId } = createTimeoutController(DEFAULT_TIMEOUT_MS);
+        const { controller: retryController, timeoutId: retryTimeoutId } =
+          createTimeoutController(DEFAULT_TIMEOUT_MS);
         headers.Authorization = `Bearer ${refreshResult.token.accessToken}`;
 
         let retryResponse: Response;
@@ -332,7 +342,11 @@ export async function submitDocuments(
       ok: false,
       error: {
         status: 0,
-        message: isTimeout ? "Request timed out" : (error instanceof Error ? error.message : "Network error"),
+        message: isTimeout
+          ? "Request timed out"
+          : error instanceof Error
+            ? error.message
+            : "Network error",
         code: isTimeout ? "TIMEOUT_ERROR" : "NETWORK_ERROR",
       },
     };

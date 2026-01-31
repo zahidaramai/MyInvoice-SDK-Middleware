@@ -64,9 +64,7 @@ describe("P0-01/P0-10: Invoice Creation Race Condition", () => {
 
     // updateInvoiceStatus should NOT be called for status change
     expect(updateInvoiceStatus).not.toHaveBeenCalled();
-    expect(createInvoice).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "SUBMITTING" })
-    );
+    expect(createInvoice).toHaveBeenCalledWith(expect.objectContaining({ status: "SUBMITTING" }));
   });
 });
 
@@ -294,12 +292,7 @@ describe("P0-05: Consolidation Transaction", () => {
     });
 
     // Verify order: transaction wraps both operations
-    expect(operations).toEqual([
-      "transaction_start",
-      "create",
-      "updateMany",
-      "transaction_end",
-    ]);
+    expect(operations).toEqual(["transaction_start", "create", "updateMany", "transaction_end"]);
   });
 
   it("should rollback if updateMany fails", async () => {

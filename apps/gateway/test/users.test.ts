@@ -27,26 +27,28 @@ vi.mock("@myinvois/storage", async (importOriginal) => {
     findRoleById: vi.fn(),
     parsePermissions: vi.fn().mockReturnValue(["manage:users", "read:documents"]),
     getPrismaClient: vi.fn().mockReturnValue({
-      $transaction: vi.fn((fn) => fn({
-        user: {
-          create: vi.fn().mockResolvedValue({
-            id: "new-user-123",
-            email: "newuser@example.com",
-            name: "New User",
-            roleId: "role-123",
-            isActive: true,
-            role: { id: "role-123", name: "Admin" },
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }),
-        },
-        company: {
-          findUnique: vi.fn().mockResolvedValue({ id: "company-123" }),
-        },
-        userCompany: {
-          createMany: vi.fn().mockResolvedValue({ count: 1 }),
-        },
-      })),
+      $transaction: vi.fn((fn) =>
+        fn({
+          user: {
+            create: vi.fn().mockResolvedValue({
+              id: "new-user-123",
+              email: "newuser@example.com",
+              name: "New User",
+              roleId: "role-123",
+              isActive: true,
+              role: { id: "role-123", name: "Admin" },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }),
+          },
+          company: {
+            findUnique: vi.fn().mockResolvedValue({ id: "company-123" }),
+          },
+          userCompany: {
+            createMany: vi.fn().mockResolvedValue({ count: 1 }),
+          },
+        })
+      ),
     }),
   };
 });
@@ -196,9 +198,7 @@ describe("TST-02: User Management API", () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(storage.listUsers).toHaveBeenCalledWith(
-        expect.objectContaining({ isActive: true })
-      );
+      expect(storage.listUsers).toHaveBeenCalledWith(expect.objectContaining({ isActive: true }));
     });
   });
 

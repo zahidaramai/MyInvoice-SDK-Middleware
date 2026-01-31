@@ -324,10 +324,11 @@ describe("changeDocumentState (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Document already cancelled",
-          code: "AlreadyCancelled",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Document already cancelled",
+            code: "AlreadyCancelled",
+          }),
       });
 
       const result = await changeDocumentState(
@@ -368,10 +369,11 @@ describe("changeDocumentState (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Cancellation window has expired",
-          code: "WindowExpired",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Cancellation window has expired",
+            code: "WindowExpired",
+          }),
       });
 
       const result = await changeDocumentState(
@@ -426,10 +428,11 @@ describe("changeDocumentState (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await changeDocumentState(
@@ -449,9 +452,10 @@ describe("changeDocumentState (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "Something went wrong",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "Something went wrong",
+          }),
       });
 
       const result = await changeDocumentState(

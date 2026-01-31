@@ -276,9 +276,7 @@ describe("companiesRepo", () => {
     });
 
     it("returns companies with pagination", async () => {
-      const mockCompanies = [
-        { id: "company-2", name: "Company B", tin: "C22222222222" },
-      ];
+      const mockCompanies = [{ id: "company-2", name: "Company B", tin: "C22222222222" }];
 
       mockPrismaClient.company.findMany.mockResolvedValueOnce(mockCompanies);
 
@@ -292,9 +290,7 @@ describe("companiesRepo", () => {
     });
 
     it("returns companies filtered by state", async () => {
-      const mockCompanies = [
-        { id: "company-1", name: "KL Company", state: "14" },
-      ];
+      const mockCompanies = [{ id: "company-1", name: "KL Company", state: "14" }];
 
       mockPrismaClient.company.findMany.mockResolvedValueOnce(mockCompanies);
 

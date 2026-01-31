@@ -48,13 +48,10 @@ let monthlyConsolidateQueue: Queue<MonthlyConsolidateJobData> | null = null;
  */
 export function getMonthlyConsolidateQueue(): Queue<MonthlyConsolidateJobData> {
   if (!monthlyConsolidateQueue) {
-    monthlyConsolidateQueue = new Queue<MonthlyConsolidateJobData>(
-      MONTHLY_CONSOLIDATE_QUEUE_NAME,
-      {
-        connection: getRedisConnection(),
-        defaultJobOptions: DEFAULT_JOB_OPTIONS,
-      }
-    );
+    monthlyConsolidateQueue = new Queue<MonthlyConsolidateJobData>(MONTHLY_CONSOLIDATE_QUEUE_NAME, {
+      connection: getRedisConnection(),
+      defaultJobOptions: DEFAULT_JOB_OPTIONS,
+    });
   }
   return monthlyConsolidateQueue;
 }
@@ -103,9 +100,7 @@ export async function initMonthlyConsolidateCron(): Promise<void> {
  * Manually trigger consolidation (for admin/testing)
  * @param companyId Optional company ID to process only that company
  */
-export async function triggerManualConsolidation(
-  companyId?: string
-): Promise<{ jobId: string }> {
+export async function triggerManualConsolidation(companyId?: string): Promise<{ jobId: string }> {
   const queue = getMonthlyConsolidateQueue();
 
   const job = await queue.add(

@@ -1,19 +1,20 @@
-import * as crypto from 'crypto';
-import * as fs from 'fs';
-import type { PrivateKeySource } from './config.js';
-import { PrivateKeyLoadError, KeyCertificateMismatchError } from './errors.js';
+import * as crypto from "crypto";
+import * as fs from "fs";
+import type { PrivateKeySource } from "./config.js";
+import { PrivateKeyLoadError, KeyCertificateMismatchError } from "./errors.js";
 
 /**
  * Load private key content from a file path
  */
 export function loadPrivateKeyFromFile(path: string): string {
   try {
-    return fs.readFileSync(path, 'utf-8');
+    return fs.readFileSync(path, "utf-8");
   } catch (error) {
-    throw new PrivateKeyLoadError(
-      `Failed to load private key from file: ${path}`,
-      { source: 'file', path, cause: error as Error }
-    );
+    throw new PrivateKeyLoadError(`Failed to load private key from file: ${path}`, {
+      source: "file",
+      path,
+      cause: error as Error,
+    });
   }
 }
 
@@ -22,12 +23,12 @@ export function loadPrivateKeyFromFile(path: string): string {
  */
 export function loadPrivateKeyFromBase64(base64Data: string): string {
   try {
-    return Buffer.from(base64Data, 'base64').toString('utf-8');
+    return Buffer.from(base64Data, "base64").toString("utf-8");
   } catch (error) {
-    throw new PrivateKeyLoadError(
-      'Failed to decode base64 private key data',
-      { source: 'base64', cause: error as Error }
-    );
+    throw new PrivateKeyLoadError("Failed to decode base64 private key data", {
+      source: "base64",
+      cause: error as Error,
+    });
   }
 }
 
@@ -37,10 +38,9 @@ export function loadPrivateKeyFromBase64(base64Data: string): string {
 export function loadPrivateKeyFromEnv(envVar: string): string {
   const value = process.env[envVar];
   if (!value) {
-    throw new PrivateKeyLoadError(
-      `Environment variable ${envVar} is not set or empty`,
-      { source: 'env' }
-    );
+    throw new PrivateKeyLoadError(`Environment variable ${envVar} is not set or empty`, {
+      source: "env",
+    });
   }
   return value;
 }
@@ -58,31 +58,27 @@ export function loadPrivateKeyPem(source: PrivateKeySource): string {
   if (source.envVar) {
     return loadPrivateKeyFromEnv(source.envVar);
   }
-  throw new PrivateKeyLoadError('No private key source specified');
+  throw new PrivateKeyLoadError("No private key source specified");
 }
 
 /**
  * Parse a PEM-encoded private key
  * Handles both encrypted and unencrypted keys
  */
-export function parsePrivateKey(
-  pemContent: string,
-  passphrase?: string
-): crypto.KeyObject {
+export function parsePrivateKey(pemContent: string, passphrase?: string): crypto.KeyObject {
   try {
     // Determine if the key is encrypted
-    const isEncrypted = pemContent.includes('ENCRYPTED');
+    const isEncrypted = pemContent.includes("ENCRYPTED");
 
     if (isEncrypted && !passphrase) {
-      throw new PrivateKeyLoadError(
-        'Private key is encrypted but no passphrase was provided',
-        { encrypted: true }
-      );
+      throw new PrivateKeyLoadError("Private key is encrypted but no passphrase was provided", {
+        encrypted: true,
+      });
     }
 
     const keyOptions: crypto.PrivateKeyInput = {
       key: pemContent,
-      format: 'pem'
+      format: "pem",
     };
 
     if (passphrase) {
@@ -96,26 +92,24 @@ export function parsePrivateKey(
     }
 
     // Check for common error types
-    const errorMessage = (error as Error).message || '';
+    const errorMessage = (error as Error).message || "";
 
-    if (errorMessage.includes('bad decrypt') || errorMessage.includes('wrong password')) {
-      throw new PrivateKeyLoadError(
-        'Failed to decrypt private key: Invalid passphrase',
-        { encrypted: true, cause: error as Error }
-      );
+    if (errorMessage.includes("bad decrypt") || errorMessage.includes("wrong password")) {
+      throw new PrivateKeyLoadError("Failed to decrypt private key: Invalid passphrase", {
+        encrypted: true,
+        cause: error as Error,
+      });
     }
 
-    if (errorMessage.includes('unsupported') || errorMessage.includes('invalid')) {
-      throw new PrivateKeyLoadError(
-        'Failed to parse private key: Unsupported or invalid format',
-        { cause: error as Error }
-      );
+    if (errorMessage.includes("unsupported") || errorMessage.includes("invalid")) {
+      throw new PrivateKeyLoadError("Failed to parse private key: Unsupported or invalid format", {
+        cause: error as Error,
+      });
     }
 
-    throw new PrivateKeyLoadError(
-      'Failed to parse private key: ' + errorMessage,
-      { cause: error as Error }
-    );
+    throw new PrivateKeyLoadError("Failed to parse private key: " + errorMessage, {
+      cause: error as Error,
+    });
   }
 }
 
@@ -125,8 +119,8 @@ export function parsePrivateKey(
 export function getPublicKeyFromPrivate(privateKey: crypto.KeyObject): crypto.KeyObject {
   // Create public key from private key
   const publicKeyPem = crypto.createPublicKey(privateKey).export({
-    type: 'spki',
-    format: 'pem'
+    type: "spki",
+    format: "pem",
   });
   return crypto.createPublicKey(publicKeyPem as string);
 }
@@ -148,8 +142,8 @@ export function verifyKeyMatchesCertificate(
     const privatePublicKey = crypto.createPublicKey(privateKey);
 
     // Export both to compare
-    const certPubPem = certPublicKey.export({ type: 'spki', format: 'pem' });
-    const privPubPem = privatePublicKey.export({ type: 'spki', format: 'pem' });
+    const certPubPem = certPublicKey.export({ type: "spki", format: "pem" });
+    const privPubPem = privatePublicKey.export({ type: "spki", format: "pem" });
 
     return certPubPem === privPubPem;
   } catch {
@@ -176,10 +170,9 @@ export function loadAndVerifyPrivateKey(
   const privateKey = loadPrivateKey(source);
 
   if (!verifyKeyMatchesCertificate(privateKey, certificatePem)) {
-    throw new KeyCertificateMismatchError(
-      'Private key does not match the certificate public key',
-      { certificateSubject }
-    );
+    throw new KeyCertificateMismatchError("Private key does not match the certificate public key", {
+      certificateSubject,
+    });
   }
 
   return privateKey;
@@ -189,7 +182,7 @@ export function loadAndVerifyPrivateKey(
  * Get information about a private key
  */
 export interface PrivateKeyInfo {
-  type: 'rsa' | 'ec' | 'unknown';
+  type: "rsa" | "ec" | "unknown";
   keySize: number;
   encrypted: boolean;
 }
@@ -198,25 +191,25 @@ export interface PrivateKeyInfo {
  * Get metadata about a private key
  */
 export function getPrivateKeyInfo(privateKey: crypto.KeyObject): PrivateKeyInfo {
-  let type: 'rsa' | 'ec' | 'unknown' = 'unknown';
+  let type: "rsa" | "ec" | "unknown" = "unknown";
   let keySize = 0;
 
-  if (privateKey.asymmetricKeyType === 'rsa') {
-    type = 'rsa';
+  if (privateKey.asymmetricKeyType === "rsa") {
+    type = "rsa";
     const details = privateKey.asymmetricKeyDetails;
     keySize = details?.modulusLength ?? 0;
-  } else if (privateKey.asymmetricKeyType === 'ec') {
-    type = 'ec';
+  } else if (privateKey.asymmetricKeyType === "ec") {
+    type = "ec";
     const details = privateKey.asymmetricKeyDetails;
     const curve = details?.namedCurve;
-    if (curve === 'prime256v1' || curve === 'P-256') keySize = 256;
-    else if (curve === 'secp384r1' || curve === 'P-384') keySize = 384;
-    else if (curve === 'secp521r1' || curve === 'P-521') keySize = 521;
+    if (curve === "prime256v1" || curve === "P-256") keySize = 256;
+    else if (curve === "secp384r1" || curve === "P-384") keySize = 384;
+    else if (curve === "secp521r1" || curve === "P-521") keySize = 521;
   }
 
   return {
     type,
     keySize,
-    encrypted: false // We can't determine this after parsing
+    encrypted: false, // We can't determine this after parsing
   };
 }

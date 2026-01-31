@@ -75,9 +75,8 @@ function normalizeDocumentSummary(doc: DocumentSummaryUpstream): NormalizedDocum
     issuerName: doc.issuerName ?? null,
     receiverId: doc.receiverId ?? null,
     receiverName: doc.receiverName ?? null,
-    totalPayableAmount: doc.totalPayableAmount !== undefined
-      ? doc.totalPayableAmount.toString()
-      : null,
+    totalPayableAmount:
+      doc.totalPayableAmount !== undefined ? doc.totalPayableAmount.toString() : null,
   };
 }
 

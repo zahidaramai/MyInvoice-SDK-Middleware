@@ -169,9 +169,7 @@ describe("submitDocuments (actual)", () => {
             error: {
               code: "ValidationError",
               message: "Validation failed",
-              details: [
-                { code: "Detail1", message: "Detail error 1" },
-              ],
+              details: [{ code: "Detail1", message: "Detail error 1" }],
             },
           },
         ],
@@ -267,7 +265,8 @@ describe("submitDocuments (actual)", () => {
 
     it("checks rate limit on retry after 401", async () => {
       const mockRateLimiter = {
-        consume: vi.fn()
+        consume: vi
+          .fn()
           .mockReturnValueOnce({ allowed: true, limit: 100, remaining: 99 })
           .mockReturnValueOnce({ allowed: false, limit: 100, remaining: 0 }),
       };
@@ -442,10 +441,11 @@ describe("submitDocuments (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 422,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Duplicate submission",
-          code: "DuplicateSubmission",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Duplicate submission",
+            code: "DuplicateSubmission",
+          }),
       });
 
       const result = await submitDocuments(
@@ -465,10 +465,11 @@ describe("submitDocuments (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 422,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "This is a duplicate submission detected",
-          code: "ValidationError",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "This is a duplicate submission detected",
+            code: "ValidationError",
+          }),
       });
 
       const result = await submitDocuments(
@@ -487,10 +488,11 @@ describe("submitDocuments (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 422,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Invalid tax amount",
-          code: "InvalidTaxAmount",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Invalid tax amount",
+            code: "InvalidTaxAmount",
+          }),
       });
 
       const result = await submitDocuments(
@@ -581,10 +583,11 @@ describe("submitDocuments (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          message: "Internal server error",
-          code: "SERVER_ERROR",
-        }),
+        json: () =>
+          Promise.resolve({
+            message: "Internal server error",
+            code: "SERVER_ERROR",
+          }),
       });
 
       const result = await submitDocuments(
@@ -604,9 +607,10 @@ describe("submitDocuments (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 500,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          error: "Something went wrong",
-        }),
+        json: () =>
+          Promise.resolve({
+            error: "Something went wrong",
+          }),
       });
 
       const result = await submitDocuments(
@@ -653,11 +657,12 @@ describe("submitDocuments (actual)", () => {
       mockFetch.mockResolvedValueOnce({
         status: 202,
         headers: new Headers({}),
-        json: () => Promise.resolve({
-          submissionUid: "test",
-          acceptedDocuments: [],
-          rejectedDocuments: [],
-        }),
+        json: () =>
+          Promise.resolve({
+            submissionUid: "test",
+            acceptedDocuments: [],
+            rejectedDocuments: [],
+          }),
       });
 
       await submitDocuments(

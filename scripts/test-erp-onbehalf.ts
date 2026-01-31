@@ -51,7 +51,7 @@ async function login(): Promise<void> {
     throw new Error(`Login failed: ${response.status} - ${text}`);
   }
 
-  const data = await response.json() as { accessToken: string };
+  const data = (await response.json()) as { accessToken: string };
   authToken = data.accessToken;
   console.log("✓ Authenticated successfully");
 }
@@ -69,21 +69,25 @@ async function submitConsolidate(): Promise<SubmissionResult> {
   const payload = {
     CompanyId: BPOINT_COMPANY_ID,
     ConsolidatedInvoice: true,
-    invoices: [{
-      invoiceNumber,
-      invoiceDate: new Date().toISOString(),
-      amount: 100.00,
-      taxAmount: 0.00,
-      total: 100.00,
-      items: [{
-        description: "Daily consolidated sales - ERP onbehalf test",
-        quantity: 1,
-        unitPrice: 100.00,
-        taxCode: "E",
-        taxAmount: 0.00,
-        total: 100.00,
-      }],
-    }],
+    invoices: [
+      {
+        invoiceNumber,
+        invoiceDate: new Date().toISOString(),
+        amount: 100.0,
+        taxAmount: 0.0,
+        total: 100.0,
+        items: [
+          {
+            description: "Daily consolidated sales - ERP onbehalf test",
+            quantity: 1,
+            unitPrice: 100.0,
+            taxCode: "E",
+            taxAmount: 0.0,
+            total: 100.0,
+          },
+        ],
+      },
+    ],
   };
 
   try {
@@ -91,7 +95,7 @@ async function submitConsolidate(): Promise<SubmissionResult> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`,
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(payload),
     });
@@ -136,32 +140,36 @@ async function submitBuyer(): Promise<SubmissionResult> {
 
   const payload = {
     CompanyId: BPOINT_COMPANY_ID,
-    invoices: [{
-      invoiceNumber,
-      invoiceDate: new Date().toISOString(),
-      amount: 200.00,
-      taxAmount: 0.00,
-      total: 200.00,
-      customer: {
-        Tin: "C25235029040",
-        Name: "Test Buyer Company Sdn Bhd",
-        Address1: "123 Jalan Test",
-        PostalCode: "50000",
-        City: "Kuala Lumpur",
-        StateCode: "14",
-        Telephone: "0312345678",
-        IdType: "BRN",
-        IdValue: "202001234567",
+    invoices: [
+      {
+        invoiceNumber,
+        invoiceDate: new Date().toISOString(),
+        amount: 200.0,
+        taxAmount: 0.0,
+        total: 200.0,
+        customer: {
+          Tin: "C25235029040",
+          Name: "Test Buyer Company Sdn Bhd",
+          Address1: "123 Jalan Test",
+          PostalCode: "50000",
+          City: "Kuala Lumpur",
+          StateCode: "14",
+          Telephone: "0312345678",
+          IdType: "BRN",
+          IdValue: "202001234567",
+        },
+        items: [
+          {
+            description: "B2B Product - ERP onbehalf test",
+            quantity: 2,
+            unitPrice: 100.0,
+            taxCode: "E",
+            taxAmount: 0.0,
+            total: 200.0,
+          },
+        ],
       },
-      items: [{
-        description: "B2B Product - ERP onbehalf test",
-        quantity: 2,
-        unitPrice: 100.00,
-        taxCode: "E",
-        taxAmount: 0.00,
-        total: 200.00,
-      }],
-    }],
+    ],
   };
 
   try {
@@ -169,7 +177,7 @@ async function submitBuyer(): Promise<SubmissionResult> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`,
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(payload),
     });
@@ -214,32 +222,36 @@ async function submitPersonal(): Promise<SubmissionResult> {
 
   const payload = {
     CompanyId: BPOINT_COMPANY_ID,
-    invoices: [{
-      invoiceNumber,
-      invoiceDate: new Date().toISOString(),
-      amount: 50.00,
-      taxAmount: 0.00,
-      total: 50.00,
-      customer: {
-        tin: "EI00000000010",
-        name: "Test Customer",
-        address1: "456 Jalan Personal",
-        postalCode: "40000",
-        city: "Shah Alam",
-        stateCode: "10",
-        telephone: "0123456789",
-        idType: "NRIC",
-        idValue: "801025145127",
+    invoices: [
+      {
+        invoiceNumber,
+        invoiceDate: new Date().toISOString(),
+        amount: 50.0,
+        taxAmount: 0.0,
+        total: 50.0,
+        customer: {
+          tin: "EI00000000010",
+          name: "Test Customer",
+          address1: "456 Jalan Personal",
+          postalCode: "40000",
+          city: "Shah Alam",
+          stateCode: "10",
+          telephone: "0123456789",
+          idType: "NRIC",
+          idValue: "801025145127",
+        },
+        items: [
+          {
+            description: "B2C Product - ERP onbehalf test",
+            quantity: 1,
+            unitPrice: 50.0,
+            taxCode: "E",
+            taxAmount: 0.0,
+            total: 50.0,
+          },
+        ],
       },
-      items: [{
-        description: "B2C Product - ERP onbehalf test",
-        quantity: 1,
-        unitPrice: 50.00,
-        taxCode: "E",
-        taxAmount: 0.00,
-        total: 50.00,
-      }],
-    }],
+    ],
   };
 
   try {
@@ -247,7 +259,7 @@ async function submitPersonal(): Promise<SubmissionResult> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`,
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(payload),
     });
@@ -284,20 +296,25 @@ async function submitPersonal(): Promise<SubmissionResult> {
   }
 }
 
-async function pollForStatus(uuid: string, maxAttempts = 10): Promise<{ status: string; longId?: string }> {
+async function pollForStatus(
+  uuid: string,
+  maxAttempts = 10
+): Promise<{ status: string; longId?: string }> {
   console.log(`\nPolling status for UUID: ${uuid}`);
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    await new Promise(r => setTimeout(r, 3000)); // Wait 3 seconds between polls
+    await new Promise((r) => setTimeout(r, 3000)); // Wait 3 seconds between polls
 
     try {
       const response = await fetch(`${GATEWAY_URL}/api/v1/documents/${uuid}/status`, {
-        headers: { "Authorization": `Bearer ${authToken}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       if (response.ok) {
-        const data = await response.json() as { status: string; longId?: string };
-        console.log(`  Attempt ${attempt}: status = ${data.status}, longId = ${data.longId || "pending"}`);
+        const data = (await response.json()) as { status: string; longId?: string };
+        console.log(
+          `  Attempt ${attempt}: status = ${data.status}, longId = ${data.longId || "pending"}`
+        );
 
         if (data.status === "VALID" && data.longId) {
           return data;
@@ -366,8 +383,8 @@ async function main() {
       if (result.error) console.log(`  Error: ${result.error}`);
     }
 
-    const withLongId = results.filter(r => r.longId).length;
-    const successful = results.filter(r => r.success).length;
+    const withLongId = results.filter((r) => r.longId).length;
+    const successful = results.filter((r) => r.success).length;
 
     console.log("\n" + "-".repeat(60));
     console.log(`Total: ${results.length}`);
@@ -382,7 +399,6 @@ async function main() {
     } else {
       console.log("\n✗ SOME SUBMISSIONS FAILED - Check errors above");
     }
-
   } catch (error) {
     console.error("\nFatal error:", error);
     process.exit(1);

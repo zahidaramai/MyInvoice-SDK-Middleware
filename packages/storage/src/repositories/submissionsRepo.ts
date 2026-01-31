@@ -192,9 +192,7 @@ export async function markSubmissionError(
 /**
  * Get submission by tracking ID
  */
-export async function getByTrackingId(
-  trackingId: string
-): Promise<SubmissionWithDocuments | null> {
+export async function getByTrackingId(trackingId: string): Promise<SubmissionWithDocuments | null> {
   const prisma = getPrismaClient();
 
   const submission = await prisma.submission.findUnique({
@@ -391,9 +389,7 @@ export async function finalizeSubmission(
 /**
  * Update a document with data from poll response
  */
-export async function updateDocumentFromPoll(
-  input: UpdateDocumentFromPollInput
-): Promise<void> {
+export async function updateDocumentFromPoll(input: UpdateDocumentFromPollInput): Promise<void> {
   const prisma = getPrismaClient();
 
   await prisma.submissionDocument.updateMany({

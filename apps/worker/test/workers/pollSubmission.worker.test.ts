@@ -349,8 +349,7 @@ describe("pollSubmission.worker", () => {
         ],
       };
 
-      const allAccountedFor =
-        submission.documentSummary.length === submission.documentCount;
+      const allAccountedFor = submission.documentSummary.length === submission.documentCount;
       expect(allAccountedFor).toBe(true);
     });
 
@@ -360,19 +359,14 @@ describe("pollSubmission.worker", () => {
         documentSummary: [{ uuid: "1" }, { uuid: "2" }],
       };
 
-      const allAccountedFor =
-        submission.documentSummary.length === submission.documentCount;
+      const allAccountedFor = submission.documentSummary.length === submission.documentCount;
       expect(allAccountedFor).toBe(false);
     });
   });
 
   describe("overall status determination", () => {
     it("determines overall valid when all documents valid", () => {
-      const documents = [
-        { status: "Valid" },
-        { status: "Valid" },
-        { status: "Valid" },
-      ];
+      const documents = [{ status: "Valid" }, { status: "Valid" }, { status: "Valid" }];
 
       const allValid = documents.every((d) => d.status === "Valid");
       const anyInvalid = documents.some((d) => d.status === "Invalid");
@@ -382,11 +376,7 @@ describe("pollSubmission.worker", () => {
     });
 
     it("determines partially valid when mixed statuses", () => {
-      const documents = [
-        { status: "Valid" },
-        { status: "Invalid" },
-        { status: "Valid" },
-      ];
+      const documents = [{ status: "Valid" }, { status: "Invalid" }, { status: "Valid" }];
 
       const allValid = documents.every((d) => d.status === "Valid");
       const anyValid = documents.some((d) => d.status === "Valid");
@@ -398,11 +388,7 @@ describe("pollSubmission.worker", () => {
     });
 
     it("determines invalid when all documents invalid", () => {
-      const documents = [
-        { status: "Invalid" },
-        { status: "Invalid" },
-        { status: "Invalid" },
-      ];
+      const documents = [{ status: "Invalid" }, { status: "Invalid" }, { status: "Invalid" }];
 
       const allInvalid = documents.every((d) => d.status === "Invalid");
       expect(allInvalid).toBe(true);
