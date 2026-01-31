@@ -21,14 +21,7 @@ import type {
   TaxTypeCode,
   PartyIdScheme,
 } from "@myinvois/myinvois-client";
-import type {
-  Invoice,
-  InvoiceItem,
-  Buyer,
-  TaxCode,
-  StateCode,
-  IdType,
-} from "./schemas.js";
+import type { Invoice, InvoiceItem, Buyer, TaxCode, StateCode, IdType } from "./schemas.js";
 
 /**
  * Company information from database
@@ -169,7 +162,9 @@ function buildPostalAddress(
   postalCode?: string,
   country?: string
 ): UBLJsonPostalAddress {
-  const addressLines = address ? address.split("\n").filter((l) => l.trim()) : ["NA"];
+  // Split address into lines, truncate each to 150 chars (LHDN max per line), max 3 lines
+  const rawLines = address ? address.split("\n").filter((l) => l.trim()) : ["NA"];
+  const addressLines = rawLines.slice(0, 3).map((line) => line.substring(0, 150));
 
   return {
     CityName: [{ _: city || "NA" }],
@@ -232,7 +227,9 @@ function buildSupplierParty(company: CompanyInfo): UBLJsonAccountingSupplierPart
   party.IndustryClassificationCode = [
     {
       _: company.industryCode || "46510",
-      name: company.industryName || "Wholesale of computers, computer peripheral equipment and software",
+      name:
+        company.industryName ||
+        "Wholesale of computers, computer peripheral equipment and software",
     },
   ];
 
@@ -299,13 +296,7 @@ function buildCustomerParty(buyer: Buyer): UBLJsonAccountingCustomerParty {
   const party: UBLJsonParty = {
     PartyIdentification: identifications,
     PostalAddress: [
-      buildPostalAddress(
-        buyer.address,
-        buyer.city,
-        buyer.state,
-        buyer.postalCode,
-        buyer.country
-      ),
+      buildPostalAddress(buyer.address, buyer.city, buyer.state, buyer.postalCode, buyer.country),
     ],
     PartyLegalEntity: [{ RegistrationName: [{ _: buyer.name }] }],
     Contact: [
@@ -327,39 +318,49 @@ function buildTaxSubtotal(
   taxableAmount: number,
   taxAmount: number,
   taxCode: TaxCode,
-  currencyCode: CurrencyCode
+  currencyCode: CurrencyCode,
+  taxExemptionReason?: string
 ): UBLJsonTaxSubtotal {
-  return {
-    TaxableAmount: [{ _: taxableAmount, currencyID: currencyCode }],
-    TaxAmount: [{ _: taxAmount, currencyID: currencyCode }],
-    TaxCategory: [
+  const taxCategory: {
+    ID: Array<{ _: string }>;
+    TaxExemptionReason?: Array<{ _: string }>;
+    TaxScheme: Array<{ ID: Array<{ _: string; schemeID: string; schemeAgencyID: string }> }>;
+  } = {
+    ID: [{ _: mapTaxCode(taxCode) }],
+    TaxScheme: [
       {
-        ID: [{ _: mapTaxCode(taxCode) }],
-        TaxScheme: [
+        ID: [
           {
-            ID: [
-              {
-                _: "OTH",
-                schemeID: "UN/ECE 5153",
-                schemeAgencyID: "6",
-              },
-            ],
+            _: "OTH",
+            schemeID: "UN/ECE 5153",
+            schemeAgencyID: "6",
           },
         ],
       },
     ],
+  };
+
+  // Add TaxExemptionReason when tax code is "E" (per LHDN 6 Apr 2024)
+  if (taxCode === "E" && taxExemptionReason) {
+    taxCategory.TaxExemptionReason = [{ _: taxExemptionReason }];
+  }
+
+  return {
+    TaxableAmount: [{ _: taxableAmount, currencyID: currencyCode }],
+    TaxAmount: [{ _: taxAmount, currencyID: currencyCode }],
+    TaxCategory: [taxCategory],
   };
 }
 
 /**
  * Build tax total from items
  */
-function buildTaxTotal(
-  items: InvoiceItem[],
-  currencyCode: CurrencyCode
-): UBLJsonTaxTotal {
+function buildTaxTotal(items: InvoiceItem[], currencyCode: CurrencyCode): UBLJsonTaxTotal {
   // Aggregate tax by tax code
-  const taxMap = new Map<TaxCode, { taxableAmount: number; taxAmount: number }>();
+  const taxMap = new Map<
+    TaxCode,
+    { taxableAmount: number; taxAmount: number; taxExemptionReason?: string }
+  >();
 
   for (const item of items) {
     const existing = taxMap.get(item.taxCode);
@@ -367,8 +368,16 @@ function buildTaxTotal(
     if (existing) {
       existing.taxableAmount += taxableAmount;
       existing.taxAmount += item.taxAmount;
+      // Keep first exemption reason found for this tax code
+      if (!existing.taxExemptionReason && item.taxExemptionReason) {
+        existing.taxExemptionReason = item.taxExemptionReason;
+      }
     } else {
-      taxMap.set(item.taxCode, { taxableAmount, taxAmount: item.taxAmount });
+      taxMap.set(item.taxCode, {
+        taxableAmount,
+        taxAmount: item.taxAmount,
+        taxExemptionReason: item.taxExemptionReason,
+      });
     }
   }
 
@@ -377,7 +386,13 @@ function buildTaxTotal(
   return {
     TaxAmount: [{ _: totalTaxAmount, currencyID: currencyCode }],
     TaxSubtotal: Array.from(taxMap.entries()).map(([taxCode, amounts]) =>
-      buildTaxSubtotal(amounts.taxableAmount, amounts.taxAmount, taxCode, currencyCode)
+      buildTaxSubtotal(
+        amounts.taxableAmount,
+        amounts.taxAmount,
+        taxCode,
+        currencyCode,
+        amounts.taxExemptionReason
+      )
     ),
   };
 }
@@ -407,7 +422,15 @@ function buildInvoiceLine(
     TaxTotal: [
       {
         TaxAmount: [{ _: item.taxAmount, currencyID: currencyCode }],
-        TaxSubtotal: [buildTaxSubtotal(lineExtension, item.taxAmount, item.taxCode, currencyCode)],
+        TaxSubtotal: [
+          buildTaxSubtotal(
+            lineExtension,
+            item.taxAmount,
+            item.taxCode,
+            currencyCode,
+            item.taxExemptionReason
+          ),
+        ],
       },
     ],
     Item: [
@@ -498,7 +521,7 @@ function transformInvoiceToUBL(
     IssueTime: [{ _: formatTime(invoice.invoiceDate) }],
     InvoiceTypeCode: [
       {
-        _: isConsolidated ? "01" : "01", // All are invoice type 01
+        _: "01", // Invoice type 01
         listVersionID: documentVersion,
       },
     ],
@@ -521,6 +544,17 @@ function transformInvoiceToUBL(
       buildInvoiceLine(item, index, currencyCode, isConsolidated)
     ),
   };
+
+  // Add TaxExchangeRate when currency is not MYR (per LHDN 9 Aug 2025, enforced 1 Sep 2025)
+  if (currencyCode !== "MYR" && invoice.exchangeRate) {
+    content.TaxExchangeRate = [
+      {
+        SourceCurrencyCode: [{ _: currencyCode }],
+        TargetCurrencyCode: [{ _: "MYR" as CurrencyCode }],
+        CalculationRate: [{ _: invoice.exchangeRate }],
+      },
+    ];
+  }
 
   // Add payment means (default: Others)
   content.PaymentMeans = [
@@ -586,6 +620,7 @@ export function transformToUBLv1_0(
       total: totalSum,
       items: mergedItems,
       currency: invoice.currency,
+      exchangeRate: invoice.exchangeRate,
     };
 
     const content = transformInvoiceToUBL(mergedInvoice, company, true, "1.0", options);
@@ -644,6 +679,7 @@ export function transformToUBLv1_1(
       total: totalSum,
       items: mergedItems,
       currency: invoice.currency,
+      exchangeRate: invoice.exchangeRate,
     };
 
     const content = transformInvoiceToUBL(mergedInvoice, company, true, "1.1", options);

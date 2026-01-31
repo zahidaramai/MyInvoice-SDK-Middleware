@@ -15,7 +15,7 @@ export const TaxCodeSchema = z.enum([
   "04", // High-Value Goods Tax
   "05", // Sales Tax on Low Value Goods
   "06", // Not Applicable
-  "E",  // Tax Exemption
+  "E", // Tax Exemption
 ]);
 
 /**
@@ -45,10 +45,10 @@ export const StateCodeSchema = z.enum([
  * ID types for buyer identification
  */
 export const IdTypeSchema = z.enum([
-  "BRN",      // Business Registration Number
-  "NRIC",     // National Registration Identity Card
+  "BRN", // Business Registration Number
+  "NRIC", // National Registration Identity Card
   "PASSPORT", // Passport
-  "ARMY",     // Army ID
+  "ARMY", // Army ID
 ]);
 
 /**
@@ -58,28 +58,28 @@ export const IdTypeSchema = z.enum([
  * NRIC: 12 digits (e.g., 801025145127)
  */
 // TIN pattern: starts with C, IG, or OG followed by digits
-export const TinFormatSchema = z.string().regex(
-  /^(C|IG|OG)[0-9]{10,13}$/,
-  "Invalid TIN format. Must start with C, IG, or OG followed by 10-13 digits"
-).or(z.string().regex(/^EI[0-9]{11}$/, "Invalid TIN")); // General public TIN
+export const TinFormatSchema = z
+  .string()
+  .regex(
+    /^(C|IG|OG)[0-9]{10,13}$/,
+    "Invalid TIN format. Must start with C, IG, or OG followed by 10-13 digits"
+  )
+  .or(z.string().regex(/^EI[0-9]{11}$/, "Invalid TIN")); // General public TIN
 
 // BRN pattern: 12 digits or alphanumeric (some old formats)
-export const BrnFormatSchema = z.string().regex(
-  /^[0-9A-Z]{10,20}$/,
-  "Invalid BRN format. Must be 10-20 alphanumeric characters"
-);
+export const BrnFormatSchema = z
+  .string()
+  .regex(/^[0-9A-Z]{10,20}$/, "Invalid BRN format. Must be 10-20 alphanumeric characters");
 
 // NRIC pattern: exactly 12 digits
-export const NricFormatSchema = z.string().regex(
-  /^[0-9]{12}$/,
-  "Invalid NRIC format. Must be exactly 12 digits"
-);
+export const NricFormatSchema = z
+  .string()
+  .regex(/^[0-9]{12}$/, "Invalid NRIC format. Must be exactly 12 digits");
 
 // Passport: alphanumeric, 6-20 chars
-export const PassportFormatSchema = z.string().regex(
-  /^[A-Z0-9]{6,20}$/i,
-  "Invalid passport format. Must be 6-20 alphanumeric characters"
-);
+export const PassportFormatSchema = z
+  .string()
+  .regex(/^[A-Z0-9]{6,20}$/i, "Invalid passport format. Must be 6-20 alphanumeric characters");
 
 /**
  * Invoice line item
@@ -87,7 +87,10 @@ export const PassportFormatSchema = z.string().regex(
  * P1-14: Added .finite() to reject Infinity/NaN values
  */
 export const InvoiceItemSchema = z.object({
-  description: z.string().min(1, "Item description is required").max(500, "Description too long"),
+  description: z
+    .string()
+    .min(1, "Item description is required")
+    .max(300, "Description too long (max 300 chars per LHDN)"),
   quantity: z.number().positive("Quantity must be positive").finite("Invalid quantity"),
   unitPrice: z.number().min(0, "Unit price cannot be negative").finite("Invalid unit price"),
   discount: z.number().min(0).finite("Invalid discount").default(0),
@@ -95,10 +98,12 @@ export const InvoiceItemSchema = z.object({
   taxRate: z.number().min(0).max(100).finite("Invalid tax rate"),
   taxAmount: z.number().min(0).finite("Invalid tax amount"),
   total: z.number().min(0).finite("Invalid total"),
+  // Tax exemption reason (required when taxCode is "E", per LHDN 6 Apr 2024, max 300 chars)
+  taxExemptionReason: z.string().max(300).optional(),
   // Optional fields with length limits
-  unitOfMeasure: z.string().max(50).optional(),
+  unitOfMeasure: z.string().max(3).optional(),
   productCode: z.string().max(100).optional(),
-  classification: z.string().max(100).optional(),
+  classification: z.string().max(3).optional(),
 });
 
 /**
@@ -107,12 +112,12 @@ export const InvoiceItemSchema = z.object({
  */
 export const BuyerBaseSchema = z.object({
   name: z.string().min(1, "Buyer name is required").max(300, "Name too long"),
-  tin: z.string().max(20).optional(), // TIN for B2B
+  tin: z.string().max(14).optional(), // TIN for B2B (LHDN max 14 chars)
   idType: IdTypeSchema.optional(),
   idValue: z.string().max(50).optional(), // BRN, NRIC, Passport number
-  // Address fields
-  address: z.string().max(500).optional(),
-  city: z.string().max(100).optional(),
+  // Address fields (LHDN: max 150 chars per line, max 3 lines)
+  address: z.string().max(452).optional(),
+  city: z.string().max(50).optional(),
   state: StateCodeSchema.optional(),
   postalCode: z.string().max(20).optional(),
   country: z.string().max(10).default("MYS"),
@@ -184,7 +189,10 @@ export const BuyerSchema = BuyerBaseSchema.superRefine(validateBuyer);
  * P1-15: Added max array bounds to prevent OOM
  */
 export const InvoiceBaseSchema = z.object({
-  invoiceNumber: z.string().min(1, "Invoice number is required").max(100, "Invoice number too long"),
+  invoiceNumber: z
+    .string()
+    .min(1, "Invoice number is required")
+    .max(50, "Invoice number too long (max 50 chars per LHDN)"),
   invoiceDate: z.string().datetime({ message: "Invalid date format, use ISO 8601" }),
   // Amounts (stored as numbers, converted to string for precision)
   amount: z.number().min(0, "Amount cannot be negative").finite("Invalid amount"),
@@ -197,9 +205,14 @@ export const InvoiceBaseSchema = z.object({
   // Buyer info (optional for consolidated, required for buyer/personal)
   buyer: BuyerBaseSchema.optional(),
   // Line items (P1-15: max 100 items per invoice)
-  items: z.array(InvoiceItemSchema).min(1, "At least one item is required").max(100, "Maximum 100 items per invoice"),
-  // Currency (default MYR)
-  currency: z.string().max(10).default("MYR"),
+  items: z
+    .array(InvoiceItemSchema)
+    .min(1, "At least one item is required")
+    .max(100, "Maximum 100 items per invoice"),
+  // Currency (default MYR) - ISO 4217, max 3 chars per LHDN spec
+  currency: z.string().max(3).default("MYR"),
+  // Currency exchange rate (required when currency != MYR, per LHDN 9 Aug 2025)
+  exchangeRate: z.number().positive().finite().optional(),
   // Payment type (optional)
   paymentType: z.string().max(50).optional(),
 });
@@ -221,6 +234,15 @@ function validateInvoice(data: z.infer<typeof InvoiceBaseSchema>, ctx: z.Refinem
     });
   }
 
+  // Validate currency exchange rate (required when currency != MYR, per LHDN 9 Aug 2025)
+  if (data.currency && data.currency !== "MYR" && !data.exchangeRate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Currency exchange rate is required when currency is not MYR (got "${data.currency}"). Per LHDN requirement effective 1 Sep 2025.`,
+      path: ["exchangeRate"],
+    });
+  }
+
   // Also validate buyer if present
   if (data.buyer) {
     validateBuyer(data.buyer, ctx);
@@ -238,7 +260,10 @@ export const InvoiceSchema = InvoiceBaseSchema.superRefine(validateInvoice);
  */
 export const SubmitConsolidateSchema = z.object({
   companyId: z.string().min(1, "Company ID is required").max(100),
-  invoices: z.array(InvoiceSchema).min(1, "At least one invoice is required").max(100, "Maximum 100 invoices per submission"),
+  invoices: z
+    .array(InvoiceSchema)
+    .min(1, "At least one invoice is required")
+    .max(100, "Maximum 100 invoices per submission"),
   // Document version (1.0 or 1.1) - default to 1.0 (unsigned)
   documentVersion: z.enum(["1.0", "1.1"]).default("1.0"),
   // Optional buyer email for consolidated invoices (for notification purposes)
@@ -309,35 +334,37 @@ export type SubmitPersonalRequest = z.infer<typeof SubmitPersonalSchema>;
  * P1-13: Added max length limits to prevent OOM attacks
  * Note: .passthrough() kept for backwards compatibility with client's original format
  */
-export const FlexibleCustomerSchema = z.object({
-  // PascalCase (client's original format)
-  Tin: z.string().max(20).optional(),
-  Name: z.string().max(300).optional(),
-  Address1: z.string().max(500).optional(),
-  PostalCode: z.string().max(20).optional(),
-  City: z.string().max(100).optional(),
-  StateCode: z.string().max(10).optional(),
-  Telephone: z.string().max(30).optional(),
-  Email: z.string().email().max(254).optional(),
-  IdType: z.string().max(20).optional(),
-  IdValue: z.string().max(50).optional(),
-  // camelCase (our internal format - also accepted)
-  tin: z.string().max(20).optional(),
-  name: z.string().max(300).optional(),
-  address1: z.string().max(500).optional(),
-  address: z.string().max(500).optional(),
-  postalCode: z.string().max(20).optional(),
-  city: z.string().max(100).optional(),
-  stateCode: z.string().max(10).optional(),
-  state: z.string().max(10).optional(),
-  telephone: z.string().max(30).optional(),
-  phone: z.string().max(30).optional(),
-  email: z.string().email().max(254).optional(),
-  idType: z.string().max(20).optional(),
-  idValue: z.string().max(50).optional(),
-  // Client's special fields for personal invoices
-  customerIcNo: z.string().max(20).optional(),
-}).passthrough(); // Allow unknown fields for backwards compatibility
+export const FlexibleCustomerSchema = z
+  .object({
+    // PascalCase (client's original format)
+    Tin: z.string().max(14).optional(),
+    Name: z.string().max(300).optional(),
+    Address1: z.string().max(452).optional(),
+    PostalCode: z.string().max(20).optional(),
+    City: z.string().max(50).optional(),
+    StateCode: z.string().max(10).optional(),
+    Telephone: z.string().max(30).optional(),
+    Email: z.string().email().max(254).optional(),
+    IdType: z.string().max(20).optional(),
+    IdValue: z.string().max(50).optional(),
+    // camelCase (our internal format - also accepted)
+    tin: z.string().max(14).optional(),
+    name: z.string().max(300).optional(),
+    address1: z.string().max(452).optional(),
+    address: z.string().max(452).optional(),
+    postalCode: z.string().max(20).optional(),
+    city: z.string().max(50).optional(),
+    stateCode: z.string().max(10).optional(),
+    state: z.string().max(10).optional(),
+    telephone: z.string().max(30).optional(),
+    phone: z.string().max(30).optional(),
+    email: z.string().email().max(254).optional(),
+    idType: z.string().max(20).optional(),
+    idValue: z.string().max(50).optional(),
+    // Client's special fields for personal invoices
+    customerIcNo: z.string().max(20).optional(),
+  })
+  .passthrough(); // Allow unknown fields for backwards compatibility
 
 /**
  * Flexible invoice item schema
@@ -345,21 +372,35 @@ export const FlexibleCustomerSchema = z.object({
  * P1-14: Added .finite() to reject Infinity/NaN
  * P2-16: Aligned validation constraints with InvoiceItemSchema
  */
-export const FlexibleItemSchema = z.object({
-  // P2-16: description has min requirement matching InvoiceItemSchema
-  description: z.string().min(1, "Item description is required").max(500, "Description too long"),
-  // P2-16: Added positive constraint for quantity, min(0) for prices
-  quantity: z.number().positive("Quantity must be positive").finite("Invalid quantity").default(1),
-  unitPrice: z.number().min(0, "Unit price cannot be negative").finite("Invalid unit price").default(0),
-  discount: z.number().min(0).finite("Invalid discount").default(0),
-  taxCode: z.string().max(10).default("06"),
-  taxRate: z.number().min(0).max(100).finite("Invalid tax rate").default(0),
-  taxAmount: z.number().min(0).finite("Invalid tax amount").default(0),
-  total: z.number().min(0).finite("Invalid total").default(0),
-  unitOfMeasure: z.string().max(50).optional(),
-  productCode: z.string().max(100).optional(),
-  classification: z.string().max(100).optional(),
-}).passthrough(); // Allow unknown fields for backwards compatibility
+export const FlexibleItemSchema = z
+  .object({
+    // P2-16: description has min requirement matching InvoiceItemSchema
+    description: z
+      .string()
+      .min(1, "Item description is required")
+      .max(300, "Description too long (max 300 chars per LHDN)"),
+    // P2-16: Added positive constraint for quantity, min(0) for prices
+    quantity: z
+      .number()
+      .positive("Quantity must be positive")
+      .finite("Invalid quantity")
+      .default(1),
+    unitPrice: z
+      .number()
+      .min(0, "Unit price cannot be negative")
+      .finite("Invalid unit price")
+      .default(0),
+    discount: z.number().min(0).finite("Invalid discount").default(0),
+    taxCode: z.string().max(10).default("06"),
+    taxRate: z.number().min(0).max(100).finite("Invalid tax rate").default(0),
+    taxAmount: z.number().min(0).finite("Invalid tax amount").default(0),
+    total: z.number().min(0).finite("Invalid total").default(0),
+    taxExemptionReason: z.string().max(300).optional(),
+    unitOfMeasure: z.string().max(3).optional(),
+    productCode: z.string().max(100).optional(),
+    classification: z.string().max(3).optional(),
+  })
+  .passthrough(); // Allow unknown fields for backwards compatibility
 
 /**
  * Flexible invoice schema that accepts both customer and buyer
@@ -371,32 +412,39 @@ export const FlexibleItemSchema = z.object({
  * P2-10: Custom date validation that accepts multiple formats but validates strictly
  * Accepts: ISO 8601 with/without timezone, YYYY-MM-DD, YYYY-MM-DDTHH:mm:ss
  */
-const flexibleDateSchema = z.string().max(50).refine(
-  (val) => {
-    if (!val) return true; // Optional, let the outer schema handle required
-    const date = new Date(val);
-    // Must be a valid date and not in the far future (prevent typos like 2099)
-    return !isNaN(date.getTime()) && date.getFullYear() <= new Date().getFullYear() + 1;
-  },
-  { message: "Invalid date format. Use ISO 8601 format (e.g., 2026-01-28T12:00:00+08:00)" }
-);
+const flexibleDateSchema = z
+  .string()
+  .max(50)
+  .refine(
+    (val) => {
+      if (!val) return true; // Optional, let the outer schema handle required
+      const date = new Date(val);
+      // Must be a valid date and not in the far future (prevent typos like 2099)
+      return !isNaN(date.getTime()) && date.getFullYear() <= new Date().getFullYear() + 1;
+    },
+    { message: "Invalid date format. Use ISO 8601 format (e.g., 2026-01-28T12:00:00+08:00)" }
+  );
 
-export const FlexibleInvoiceSchema = z.object({
-  invoiceNumber: z.string().max(100),
-  // P2-10: Added strict date validation with refine
-  invoiceDate: flexibleDateSchema,
-  amount: z.number().finite(),
-  discount: z.number().finite().optional(),
-  rounding: z.number().finite().optional(),
-  taxAmount: z.number().finite(),
-  total: z.number().finite(),
-  reference: z.string().max(200).optional(),
-  currency: z.string().max(10).optional(),
-  // Accept both customer (client's original) and buyer (internal)
-  customer: FlexibleCustomerSchema.optional(),
-  buyer: FlexibleCustomerSchema.optional(),
-  items: z.array(FlexibleItemSchema).max(100, "Maximum 100 items per invoice"),
-}).passthrough(); // Allow unknown fields for backwards compatibility
+export const FlexibleInvoiceSchema = z
+  .object({
+    invoiceNumber: z.string().max(50),
+    // P2-10: Added strict date validation with refine
+    invoiceDate: flexibleDateSchema,
+    amount: z.number().finite(),
+    discount: z.number().finite().optional(),
+    rounding: z.number().finite().optional(),
+    taxAmount: z.number().finite(),
+    total: z.number().finite(),
+    reference: z.string().max(200).optional(),
+    currency: z.string().max(3).optional(),
+    // Currency exchange rate (required when currency != MYR, per LHDN 9 Aug 2025)
+    exchangeRate: z.number().positive().finite().optional(),
+    // Accept both customer (client's original) and buyer (internal)
+    customer: FlexibleCustomerSchema.optional(),
+    buyer: FlexibleCustomerSchema.optional(),
+    items: z.array(FlexibleItemSchema).max(100, "Maximum 100 items per invoice"),
+  })
+  .passthrough(); // Allow unknown fields for backwards compatibility
 
 /**
  * Original submit schema - unified endpoint that accepts flags
@@ -407,25 +455,29 @@ export const FlexibleInvoiceSchema = z.object({
  * - customer object (not buyer)
  * P1-13/P1-15: Added length limits and array bounds
  */
-export const OriginalSubmitSchema = z.object({
-  // Company ID (accept both cases)
-  CompanyId: z.string().max(100).optional(),
-  companyId: z.string().max(100).optional(),
-  // Flags for routing
-  ConsolidatedInvoice: z.boolean().optional(),
-  consolidatedInvoice: z.boolean().optional(),
-  SaveInvoice: z.boolean().optional(),
-  saveInvoice: z.boolean().optional(),
-  // Document version
-  documentVersion: z.enum(["1.0", "1.1"]).optional(),
-  // Invoices array (P1-15: max 100 invoices)
-  invoices: z.array(FlexibleInvoiceSchema).min(1, "At least one invoice is required").max(100, "Maximum 100 invoices per submission"),
-  // Optional buyer email for consolidated
-  buyerEmail: z.string().email().max(254).optional(),
-}).refine(
-  (data) => data.CompanyId || data.companyId,
-  { message: "Company ID is required (CompanyId or companyId)" }
-);
+export const OriginalSubmitSchema = z
+  .object({
+    // Company ID (accept both cases)
+    CompanyId: z.string().max(100).optional(),
+    companyId: z.string().max(100).optional(),
+    // Flags for routing
+    ConsolidatedInvoice: z.boolean().optional(),
+    consolidatedInvoice: z.boolean().optional(),
+    SaveInvoice: z.boolean().optional(),
+    saveInvoice: z.boolean().optional(),
+    // Document version
+    documentVersion: z.enum(["1.0", "1.1"]).optional(),
+    // Invoices array (P1-15: max 100 invoices)
+    invoices: z
+      .array(FlexibleInvoiceSchema)
+      .min(1, "At least one invoice is required")
+      .max(100, "Maximum 100 invoices per submission"),
+    // Optional buyer email for consolidated
+    buyerEmail: z.string().email().max(254).optional(),
+  })
+  .refine((data) => data.CompanyId || data.companyId, {
+    message: "Company ID is required (CompanyId or companyId)",
+  });
 
 export type OriginalSubmitRequest = z.infer<typeof OriginalSubmitSchema>;
 
