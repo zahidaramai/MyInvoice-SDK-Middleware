@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "documentation/**"
+      - "openapi/**"
       - ".spectral.yaml"
   pull_request:
     branches: [main]
     paths:
-      - "documentation/**"
+      - "openapi/**"
       - ".spectral.yaml"
 
 jobs:
@@ -26,4 +26,4 @@ jobs:
           node-version: "22"
 
       - name: Lint OpenAPI spec
-        run: npx --yes @stoplight/spectral-cli lint documentation/openapi.yaml --ruleset .spectral.yaml
+        run: npx --yes @stoplight/spectral-cli lint openapi/openapi.yaml --ruleset .spectral.yaml

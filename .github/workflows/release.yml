@@ -63,7 +63,7 @@ jobs:
       - name: Package OpenAPI spec
         run: |
           mkdir -p release-assets
-          cp documentation/openapi.yaml release-assets/openapi.yaml
+          cp openapi/openapi.yaml release-assets/openapi.yaml
 
       - name: Package TypeScript SDK
         if: hashFiles('sdks/typescript/**') != ''

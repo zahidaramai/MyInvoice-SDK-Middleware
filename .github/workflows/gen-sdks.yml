@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "documentation/openapi.yaml"
+      - "openapi/openapi.yaml"
       - "openapi-generator/*.json"
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/documentation/openapi.yaml \
+            -i /local/openapi/openapi.yaml \
             -g typescript-axios \
             -o /local/sdks/typescript \
             -c /local/openapi-generator/typescript-axios.config.json \
@@ -36,7 +36,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/documentation/openapi.yaml \
+            -i /local/openapi/openapi.yaml \
             -g python \
             -o /local/sdks/python \
             -c /local/openapi-generator/python.config.json \
@@ -47,7 +47,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/documentation/openapi.yaml \
+            -i /local/openapi/openapi.yaml \
             -g csharp \
             -o /local/sdks/dotnet \
             -c /local/openapi-generator/csharp.config.json \
@@ -58,7 +58,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/local" \
             openapitools/openapi-generator-cli:v7.10.0 generate \
-            -i /local/documentation/openapi.yaml \
+            -i /local/openapi/openapi.yaml \
             -g java \
             -o /local/sdks/java \
             -c /local/openapi-generator/java.config.json \
@@ -168,7 +168,7 @@ jobs:
 
             ## Trigger
             Changes detected in:
-            - `documentation/openapi.yaml`
+            - `openapi/openapi.yaml`
             - `openapi-generator/*.json`
 
             ---
