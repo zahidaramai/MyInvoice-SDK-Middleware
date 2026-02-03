@@ -1,0 +1,3447 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: hello@zahidaramai.com
+    name: MyInvois SDK Middleware
+  description: |
+    API middleware gateway for Malaysia's MyInvois e-invoicing system (LHDN).
+
+    **Version:** 1.1.1
+
+    ## Features
+    - 4 Submission Endpoints (Consolidate, JustSave, Buyer, Personal)
+    - JWT Authentication with Access & Refresh Tokens
+    - User/Role/Company Management
+    - Document Operations (List, Status, PDF, Cancel)
+    - Digital Signing v1.1 (XAdES signatures)
+    - Background Status Polling
+
+    ## Authentication
+    All endpoints except `/api/v1/auth/login` require JWT authentication.
+    Include the access token in the Authorization header:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+  title: KLCubeLHDN MyInvois Middleware API
+  version: 1.1.1
+servers:
+- description: Local Development
+  url: http://localhost:3000
+- description: Production
+  url: https://localhost:3000
+tags:
+- description: Health and readiness checks
+  name: Health
+- description: JWT authentication endpoints
+  name: Authentication
+- description: Invoice submission endpoints
+  name: KLCubeLHDN Submission
+- description: Document operations
+  name: Documents
+- description: User management
+  name: Users
+- description: Role management
+  name: Roles
+- description: Company management
+  name: Companies
+paths:
+  /healthz:
+    get:
+      description: Returns OK if the gateway is running
+      operationId: healthCheck
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/healthCheck_200_response'
+          description: Gateway is healthy
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      summary: Health check
+      tags:
+      - Health
+      x-accepts:
+      - application/json
+  /readyz:
+    get:
+      description: "Returns OK if all dependencies (DB, Redis) are connected"
+      operationId: readinessCheck
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+          description: Gateway is ready
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      summary: Readiness check
+      tags:
+      - Health
+      x-accepts:
+      - application/json
+  /version:
+    get:
+      description: Returns the current API version and build information
+      operationId: getVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+          description: Version information
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      summary: Version information
+      tags:
+      - Health
+      x-accepts:
+      - application/json
+  /api/v1/auth/login:
+    post:
+      description: "Authenticate with email/password, returns access and refresh tokens"
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: Login successful
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      summary: Login
+      tags:
+      - Authentication
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/auth/logout:
+    post:
+      description: Invalidate current tokens
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/logout_200_response'
+          description: Logout successful
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Logout
+      tags:
+      - Authentication
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/auth/refresh:
+    post:
+      description: Exchange refresh token for new access token
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+          description: Token refreshed
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      summary: Refresh access token
+      tags:
+      - Authentication
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/auth/me:
+    get:
+      description: Returns details of the authenticated user
+      operationId: getCurrentUser
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+          description: Current user details
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Get current user
+      tags:
+      - Authentication
+      x-accepts:
+      - application/json
+  /api/v1/auth/switch-company:
+    post:
+      description: Switch to a different company context
+      operationId: switchCompany
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/switchCompany_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: Company switched
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Switch active company
+      tags:
+      - Authentication
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/klcubelhdn/submit-consolidate:
+    post:
+      description: |
+        Combine multiple invoices into one e-invoice submission.
+        Supports v1.0 (unsigned) and v1.1 (digitally signed) documents.
+      operationId: submitConsolidate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitConsolidateRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponse'
+          description: Submission accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Insufficient permissions
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Submit consolidated invoice
+      tags:
+      - KLCubeLHDN Submission
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/klcubelhdn/submit-justsave:
+    post:
+      description: Save invoice to database without submitting to LHDN
+      operationId: submitJustSave
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitJustSaveRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponse'
+          description: Invoice saved
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Save invoice locally
+      tags:
+      - KLCubeLHDN Submission
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/klcubelhdn/submit-buyer:
+    post:
+      description: Submit invoice with buyer TIN + BRN (Business Registration Number)
+      operationId: submitBuyer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitBuyerRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponse'
+          description: Submission accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Submit B2B invoice
+      tags:
+      - KLCubeLHDN Submission
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/klcubelhdn/submit-personal:
+    post:
+      description: Submit invoice with buyer NRIC (personal identification)
+      operationId: submitPersonal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitPersonalRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponse'
+          description: Submission accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Authentication required
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Submit B2C invoice
+      tags:
+      - KLCubeLHDN Submission
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/klcubelhdn/invoices/{trackingId}:
+    get:
+      description: "Retrieve invoice details including status, MyInvois UUID, and\
+        \ submission history"
+      operationId: getInvoiceByTrackingId
+      parameters:
+      - explode: false
+        in: path
+        name: trackingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetails'
+          description: Invoice details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Resource not found
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Get invoice by tracking ID
+      tags:
+      - KLCubeLHDN Submission
+      x-accepts:
+      - application/json
+  /api/v1/documents:
+    get:
+      description: List documents with optional filters
+      operationId: listDocuments
+      parameters:
+      - explode: true
+        in: query
+        name: companyId
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          enum:
+          - DRAFT
+          - SUBMITTED
+          - VALID
+          - INVALID
+          - CANCELLED
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: invoiceType
+        required: false
+        schema:
+          enum:
+          - CONSOLIDATE
+          - JUSTSAVE
+          - BUYER
+          - PERSONAL
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: fromDate
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: toDate
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentListResponse'
+          description: Document list
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List documents
+      tags:
+      - Documents
+      x-accepts:
+      - application/json
+  /api/v1/documents/{uuid}/status:
+    get:
+      description: Get the current validation status of a submitted document from
+        MyInvois
+      operationId: getDocumentStatus
+      parameters:
+      - explode: false
+        in: path
+        name: uuid
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentStatusResponse'
+          description: Document status
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Resource not found
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Get document status
+      tags:
+      - Documents
+      x-accepts:
+      - application/json
+  /api/v1/documents/{uuid}/pdf:
+    get:
+      description: Download the PDF representation of a validated document from MyInvois
+      operationId: getDocumentPdf
+      parameters:
+      - explode: false
+        in: path
+        name: uuid
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentPdfResponse'
+          description: Document data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Resource not found
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Download document PDF
+      tags:
+      - Documents
+      x-accepts:
+      - application/json
+  /api/v1/documents/{uuid}/cancel:
+    post:
+      description: Cancel a submitted document (within 72 hours)
+      operationId: cancelDocument
+      parameters:
+      - explode: false
+        in: path
+        name: uuid
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/cancelDocument_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cancelDocument_200_response'
+          description: Document cancelled
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Resource not found
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Cancel document
+      tags:
+      - Documents
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/users:
+    get:
+      description: List all users with pagination and optional search filter
+      operationId: listUsers
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: search
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+          description: User list
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List users
+      tags:
+      - Users
+      x-accepts:
+      - application/json
+    post:
+      description: "Create a new user with email, name, and role assignment"
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Create user
+      tags:
+      - Users
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/users/{id}:
+    delete:
+      description: Permanently delete a user from the system
+      operationId: deleteUser
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteUser_200_response'
+          description: User deleted
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Delete user
+      tags:
+      - Users
+      x-accepts:
+      - application/json
+    get:
+      description: Retrieve user details including role and company assignments
+      operationId: getUser
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Resource not found
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Get user by ID
+      tags:
+      - Users
+      x-accepts:
+      - application/json
+    put:
+      description: "Update user details such as name, email, or active status"
+      operationId: updateUser
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User updated
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Update user
+      tags:
+      - Users
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/users/{id}/role:
+    put:
+      description: Assign a different role to a user
+      operationId: updateUserRole
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserRole_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Role updated
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Update user role
+      tags:
+      - Users
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/roles:
+    get:
+      description: List all roles with pagination
+      operationId: listRoles
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleListResponse'
+          description: Role list
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List roles
+      tags:
+      - Roles
+      x-accepts:
+      - application/json
+    post:
+      description: Create a new role with specified permissions
+      operationId: createRole
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Role created
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Create role
+      tags:
+      - Roles
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/roles/all:
+    get:
+      description: Returns all roles without pagination for dropdowns and selectors
+      operationId: listAllRoles
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listAllRoles_200_response'
+          description: All roles
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List all roles (no pagination)
+      tags:
+      - Roles
+      x-accepts:
+      - application/json
+  /api/v1/roles/permissions:
+    get:
+      description: Returns all available permission strings that can be assigned to
+        roles
+      operationId: listPermissions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listPermissions_200_response'
+          description: Available permissions
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List available permissions
+      tags:
+      - Roles
+      x-accepts:
+      - application/json
+  /api/v1/roles/{id}:
+    delete:
+      description: Permanently delete a role (fails if users are assigned)
+      operationId: deleteRole
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Role deleted
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Delete role
+      tags:
+      - Roles
+      x-accepts:
+      - application/json
+    get:
+      description: Retrieve role details including assigned permissions
+      operationId: getRole
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Role details
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Get role by ID
+      tags:
+      - Roles
+      x-accepts:
+      - application/json
+    put:
+      description: "Update role name, description, or permissions"
+      operationId: updateRole
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Role updated
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Update role
+      tags:
+      - Roles
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/roles/{id}/permissions:
+    put:
+      description: Replace the permissions assigned to a role
+      operationId: updateRolePermissions
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateRolePermissions_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Permissions updated
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Update role permissions
+      tags:
+      - Roles
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/companies:
+    get:
+      description: List all companies with pagination
+      operationId: listCompanies
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyListResponse'
+          description: Company list
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List companies
+      tags:
+      - Companies
+      x-accepts:
+      - application/json
+    post:
+      description: Create a new company with TIN and business registration details
+      operationId: createCompany
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: Company created
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Create company
+      tags:
+      - Companies
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/companies/all:
+    get:
+      description: Returns all companies without pagination for dropdowns and selectors
+      operationId: listAllCompanies
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listAllCompanies_200_response'
+          description: All companies
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: List all companies (no pagination)
+      tags:
+      - Companies
+      x-accepts:
+      - application/json
+  /api/v1/companies/{id}:
+    delete:
+      description: Permanently delete a company and all associated data
+      operationId: deleteCompany
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Company deleted
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Delete company
+      tags:
+      - Companies
+      x-accepts:
+      - application/json
+    get:
+      description: Retrieve company details including TIN and MyInvois configuration
+      operationId: getCompany
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: Company details
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Get company by ID
+      tags:
+      - Companies
+      x-accepts:
+      - application/json
+    put:
+      description: "Update company details such as name, address, or contact information"
+      operationId: updateCompany
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompanyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: Company updated
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Update company
+      tags:
+      - Companies
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/companies/{id}/credentials:
+    put:
+      description: Configure the company's MyInvois API credentials
+      operationId: updateCompanyCredentials
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCredentialsRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: Credentials updated
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Set MyInvois credentials
+      tags:
+      - Companies
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/companies/{id}/users/{userId}:
+    delete:
+      description: Revoke a user's access to a company
+      operationId: removeUserFromCompany
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: User removed from company
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Remove user from company
+      tags:
+      - Companies
+      x-accepts:
+      - application/json
+    post:
+      description: Grant a user access to a company
+      operationId: addUserToCompany
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: User added to company
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - bearerAuth: []
+      summary: Add user to company
+      tags:
+      - Companies
+      x-accepts:
+      - application/json
+components:
+  responses:
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      description: Invalid request
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      description: Authentication required
+    Forbidden:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      description: Insufficient permissions
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      description: Resource not found
+    TooManyRequests:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          explode: false
+          schema:
+            type: integer
+          style: simple
+  schemas:
+    ErrorResponse:
+      example:
+        error:
+          code: code
+          details:
+          - "{}"
+          - "{}"
+          message: message
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorResponse_error'
+      required:
+      - error
+      type: object
+    Pagination:
+      example:
+        total: 0
+        limit: 1
+        totalPages: 5
+        page: 6
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+      type: object
+    ReadinessResponse:
+      example:
+        checks:
+          database: ok
+          redis: ok
+        signing:
+          certificateValid: true
+          enabled: true
+          defaultVersion: defaultVersion
+        status: ok
+      properties:
+        status:
+          enum:
+          - ok
+          - degraded
+          type: string
+        checks:
+          $ref: '#/components/schemas/ReadinessResponse_checks'
+        signing:
+          $ref: '#/components/schemas/ReadinessResponse_signing'
+      type: object
+    VersionResponse:
+      example:
+        buildTime: buildTime
+        name: name
+        commit: commit
+        version: version
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        commit:
+          type: string
+        buildTime:
+          type: string
+      type: object
+    LoginRequest:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+        password:
+          format: password
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    LoginResponse:
+      example:
+        expiresIn: 0
+        accessToken: accessToken
+        user:
+          createdAt: createdAt
+          companies:
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          role:
+            isSystem: true
+            createdAt: createdAt
+            permissions:
+            - permissions
+            - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
+          name: name
+          id: id
+          isActive: true
+          email: email
+          updatedAt: updatedAt
+        refreshToken: refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          description: Access token expiry in seconds
+          type: integer
+        user:
+          $ref: '#/components/schemas/User'
+      type: object
+    LogoutRequest:
+      example:
+        refreshToken: refreshToken
+      properties:
+        refreshToken:
+          type: string
+      required:
+      - refreshToken
+      type: object
+    RefreshRequest:
+      example:
+        refreshToken: refreshToken
+      properties:
+        refreshToken:
+          type: string
+      required:
+      - refreshToken
+      type: object
+    RefreshResponse:
+      example:
+        expiresIn: 0
+        accessToken: accessToken
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+      type: object
+    CurrentUserResponse:
+      example:
+        companies:
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+        user:
+          createdAt: createdAt
+          companies:
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          role:
+            isSystem: true
+            createdAt: createdAt
+            permissions:
+            - permissions
+            - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
+          name: name
+          id: id
+          isActive: true
+          email: email
+          updatedAt: updatedAt
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        companies:
+          items:
+            $ref: '#/components/schemas/Company'
+          type: array
+      type: object
+    InvoiceItem:
+      example:
+        unitPrice: 7.061401241503109
+        taxRate: 3.616076749251911
+        total: 4.145608029883936
+        quantity: 2.3021358869347655
+        description: description
+        discount: 9.301444243932576
+        taxCode: taxCode
+        taxAmount: 2.027123023002322
+      properties:
+        description:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        discount:
+          default: 0
+          type: number
+        taxCode:
+          description: "Tax code (01=SST, 02=Service Tax, E=Exempt)"
+          type: string
+        taxRate:
+          type: number
+        taxAmount:
+          type: number
+        total:
+          type: number
+      required:
+      - description
+      - quantity
+      - taxAmount
+      - taxCode
+      - taxRate
+      - total
+      - unitPrice
+      type: object
+    BuyerInfo:
+      example:
+        idType: NRIC
+        address: address
+        city: city
+        phone: phone
+        postalCode: postalCode
+        tin: tin
+        name: name
+        idValue: idValue
+        state: state
+        email: email
+      properties:
+        tin:
+          description: Tax Identification Number
+          type: string
+        name:
+          type: string
+        idType:
+          enum:
+          - NRIC
+          - PASSPORT
+          - BRN
+          - ARMY
+          type: string
+        idValue:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          description: State code (01-16)
+          type: string
+        postalCode:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+      required:
+      - address
+      - city
+      - idType
+      - idValue
+      - name
+      - postalCode
+      - state
+      type: object
+    Invoice:
+      example:
+        amount: 0.8008281904610115
+        total: 5.637376656633329
+        invoiceNumber: invoiceNumber
+        discount: 6.027456183070403
+        rounding: 1.4658129805029452
+        invoiceDate: 2000-01-23T04:56:07.000+00:00
+        taxAmount: 5.962133916683182
+        items:
+        - unitPrice: 7.061401241503109
+          taxRate: 3.616076749251911
+          total: 4.145608029883936
+          quantity: 2.3021358869347655
+          description: description
+          discount: 9.301444243932576
+          taxCode: taxCode
+          taxAmount: 2.027123023002322
+        - unitPrice: 7.061401241503109
+          taxRate: 3.616076749251911
+          total: 4.145608029883936
+          quantity: 2.3021358869347655
+          description: description
+          discount: 9.301444243932576
+          taxCode: taxCode
+          taxAmount: 2.027123023002322
+        buyer:
+          idType: NRIC
+          address: address
+          city: city
+          phone: phone
+          postalCode: postalCode
+          tin: tin
+          name: name
+          idValue: idValue
+          state: state
+          email: email
+      properties:
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          format: date-time
+          type: string
+        amount:
+          type: number
+        discount:
+          type: number
+        rounding:
+          type: number
+        taxAmount:
+          type: number
+        total:
+          type: number
+        buyer:
+          $ref: '#/components/schemas/BuyerInfo'
+        items:
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+          type: array
+      required:
+      - amount
+      - discount
+      - invoiceDate
+      - invoiceNumber
+      - items
+      - rounding
+      - taxAmount
+      - total
+      type: object
+    SubmitConsolidateRequest:
+      example:
+        companyId: companyId
+        invoices:
+        - amount: 0.8008281904610115
+          total: 5.637376656633329
+          invoiceNumber: invoiceNumber
+          discount: 6.027456183070403
+          rounding: 1.4658129805029452
+          invoiceDate: 2000-01-23T04:56:07.000+00:00
+          taxAmount: 5.962133916683182
+          items:
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          buyer:
+            idType: NRIC
+            address: address
+            city: city
+            phone: phone
+            postalCode: postalCode
+            tin: tin
+            name: name
+            idValue: idValue
+            state: state
+            email: email
+        - amount: 0.8008281904610115
+          total: 5.637376656633329
+          invoiceNumber: invoiceNumber
+          discount: 6.027456183070403
+          rounding: 1.4658129805029452
+          invoiceDate: 2000-01-23T04:56:07.000+00:00
+          taxAmount: 5.962133916683182
+          items:
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          buyer:
+            idType: NRIC
+            address: address
+            city: city
+            phone: phone
+            postalCode: postalCode
+            tin: tin
+            name: name
+            idValue: idValue
+            state: state
+            email: email
+        buyerEmail: buyerEmail
+        documentVersion: "1.0"
+      properties:
+        companyId:
+          type: string
+        documentVersion:
+          default: "1.0"
+          enum:
+          - "1.0"
+          - "1.1"
+          type: string
+        buyerEmail:
+          format: email
+          type: string
+        invoices:
+          items:
+            $ref: '#/components/schemas/Invoice'
+          minItems: 1
+          type: array
+      required:
+      - companyId
+      - invoices
+      type: object
+    SubmitJustSaveRequest:
+      example:
+        companyId: companyId
+        invoice:
+          amount: 0.8008281904610115
+          total: 5.637376656633329
+          invoiceNumber: invoiceNumber
+          discount: 6.027456183070403
+          rounding: 1.4658129805029452
+          invoiceDate: 2000-01-23T04:56:07.000+00:00
+          taxAmount: 5.962133916683182
+          items:
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          buyer:
+            idType: NRIC
+            address: address
+            city: city
+            phone: phone
+            postalCode: postalCode
+            tin: tin
+            name: name
+            idValue: idValue
+            state: state
+            email: email
+      properties:
+        companyId:
+          type: string
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+      required:
+      - companyId
+      - invoice
+      type: object
+    SubmitBuyerRequest:
+      example:
+        companyId: companyId
+        invoice:
+          amount: 0.8008281904610115
+          total: 5.637376656633329
+          invoiceNumber: invoiceNumber
+          discount: 6.027456183070403
+          rounding: 1.4658129805029452
+          invoiceDate: 2000-01-23T04:56:07.000+00:00
+          taxAmount: 5.962133916683182
+          items:
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          buyer:
+            idType: NRIC
+            address: address
+            city: city
+            phone: phone
+            postalCode: postalCode
+            tin: tin
+            name: name
+            idValue: idValue
+            state: state
+            email: email
+        documentVersion: "1.0"
+      properties:
+        companyId:
+          type: string
+        documentVersion:
+          default: "1.0"
+          enum:
+          - "1.0"
+          - "1.1"
+          type: string
+        invoice:
+          $ref: '#/components/schemas/SubmitBuyerRequest_invoice'
+      required:
+      - companyId
+      - invoice
+      type: object
+    SubmitPersonalRequest:
+      example:
+        companyId: companyId
+        invoice:
+          amount: 0.8008281904610115
+          total: 5.637376656633329
+          invoiceNumber: invoiceNumber
+          discount: 6.027456183070403
+          rounding: 1.4658129805029452
+          invoiceDate: 2000-01-23T04:56:07.000+00:00
+          taxAmount: 5.962133916683182
+          items:
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          - unitPrice: 7.061401241503109
+            taxRate: 3.616076749251911
+            total: 4.145608029883936
+            quantity: 2.3021358869347655
+            description: description
+            discount: 9.301444243932576
+            taxCode: taxCode
+            taxAmount: 2.027123023002322
+          buyer:
+            idType: NRIC
+            address: address
+            city: city
+            phone: phone
+            postalCode: postalCode
+            tin: tin
+            name: name
+            idValue: idValue
+            state: state
+            email: email
+        documentVersion: "1.0"
+      properties:
+        companyId:
+          type: string
+        documentVersion:
+          default: "1.0"
+          enum:
+          - "1.0"
+          - "1.1"
+          type: string
+        invoice:
+          $ref: '#/components/schemas/SubmitBuyerRequest_invoice'
+      required:
+      - companyId
+      - invoice
+      type: object
+    SubmissionResponse:
+      example:
+        invoiceId: invoiceId
+        message: message
+        submittedAt: 2000-01-23T04:56:07.000+00:00
+        trackingId: trackingId
+        status: DRAFT
+      properties:
+        trackingId:
+          type: string
+        invoiceId:
+          type: string
+        status:
+          enum:
+          - DRAFT
+          - SUBMITTED
+          - VALID
+          - INVALID
+          - CANCELLED
+          type: string
+        message:
+          type: string
+        submittedAt:
+          format: date-time
+          type: string
+      type: object
+    InvoiceDetails:
+      example:
+        amount: amount
+        myinvoisUuid: myinvoisUuid
+        myinvoisLongId: myinvoisLongId
+        errorMessage: errorMessage
+        discount: discount
+        rounding: rounding
+        errorCode: errorCode
+        invoiceDate: invoiceDate
+        createdAt: createdAt
+        total: total
+        invoiceNumber: invoiceNumber
+        invoiceType: invoiceType
+        taxAmount: taxAmount
+        trackingId: trackingId
+        status: status
+        updatedAt: updatedAt
+      properties:
+        trackingId:
+          type: string
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          type: string
+        invoiceType:
+          type: string
+        status:
+          type: string
+        myinvoisUuid:
+          type: string
+        myinvoisLongId:
+          type: string
+        amount:
+          type: string
+        discount:
+          type: string
+        rounding:
+          type: string
+        taxAmount:
+          type: string
+        total:
+          type: string
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      type: object
+    DocumentListResponse:
+      example:
+        pagination:
+          total: 0
+          limit: 1
+          totalPages: 5
+          page: 6
+        data:
+        - createdAt: createdAt
+          total: total
+          myinvoisUuid: myinvoisUuid
+          invoiceNumber: invoiceNumber
+          invoiceType: invoiceType
+          invoiceDate: invoiceDate
+          trackingId: trackingId
+          status: status
+        - createdAt: createdAt
+          total: total
+          myinvoisUuid: myinvoisUuid
+          invoiceNumber: invoiceNumber
+          invoiceType: invoiceType
+          invoiceDate: invoiceDate
+          trackingId: trackingId
+          status: status
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DocumentListResponse_data_inner'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    DocumentStatusResponse:
+      example:
+        total: total
+        invoiceNumber: invoiceNumber
+        errorMessage: errorMessage
+        errorCode: errorCode
+        longId: longId
+        invoiceDate: invoiceDate
+        uuid: uuid
+        status: status
+        updatedAt: updatedAt
+      properties:
+        uuid:
+          type: string
+        longId:
+          type: string
+        status:
+          type: string
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          type: string
+        total:
+          type: string
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        updatedAt:
+          type: string
+      type: object
+    DocumentPdfResponse:
+      example:
+        document: document
+        invoiceNumber: invoiceNumber
+        format: format
+        message: message
+        uuid: uuid
+      properties:
+        uuid:
+          type: string
+        invoiceNumber:
+          type: string
+        document:
+          type: string
+        format:
+          type: string
+        message:
+          type: string
+      type: object
+    User:
+      example:
+        createdAt: createdAt
+        companies:
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+        role:
+          isSystem: true
+          createdAt: createdAt
+          permissions:
+          - permissions
+          - permissions
+          name: name
+          description: description
+          id: id
+          updatedAt: updatedAt
+        name: name
+        id: id
+        isActive: true
+        email: email
+        updatedAt: updatedAt
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        isActive:
+          type: boolean
+        role:
+          $ref: '#/components/schemas/Role'
+        companies:
+          items:
+            $ref: '#/components/schemas/Company'
+          type: array
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      type: object
+    CreateUserRequest:
+      example:
+        password: password
+        companyIds:
+        - companyIds
+        - companyIds
+        roleId: roleId
+        name: name
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+        password:
+          minLength: 8
+          type: string
+        name:
+          type: string
+        roleId:
+          type: string
+        companyIds:
+          items:
+            type: string
+          type: array
+      required:
+      - email
+      - name
+      - password
+      - roleId
+      type: object
+    UpdateUserRequest:
+      example:
+        password: password
+        name: name
+        isActive: true
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+        name:
+          type: string
+        isActive:
+          type: boolean
+        password:
+          minLength: 8
+          type: string
+      type: object
+    UserListResponse:
+      example:
+        pagination:
+          total: 0
+          limit: 1
+          totalPages: 5
+          page: 6
+        data:
+        - createdAt: createdAt
+          companies:
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          role:
+            isSystem: true
+            createdAt: createdAt
+            permissions:
+            - permissions
+            - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
+          name: name
+          id: id
+          isActive: true
+          email: email
+          updatedAt: updatedAt
+        - createdAt: createdAt
+          companies:
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          - idType: idType
+            address: address
+            city: city
+            postalCode: postalCode
+            idValue: idValue
+            isActive: true
+            hasCredentials: true
+            createdAt: createdAt
+            phone: phone
+            myinvoisEnv: SANDBOX
+            name: name
+            tin: tin
+            id: id
+            state: state
+            email: email
+            updatedAt: updatedAt
+          role:
+            isSystem: true
+            createdAt: createdAt
+            permissions:
+            - permissions
+            - permissions
+            name: name
+            description: description
+            id: id
+            updatedAt: updatedAt
+          name: name
+          id: id
+          isActive: true
+          email: email
+          updatedAt: updatedAt
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/User'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    Role:
+      example:
+        isSystem: true
+        createdAt: createdAt
+        permissions:
+        - permissions
+        - permissions
+        name: name
+        description: description
+        id: id
+        updatedAt: updatedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          items:
+            type: string
+          type: array
+        isSystem:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      type: object
+    CreateRoleRequest:
+      example:
+        permissions:
+        - permissions
+        - permissions
+        name: name
+        description: description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          items:
+            type: string
+          type: array
+      required:
+      - name
+      - permissions
+      type: object
+    UpdateRoleRequest:
+      example:
+        permissions:
+        - permissions
+        - permissions
+        name: name
+        description: description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          items:
+            type: string
+          type: array
+      type: object
+    RoleListResponse:
+      example:
+        pagination:
+          total: 0
+          limit: 1
+          totalPages: 5
+          page: 6
+        data:
+        - isSystem: true
+          createdAt: createdAt
+          permissions:
+          - permissions
+          - permissions
+          name: name
+          description: description
+          id: id
+          updatedAt: updatedAt
+        - isSystem: true
+          createdAt: createdAt
+          permissions:
+          - permissions
+          - permissions
+          name: name
+          description: description
+          id: id
+          updatedAt: updatedAt
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Role'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    Company:
+      example:
+        idType: idType
+        address: address
+        city: city
+        postalCode: postalCode
+        idValue: idValue
+        isActive: true
+        hasCredentials: true
+        createdAt: createdAt
+        phone: phone
+        myinvoisEnv: SANDBOX
+        name: name
+        tin: tin
+        id: id
+        state: state
+        email: email
+        updatedAt: updatedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tin:
+          type: string
+        idType:
+          type: string
+        idValue:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        isActive:
+          type: boolean
+        myinvoisEnv:
+          enum:
+          - SANDBOX
+          - PROD
+          type: string
+        hasCredentials:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      type: object
+    CreateCompanyRequest:
+      example:
+        idType: BRN
+        address: address
+        city: city
+        phone: phone
+        myinvoisEnv: SANDBOX
+        postalCode: postalCode
+        name: name
+        tin: tin
+        idValue: idValue
+        state: state
+        email: email
+      properties:
+        name:
+          type: string
+        tin:
+          type: string
+        idType:
+          enum:
+          - BRN
+          - NRIC
+          - PASSPORT
+          - ARMY
+          type: string
+        idValue:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        myinvoisEnv:
+          default: SANDBOX
+          enum:
+          - SANDBOX
+          - PROD
+          type: string
+      required:
+      - idType
+      - idValue
+      - name
+      - tin
+      type: object
+    UpdateCompanyRequest:
+      example:
+        address: address
+        city: city
+        phone: phone
+        myinvoisEnv: SANDBOX
+        postalCode: postalCode
+        name: name
+        state: state
+        isActive: true
+        email: email
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        isActive:
+          type: boolean
+        myinvoisEnv:
+          enum:
+          - SANDBOX
+          - PROD
+          type: string
+      type: object
+    UpdateCredentialsRequest:
+      example:
+        myinvoisClientId: myinvoisClientId
+        myinvoisClientSecret: myinvoisClientSecret
+      properties:
+        myinvoisClientId:
+          type: string
+        myinvoisClientSecret:
+          type: string
+      required:
+      - myinvoisClientId
+      - myinvoisClientSecret
+      type: object
+    CompanyListResponse:
+      example:
+        pagination:
+          total: 0
+          limit: 1
+          totalPages: 5
+          page: 6
+        data:
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Company'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    healthCheck_200_response:
+      example:
+        status: ok
+      properties:
+        status:
+          example: ok
+          type: string
+      type: object
+    logout_200_response:
+      example:
+        message: Logged out successfully
+      properties:
+        message:
+          example: Logged out successfully
+          type: string
+      type: object
+    switchCompany_request:
+      properties:
+        companyId:
+          type: string
+      required:
+      - companyId
+      type: object
+    cancelDocument_request:
+      properties:
+        reason:
+          maxLength: 500
+          minLength: 1
+          type: string
+      required:
+      - reason
+      type: object
+    cancelDocument_200_response:
+      example:
+        message: message
+        uuid: uuid
+        status: CANCELLED
+      properties:
+        uuid:
+          type: string
+        status:
+          example: CANCELLED
+          type: string
+        message:
+          type: string
+      type: object
+    deleteUser_200_response:
+      example:
+        message: message
+      properties:
+        message:
+          type: string
+      type: object
+    updateUserRole_request:
+      properties:
+        roleId:
+          type: string
+      required:
+      - roleId
+      type: object
+    listAllRoles_200_response:
+      example:
+        data:
+        - isSystem: true
+          createdAt: createdAt
+          permissions:
+          - permissions
+          - permissions
+          name: name
+          description: description
+          id: id
+          updatedAt: updatedAt
+        - isSystem: true
+          createdAt: createdAt
+          permissions:
+          - permissions
+          - permissions
+          name: name
+          description: description
+          id: id
+          updatedAt: updatedAt
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Role'
+          type: array
+      type: object
+    listPermissions_200_response:
+      example:
+        permissions:
+        - submit:invoice
+        - read:documents
+        - cancel:documents
+        - manage:users
+        - manage:roles
+        - manage:companies
+      properties:
+        permissions:
+          example:
+          - submit:invoice
+          - read:documents
+          - cancel:documents
+          - manage:users
+          - manage:roles
+          - manage:companies
+          items:
+            type: string
+          type: array
+      type: object
+    updateRolePermissions_request:
+      properties:
+        permissions:
+          items:
+            type: string
+          type: array
+      required:
+      - permissions
+      type: object
+    listAllCompanies_200_response:
+      example:
+        data:
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+        - idType: idType
+          address: address
+          city: city
+          postalCode: postalCode
+          idValue: idValue
+          isActive: true
+          hasCredentials: true
+          createdAt: createdAt
+          phone: phone
+          myinvoisEnv: SANDBOX
+          name: name
+          tin: tin
+          id: id
+          state: state
+          email: email
+          updatedAt: updatedAt
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Company'
+          type: array
+      type: object
+    ErrorResponse_error:
+      example:
+        code: code
+        details:
+        - "{}"
+        - "{}"
+        message: message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          items:
+            type: object
+          type: array
+      required:
+      - code
+      - message
+      type: object
+    ReadinessResponse_checks:
+      example:
+        database: ok
+        redis: ok
+      properties:
+        database:
+          enum:
+          - ok
+          - error
+          type: string
+        redis:
+          enum:
+          - ok
+          - error
+          type: string
+      type: object
+    ReadinessResponse_signing:
+      example:
+        certificateValid: true
+        enabled: true
+        defaultVersion: defaultVersion
+      properties:
+        enabled:
+          type: boolean
+        certificateValid:
+          type: boolean
+        defaultVersion:
+          type: string
+      type: object
+    SubmitBuyerRequest_invoice:
+      allOf:
+      - $ref: '#/components/schemas/Invoice'
+      - required:
+        - buyer
+        type: object
+      example:
+        amount: 0.8008281904610115
+        total: 5.637376656633329
+        invoiceNumber: invoiceNumber
+        discount: 6.027456183070403
+        rounding: 1.4658129805029452
+        invoiceDate: 2000-01-23T04:56:07.000+00:00
+        taxAmount: 5.962133916683182
+        items:
+        - unitPrice: 7.061401241503109
+          taxRate: 3.616076749251911
+          total: 4.145608029883936
+          quantity: 2.3021358869347655
+          description: description
+          discount: 9.301444243932576
+          taxCode: taxCode
+          taxAmount: 2.027123023002322
+        - unitPrice: 7.061401241503109
+          taxRate: 3.616076749251911
+          total: 4.145608029883936
+          quantity: 2.3021358869347655
+          description: description
+          discount: 9.301444243932576
+          taxCode: taxCode
+          taxAmount: 2.027123023002322
+        buyer:
+          idType: NRIC
+          address: address
+          city: city
+          phone: phone
+          postalCode: postalCode
+          tin: tin
+          name: name
+          idValue: idValue
+          state: state
+          email: email
+    DocumentListResponse_data_inner:
+      example:
+        createdAt: createdAt
+        total: total
+        myinvoisUuid: myinvoisUuid
+        invoiceNumber: invoiceNumber
+        invoiceType: invoiceType
+        invoiceDate: invoiceDate
+        trackingId: trackingId
+        status: status
+      properties:
+        trackingId:
+          type: string
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          type: string
+        invoiceType:
+          type: string
+        status:
+          type: string
+        myinvoisUuid:
+          type: string
+        total:
+          type: string
+        createdAt:
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+

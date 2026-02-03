@@ -1,0 +1,10 @@
+# Build results
+bin/
+obj/
+*.nupkg
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
