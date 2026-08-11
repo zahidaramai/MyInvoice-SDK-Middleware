@@ -1,3 +1,5 @@
+
+
 # MyInvois Middleware Gateway
 
 [![CI](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml/badge.svg)](https://github.com/zahidaramai/MyInvoice-SDK-Middleware/actions/workflows/ci.yml)
@@ -458,6 +460,9 @@ Custom roles can be created via the API using any combination of the 6 permissio
 | `SIGNING_DEFAULT_VERSION` | 1.0 | Default document version |
 | `SIGNING_PKCS12_PATH` | - | Path to P12 certificate |
 | `SIGNING_PKCS12_PASSPHRASE` | - | P12 passphrase |
+| `SIGNING_CERT_PATH` | - | PEM certificate path |
+| `SIGNING_KEY_PATH` | - | PEM private key path |
+| `SIGNING_KEY_PASSPHRASE` | - | PEM private key passphrase |
 | `ERP_MODE` | false | Enable ERP intermediary mode |
 | `ENABLE_MONTHLY_CONSOLIDATION` | false | Enable monthly draft consolidation |
 | `METRICS_ENABLED` | true | Enable Prometheus metrics |
